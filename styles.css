@@ -1,0 +1,573 @@
+/* DataCards Plugin Styles */
+
+/* Container for all cards */
+.datacards-container {
+  --card-columns: 3;
+  --card-gap: 16px;
+  --card-radius: 8px;
+  --image-height: 200px;
+  --image-fit: cover;
+  
+  display: grid;
+  grid-template-columns: repeat(var(--card-columns), 1fr);
+  gap: var(--card-gap);
+  width: 100%;
+  margin: 1em 0;
+}
+
+/* Individual card */
+.datacards-card {
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--card-radius);
+  overflow: hidden;
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.datacards-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* When shadows are disabled */
+.datacards-no-shadows .datacards-card {
+  box-shadow: none;
+}
+
+.datacards-no-shadows .datacards-card:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+/* Image container */
+.datacards-image-container {
+  width: 100%;
+  height: var(--image-height);
+  overflow: hidden;
+}
+
+/* Image */
+.datacards-image {
+  width: 100%;
+  height: 100%;
+  object-fit: var(--image-fit);
+}
+
+/* Image placeholder */
+.datacards-image-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--background-modifier-border);
+  color: var(--text-muted);
+  font-size: 0.9em;
+  text-align: center;
+  padding: 1em;
+  transition: opacity 0.3s ease;
+}
+
+/* Fade-in animation for lazy-loaded images */
+.datacards-image {
+  width: 100%;
+  height: 100%;
+  object-fit: var(--image-fit);
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+.datacards-image.loaded {
+  opacity: 1;
+}
+
+/* Content area */
+.datacards-content {
+  padding: 16px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Properties container */
+.datacards-properties-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Scrollable properties container */
+.datacards-scrollable-properties {
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb-bg) var(--scrollbar-bg);
+  max-height: var(--content-height, 200px);
+  position: relative;
+}
+
+/* Scrollbar styling for webkit browsers */
+.datacards-scrollable-properties::-webkit-scrollbar {
+  width: 6px;
+}
+
+.datacards-scrollable-properties::-webkit-scrollbar-track {
+  background: var(--scrollbar-bg, rgba(0, 0, 0, 0.05));
+}
+
+.datacards-scrollable-properties::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb-bg, rgba(0, 0, 0, 0.2));
+  border-radius: 3px;
+}
+
+/* Subtle indicator that content is scrollable */
+.datacards-scrollable-properties::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 15px;
+  background: linear-gradient(to top, var(--background-secondary), transparent);
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+/* Property */
+.datacards-property {
+  margin-bottom: 8px;
+}
+
+/* Property label */
+.datacards-property-label {
+  font-size: 0.8em;
+  color: var(--text-muted);
+  margin-bottom: 2px;
+  text-transform: uppercase;
+}
+
+/* Property value */
+.datacards-property-value {
+  color: var(--text-normal);
+}
+
+/* Error message */
+.datacards-error {
+  grid-column: 1 / -1;
+  padding: 16px;
+  background-color: rgba(255, 0, 0, 0.1);
+  border: 1px solid rgba(255, 0, 0, 0.3);
+  border-radius: var(--card-radius);
+  color: var(--text-error);
+}
+
+/* Info message */
+.datacards-info {
+  grid-column: 1 / -1;
+  padding: 16px;
+  background-color: rgba(0, 0, 255, 0.1);
+  border: 1px solid rgba(0, 0, 255, 0.3);
+  border-radius: var(--card-radius);
+  color: var(--text-normal);
+}
+
+/* Stars rating */
+.datacards-stars {
+  display: flex;
+  gap: 2px;
+}
+
+.datacards-star-full {
+  color: gold;
+}
+
+.datacards-star-empty {
+  color: var(--text-muted);
+}
+
+/* Badge */
+.datacards-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  background-color: var(--interactive-accent);
+  color: var(--text-on-accent);
+  font-size: 0.8em;
+}
+
+/* Progress bar */
+.datacards-progress-container {
+  width: 100%;
+  height: 8px;
+  background-color: var(--background-modifier-border);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.datacards-progress-bar {
+  height: 100%;
+  background-color: var(--interactive-accent);
+}
+
+.datacards-progress-text {
+  position: absolute;
+  right: 0;
+  top: 10px;
+  font-size: 0.8em;
+  color: var(--text-muted);
+}
+
+/* Tags */
+.datacards-tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.datacards-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  background-color: var(--background-modifier-border);
+  color: var(--text-muted);
+  font-size: 0.8em;
+  text-decoration: none;
+}
+
+/* Tag links */
+a.datacards-tag:hover {
+  background-color: var(--background-modifier-hover);
+  color: var(--text-normal);
+  text-decoration: none;
+}
+
+/* Internal links */
+.datacards-property-value .internal-link {
+  color: var(--text-accent);
+  text-decoration: none;
+}
+
+.datacards-property-value .internal-link:hover {
+  text-decoration: underline;
+}
+
+/* File property (title) */
+.datacards-file-property {
+  margin-bottom: 12px;
+}
+
+.datacards-file-property .internal-link {
+  font-size: 1.2em;
+  font-weight: 600;
+  color: var(--text-accent);
+  text-decoration: none;
+}
+
+.datacards-file-property .internal-link:hover {
+  text-decoration: underline;
+}
+
+/* Preset variations */
+
+/* Grid preset - Balanced default layout for most use cases */
+.datacards-preset-grid {
+  --card-columns: 3;
+  --image-height: 200px;
+  --image-fit: cover;
+}
+
+.datacards-preset-grid .datacards-card {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Portrait preset - Optimized for book covers and portrait images */
+.datacards-preset-portrait {
+  --card-columns: 3;
+  --image-height: 350px;
+  --image-fit: contain;
+}
+
+.datacards-preset-portrait .datacards-card {
+  border-radius: 8px;
+}
+
+.datacards-preset-portrait .datacards-image-container {
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.datacards-preset-portrait .datacards-content {
+  padding: 12px;
+}
+
+/* Square preset - 1:1 cards with hover overlay */
+.datacards-preset-square {
+  --card-columns: 4;
+  --image-height: 200px;
+  --image-fit: cover;
+}
+
+.datacards-preset-square .datacards-card {
+  aspect-ratio: 1/1;
+  border-radius: 8px;
+  position: relative;
+  overflow: hidden;
+}
+
+.datacards-preset-square .datacards-image-container {
+  height: 100%;
+  width: 100%;
+  transition: all 0.3s ease;
+}
+
+/* Show only the file property (title) by default */
+.datacards-preset-square .datacards-content {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 8px;
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  transition: all 0.3s ease;
+}
+
+.datacards-preset-square .datacards-property:not(.datacards-file-property-container) {
+  display: none;
+  transition: opacity 0.3s ease;
+  opacity: 0;
+}
+
+/* No info icon - removed as it was unnecessary */
+
+/* On hover, dim the image and show all properties */
+.datacards-preset-square .datacards-card:hover .datacards-image-container {
+  filter: brightness(0.7) blur(2px);
+}
+
+.datacards-preset-square .datacards-card:hover .datacards-content {
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* Prevent the container itself from scrolling */
+}
+
+.datacards-preset-square .datacards-card:hover .datacards-file-property-container {
+  flex-shrink: 0; /* Prevent the header from shrinking */
+  padding: 12px 8px;
+  background: rgba(0, 0, 0, 0.8); /* Slightly darker background */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2); /* Visual separator */
+}
+
+/* Create a scrollable container for the non-title properties */
+.datacards-preset-square .datacards-card:hover .datacards-properties-scroll-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+.datacards-preset-square .datacards-card:hover .datacards-property {
+  display: block;
+  opacity: 1;
+}
+
+.datacards-preset-square .datacards-property {
+  margin-bottom: 8px;
+  color: white;
+}
+
+.datacards-preset-square .datacards-property-label {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.datacards-preset-square .datacards-property-value {
+  color: white;
+}
+
+.datacards-preset-square .datacards-file-property {
+  margin-bottom: 12px;
+}
+
+.datacards-preset-square .datacards-file-property .internal-link {
+  font-size: 1.2em;
+  color: white;
+}
+
+/* Adjust links in overlay to be visible */
+.datacards-preset-square .datacards-property-value .internal-link,
+.datacards-preset-square .datacards-tag {
+  color: #a6d8ff;
+}
+
+/* Compact preset - Side-by-side layout with image on left, scrollable content on right */
+.datacards-preset-compact {
+  --card-columns: 4;
+  --image-height: 200px;
+  --image-fit: cover;
+}
+
+.datacards-preset-compact .datacards-card {
+  flex-direction: row;
+  height: 200px;
+}
+
+.datacards-preset-compact .datacards-image-container {
+  width: 40%;
+  height: 100%;
+  border-right: 1px solid var(--background-modifier-border);
+}
+
+.datacards-preset-compact .datacards-content {
+  width: 60%;
+  overflow-y: auto;
+  max-height: 100%;
+  padding: 12px;
+}
+
+/* Dense preset - Maximum information density with minimal spacing */
+.datacards-preset-dense {
+  --card-columns: 6;
+  --image-height: 120px;
+  --image-fit: cover;
+}
+
+.datacards-preset-dense .datacards-card {
+  border-radius: 4px;
+}
+
+.datacards-preset-dense .datacards-content {
+  padding: 8px;
+  gap: 4px;
+}
+
+.datacards-preset-dense .datacards-property {
+  margin-bottom: 4px;
+  font-size: 0.9em;
+}
+
+.datacards-preset-dense .datacards-property-label {
+  font-size: 0.7em;
+}
+
+.datacards-preset-dense .datacards-file-property {
+  margin-bottom: 6px;
+}
+
+.datacards-preset-dense .datacards-file-property .internal-link {
+  font-size: 1em;
+}
+
+/* Responsive adjustments - these are now handled by the mobile settings in the plugin */
+/* These media queries serve as fallbacks for blocks without explicit settings */
+@media (max-width: 1200px) {
+  /* Only apply if not already set by the plugin */
+  .datacards-container:not([style*="--card-columns"]) {
+    --card-columns: 2;
+  }
+  
+  /* Adjust compact preset for medium screens */
+  .datacards-preset-compact .datacards-card {
+    flex-direction: column;
+    height: auto;
+  }
+  
+  .datacards-preset-compact .datacards-image-container {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--background-modifier-border);
+  }
+  
+  .datacards-preset-compact .datacards-content {
+    width: 100%;
+  }
+  
+  /* Adjust dense preset for medium screens */
+  .datacards-preset-dense {
+    --card-columns: 4;
+  }
+}
+
+@media (max-width: 800px) {
+  /* Only apply if not already set by the plugin */
+  .datacards-container:not([style*="--card-columns"]) {
+    --card-columns: 1;
+  }
+  
+  /* Adjust image height for better mobile viewing */
+  .datacards-container:not([style*="--image-height"]) {
+    --image-height: 150px;
+  }
+  
+  /* Force all presets to stack vertically on small screens */
+  .datacards-preset-compact .datacards-card {
+    flex-direction: column;
+    height: auto;
+  }
+  
+  .datacards-preset-compact .datacards-image-container {
+    width: 100%;
+    height: var(--image-height);
+  }
+  
+  .datacards-preset-compact .datacards-content {
+    width: 100%;
+  }
+  
+  /* All presets should default to 1 column on mobile */
+  .datacards-preset-grid,
+  .datacards-preset-portrait,
+  .datacards-preset-square,
+  .datacards-preset-compact,
+  .datacards-preset-dense {
+    --card-columns: 1;
+  }
+  
+  /* Reduce card spacing on mobile */
+  .datacards-container {
+    gap: 12px;
+    margin: 0.5em 0;
+  }
+  
+  /* Make property text slightly smaller on mobile */
+  .datacards-property-value {
+    font-size: 0.95em;
+  }
+  
+  /* Ensure cards have adequate minimum width on mobile */
+  .datacards-card {
+    min-width: 200px;
+  }
+  
+  /* Ensure property labels are readable on mobile */
+  .datacards-property-label {
+    font-size: 0.75em;
+  }
+}
+
+/* Additional mobile optimizations */
+@media (max-width: 600px) {
+  /* Force single column for very small screens */
+  .datacards-container {
+    --card-columns: 1 !important;
+  }
+  
+  /* Further reduce spacing */
+  .datacards-content {
+    padding: 12px;
+    gap: 6px;
+  }
+  
+  /* Smaller image height for very small screens */
+  .datacards-image-container {
+    height: 120px;
+  }
+}
