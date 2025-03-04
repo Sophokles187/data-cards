@@ -55,7 +55,7 @@ That's it! Your Dataview results will now display as beautiful cards.
 ### Manual Installation
 
 1. Download the latest release from the [releases page](https://github.com/Sophokles187/data-cards/releases)
-    1.1 Download these files:  `main.js`, `manifest.json`, `style.css` 
+2. Download these files:  `main.js`, `manifest.json`, `style.css` 
 3. Go to Obsidian vault's `.obsidian/plugins/` directory
 4. Create a folder `data-cards` and copy over the downloaded files
 5. Enable the plugin in Obsidian's Community Plugins settings
