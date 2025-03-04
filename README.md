@@ -5,7 +5,7 @@ Transform Dataview query results into visually appealing, customizable card layo
 
 ## Quick Start
 
-1. **Install**: Download `main.js` , `manifest.json` and `style.css` from [releases page](https://github.com/Sophokles187/data-cards/releases) go to `.obsidian/plugins/` create the folder `data-cards` and extraxt the files.
+1. **Install**: Download `main.js` , `manifest.json` and `style.css` from [releases page](https://github.com/Sophokles187/data-cards/releases) go to `.obsidian/plugins/` create the folder `data-cards` and copy over the downloaded files
 3. (Or install using the [BRAT plugin](https://github.com/TfTHacker/obsidian42-brat))
 2. **Enable**: Activate the plugin in Obsidian's Community Plugins settings
 3. **Use**: Create a code block with the `datacards` language and write a Dataview query:
@@ -56,7 +56,7 @@ That's it! Your Dataview results will now display as beautiful cards.
 1. Download the latest release from the [releases page](https://github.com/Sophokles187/data-cards/releases)
     1.1 Download these files:  `main.js`, `manifest.json`, `style.css` 
 3. Go to Obsidian vault's `.obsidian/plugins/` directory
-4. Create a folder `data-cards` and extract the downloaded files
+4. Create a folder `data-cards` and copy over the downloaded files
 5. Enable the plugin in Obsidian's Community Plugins settings
 
 ### Through BRAT Plugin
