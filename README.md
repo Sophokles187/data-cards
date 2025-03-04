@@ -5,7 +5,8 @@ Transform Dataview query results into visually appealing, customizable card layo
 
 ## Quick Start
 
-1. **Install**: Download `main.js` , `manifest.json` and `style.css` from [releases page](https://github.com/Sophokles187/data-cards/releases) 2. Go to `.obsidian/plugins/` create the folder `data-cards` and copy over the downloaded files
+1. **Install**: Download `main.js` , `manifest.json` and `style.css` from [releases page](https://github.com/Sophokles187/data-cards/releases)
+2. Go to `.obsidian/plugins/` create the folder `data-cards` and copy over the downloaded files
 3. (Or install using the [BRAT plugin](https://github.com/TfTHacker/obsidian42-brat))
 4. **Enable**: Activate the plugin in Obsidian's Community Plugins settings
 5. **Use**: Create a code block with the `datacards` language and write a Dataview query:
