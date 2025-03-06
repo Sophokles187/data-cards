@@ -67,6 +67,9 @@ export interface DataCardsSettings {
   
   // Debug settings
   debugMode: boolean; // Enable debug logging
+  
+  // Column aliases (for display names)
+  columnAliases?: ColumnAlias[]; // Mapping of original property names to display names
 }
 
 /**
@@ -112,10 +115,20 @@ export const DEFAULT_SETTINGS: DataCardsSettings = {
 };
 
 /**
+ * Column alias mapping
+ */
+export interface ColumnAlias {
+  original: string;  // Original property name
+  alias: string;     // Display name (alias)
+  expression: string; // Original expression (if complex)
+}
+
+/**
  * Settings for a specific datacards code block
  * This can override the global settings
  */
 export interface BlockSettings extends Partial<DataCardsSettings> {
   // Block-specific settings
   columns?: number; // Allow columns to be set in code blocks
+  columnAliases?: ColumnAlias[]; // Mapping of original property names to display names
 }
