@@ -154,6 +154,42 @@
   color: var(--text-normal);
 }
 
+/* Property images */
+.datacards-property-image {
+  max-width: 100%;
+  max-height: 150px;
+  border-radius: 4px;
+  display: block;
+  margin: 4px 0;
+  transition: opacity 0.3s ease;
+  opacity: 1;
+}
+
+/* Add a subtle loading animation for property images */
+.datacards-property-image.loading {
+  opacity: 0.7;
+  animation: pulse 1.5s infinite alternate;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 0.9;
+  }
+}
+
+/* Style for property image error state */
+.datacards-property-value.image-error {
+  color: var(--text-error);
+  font-size: 0.9em;
+  font-style: italic;
+  padding: 4px;
+  background-color: rgba(255, 0, 0, 0.05);
+  border-radius: 4px;
+}
+
 /* Error message */
 .datacards-error {
   grid-column: 1 / -1;

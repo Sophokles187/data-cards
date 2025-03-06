@@ -508,6 +508,11 @@ export class RendererService {
       Logger.debug('Image value is a string:', imagePath);
     }
     
+    // Check if the string contains a wiki link or URL and extract it
+    // This helps with expressions that result in strings containing wiki links or URLs
+    imagePath = this.extractImageSource(imagePath);
+    Logger.debug('After image source extraction:', imagePath);
+    
     // Create placeholder first
     const placeholder = imageContainer.createEl('div', {
       cls: 'datacards-image-placeholder',
@@ -520,6 +525,58 @@ export class RendererService {
     } else {
       this.loadImage(imageContainer, placeholder, imagePath);
     }
+  }
+
+  /**
+   * Extract an image source from a string if present
+   * This helps with handling expressions that result in wiki links or URLs
+   * 
+   * @param value The string value that might contain a wiki link or URL
+   * @returns The wiki link or URL if found, otherwise the original string
+   */
+  private extractImageSource(value: string): string {
+    if (!value || typeof value !== 'string') {
+      return String(value || '');
+    }
+    
+    // First check for markdown image syntax: ![alt text](url) or ![|size](url)
+    // Use a more robust regex that can handle parentheses within the URL
+    // This regex handles nested parentheses in URLs by using a non-greedy match
+    const markdownImageMatch = value.match(/!\[(.*?)\]\((.*?)\)/);
+    if (markdownImageMatch) {
+      // Return the URL from the markdown image syntax
+      const url = markdownImageMatch[2];
+      Logger.debug('Extracted URL from markdown image syntax:', url);
+      
+      // Clean the URL - remove any trailing punctuation or quotes
+      const cleanUrl = url.replace(/['",.;:]+$/, '');
+      return cleanUrl;
+    }
+    
+    // Check if the string contains a wiki link pattern
+    const wikiLinkMatch = value.match(/\[\[(.*?)\]\]/);
+    if (wikiLinkMatch) {
+      // Return just the wiki link part
+      const wikiLink = `[[${wikiLinkMatch[1]}]]`;
+      Logger.debug('Extracted wiki link:', wikiLink);
+      return wikiLink;
+    }
+    
+    // Check if the string contains a URL pattern
+    // Use a more robust regex for URLs that can handle query parameters and fragments
+    // This regex is more permissive to handle various URL formats
+    const urlMatch = value.match(/(https?:\/\/[^\s"'<>[\]{}]+)/);
+    if (urlMatch) {
+      // Return just the URL part
+      const url = urlMatch[1];
+      Logger.debug('Extracted URL:', url);
+      
+      // Clean the URL - remove any trailing punctuation or quotes
+      const cleanUrl = url.replace(/['",.;:]+$/, '');
+      return cleanUrl;
+    }
+    
+    return value;
   }
   
   /**
@@ -562,25 +619,28 @@ export class RendererService {
    * @param imagePath The path to the image
    */
   private loadImage(imageContainer: HTMLElement, placeholder: HTMLElement, imagePath: string): void {
+    // Check for markdown image syntax: ![alt text](url) or ![|size](url)
+    const markdownImageMatch = imagePath.match(/!\[(.*?)\]\((.*?)\)/);
+    if (markdownImageMatch) {
+      // Extract the URL from the markdown image syntax
+      const imageUrl = markdownImageMatch[2];
+      Logger.debug('Extracted URL from markdown image syntax:', imageUrl);
+      
+      // Use the extracted URL for loading
+      this.loadImage(imageContainer, placeholder, imageUrl);
+      return;
+    }
+    
     // Handle different image formats
     if (imagePath.startsWith('http') || imagePath.startsWith('https')) {
-      Logger.debug('Handling as external URL');
-      // External URL
-          const img = imageContainer.createEl('img', {
-            cls: 'datacards-image',
-            attr: { src: imagePath },
-          });
-          
-          // Remove placeholder and add loaded class when image loads
-          img.onload = () => {
-            placeholder.remove();
-            img.addClass('loaded');
-          };
+      Logger.debug('Handling as external URL:', imagePath);
       
-      // Show placeholder if image fails to load
-      img.onerror = () => {
-        placeholder.setText('Image not found');
-      };
+      // Clean the URL - remove any trailing punctuation or quotes that might have been included
+      const cleanUrl = imagePath.replace(/['",.;:]+$/, '');
+      Logger.debug('Cleaned URL:', cleanUrl);
+      
+      // Try to load the image with multiple approaches
+      this.loadExternalImage(imageContainer, placeholder, cleanUrl);
     } else if (imagePath.startsWith('[[') && imagePath.endsWith(']]')) {
       Logger.debug('Handling as wiki link');
       // Wiki link
@@ -672,6 +732,89 @@ export class RendererService {
       }
     }
   }
+  
+  /**
+   * Load an external image with multiple fallback approaches
+   * 
+   * @param imageContainer The container element for the image
+   * @param placeholder The placeholder element
+   * @param url The URL of the image
+   */
+  private loadExternalImage(imageContainer: HTMLElement, placeholder: HTMLElement, url: string): void {
+    Logger.debug('Loading external image with URL:', url);
+    
+    // First attempt: with crossorigin attribute
+    const img = imageContainer.createEl('img', {
+      cls: 'datacards-image',
+      attr: { 
+        src: url,
+        // Add crossorigin attribute to help with CORS issues
+        crossorigin: 'anonymous'
+      },
+    });
+    
+    // Remove placeholder and add loaded class when image loads
+    img.onload = () => {
+      Logger.debug('External image loaded successfully:', url);
+      placeholder.remove();
+      img.addClass('loaded');
+    };
+    
+    // Show placeholder if image fails to load
+    img.onerror = (error) => {
+      Logger.error('Failed to load external image with crossorigin attribute:', url, error);
+      
+      // Second attempt: without crossorigin attribute
+      Logger.debug('Trying again without crossorigin attribute');
+      img.removeAttribute('crossorigin');
+      
+      img.onload = () => {
+        Logger.debug('External image loaded successfully without crossorigin:', url);
+        placeholder.remove();
+        img.addClass('loaded');
+      };
+      
+      img.onerror = (secondError) => {
+        Logger.error('Failed to load external image without crossorigin:', url, secondError);
+        
+        // Third attempt: using a proxy service if available
+        // This is a common approach to bypass CORS issues
+        const proxyUrl = `https://images.weserv.nl/?url=${encodeURIComponent(url)}`;
+        Logger.debug('Trying with image proxy service:', proxyUrl);
+        
+        img.src = proxyUrl;
+        
+        img.onload = () => {
+          Logger.debug('External image loaded successfully via proxy:', proxyUrl);
+          placeholder.remove();
+          img.addClass('loaded');
+        };
+        
+        img.onerror = (thirdError) => {
+          Logger.error('All attempts to load image failed:', url, thirdError);
+          placeholder.setText('Image not found - URL: ' + url);
+          
+          // Create a hidden iframe to try to load the image
+          // This can help diagnose if the image exists but has CORS issues
+          try {
+            const testImg = document.createElement('img');
+            testImg.style.display = 'none';
+            testImg.src = url;
+            document.body.appendChild(testImg);
+            
+            // Remove the test image after a short delay
+            setTimeout(() => {
+              if (document.body.contains(testImg)) {
+                document.body.removeChild(testImg);
+              }
+            }, 3000);
+          } catch (e) {
+            Logger.error('Error during final test:', e);
+          }
+        };
+      };
+    };
+  }
 
   /**
    * Add a property to a card
@@ -694,11 +837,23 @@ export class RendererService {
       cls: 'datacards-property',
     });
     
+    // Get display name from column aliases if available
+    let displayName = propertyName;
+    
+    // Check if we have column aliases and if this property has an alias
+    if (settings.columnAliases) {
+      const aliasEntry = settings.columnAliases.find((a: { original: string }) => a.original === propertyName);
+      if (aliasEntry) {
+        displayName = aliasEntry.alias;
+        Logger.debug(`Using alias "${displayName}" for property "${propertyName}"`);
+      }
+    }
+    
     // Add label if enabled
     if (settings.showLabels) {
       propertyEl.createEl('div', {
         cls: 'datacards-property-label',
-        text: propertyName,
+        text: displayName,
       });
     }
     
@@ -800,6 +955,55 @@ export class RendererService {
           this.formatAsDate(valueEl, date);
           return;
         }
+      }
+      
+      // Check if the string contains a wiki link or URL and extract it
+      // This helps with expressions that result in strings containing wiki links or URLs
+      const extractedValue = this.extractImageSource(value);
+      if (extractedValue !== value) {
+        // If a wiki link was extracted, format it as a wiki link
+        this.formatPropertyByType(propertyEl, extractedValue);
+        return;
+      }
+      
+      // Check for markdown image syntax: ![alt text](url) or ![|size](url)
+      const markdownImageMatch = value.match(/!\[(.*?)\]\((.*?)\)/);
+      if (markdownImageMatch) {
+        Logger.debug('Found markdown image in property value');
+        const imageUrl = markdownImageMatch[2];
+        const altText = markdownImageMatch[1];
+        
+        // Add loading class initially
+        valueEl.addClass('loading');
+        
+        // Create an image element with crossorigin attribute for external URLs
+        const img = valueEl.createEl('img', {
+          cls: 'datacards-property-image loading',
+          attr: { 
+            src: imageUrl,
+            alt: altText || 'Image',
+            crossorigin: 'anonymous' // Add crossorigin attribute to help with CORS issues
+          }
+        });
+        
+        // Remove loading class when image loads
+        img.onload = () => {
+          Logger.debug('Property image loaded successfully:', imageUrl);
+          img.removeClass('loading');
+        };
+        
+        // Add error handling for property images
+        img.onerror = () => {
+          Logger.error('Failed to load property image:', imageUrl);
+          // Remove the image
+          img.remove();
+          // Add error class and message
+          valueEl.removeClass('loading');
+          valueEl.addClass('image-error');
+          valueEl.setText('Image not found: ' + imageUrl);
+        };
+        
+        return;
       }
       
       if (value.startsWith('[[') && value.endsWith(']]')) {
@@ -1009,6 +1213,11 @@ export class RendererService {
       // If it's already a string or some other type, convert to string
       stringValue = String(value);
     }
+    
+    // Check if the string contains a wiki link or URL and extract it
+    // This helps with expressions that result in strings containing wiki links or URLs
+    stringValue = this.extractImageSource(stringValue);
+    Logger.debug('File property after image source extraction:', stringValue);
     
     // Check if it's already a wiki link
     if (stringValue.startsWith('[[') && stringValue.endsWith(']]')) {

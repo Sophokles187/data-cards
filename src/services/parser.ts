@@ -1,4 +1,4 @@
-import { BlockSettings } from '../models/settings';
+import { BlockSettings, ColumnAlias } from '../models/settings';
 import { Logger } from '../utils/logger';
 
 // Type for dynamic property access
@@ -65,7 +65,145 @@ export class ParserService {
     // Parse settings (YAML-like format)
     const settings = this.parseSettings(settingsText);
     
+    // Extract column aliases from the query
+    const columnAliases = this.extractColumnAliases(query);
+    if (columnAliases.length > 0) {
+      settings.columnAliases = columnAliases;
+      Logger.debug('Extracted column aliases:', columnAliases);
+    }
+    
     return { query, settings };
+  }
+  
+  /**
+   * Extract column aliases from a Dataview query
+   * Handles both simple aliases (field as "Alias") and complex expressions
+   * 
+   * @param query The Dataview query
+   * @returns Array of column aliases
+   */
+  private extractColumnAliases(query: string): ColumnAlias[] {
+    const aliases: ColumnAlias[] = [];
+    
+    // Only process TABLE queries
+    if (!query.trim().toUpperCase().startsWith('TABLE')) {
+      return aliases;
+    }
+    
+    try {
+      // Extract the column definitions part of the query
+      // This is the part between TABLE and the first FROM, WHERE, SORT, GROUP BY, LIMIT, FLATTEN
+      // Use [\s\S] instead of dot with s flag for cross-line matching
+      const tableMatch = query.match(/TABLE\s+(without\s+id\s+)?([\s\S]*?)(?:\s+FROM|\s+WHERE|\s+SORT|\s+GROUP BY|\s+LIMIT|\s+FLATTEN|$)/i);
+      
+      if (!tableMatch || !tableMatch[2]) {
+        return aliases;
+      }
+      
+      const columnsText = tableMatch[2].trim();
+      Logger.debug('Extracted columns text:', columnsText);
+      
+      if (!columnsText) {
+        return aliases;
+      }
+      
+      // Split the columns by commas, but handle complex expressions
+      // This is a simplified approach and may not handle all cases perfectly
+      const columns = this.splitColumnsPreservingExpressions(columnsText);
+      
+      for (const column of columns) {
+        // Look for the "as" keyword, handling both quoted and unquoted aliases
+        // This regex handles: field as Alias, field as "Alias", (expression) as Alias, (expression) as "Alias"
+        const asMatch = column.match(/^(.*?)\s+as\s+(?:"([^"]+)"|'([^']+)'|([^\s,]+))$/i);
+        
+        if (asMatch) {
+          const expression = asMatch[1].trim();
+          // The alias could be in group 2 (double quotes), 3 (single quotes), or 4 (unquoted)
+          const alias = asMatch[2] || asMatch[3] || asMatch[4];
+          
+          // For simple field names, use the field name as original
+          // For complex expressions, use the whole expression
+          let original = expression;
+          
+          // If it's a simple field name (no spaces, operators, etc.), use it as original
+          if (/^[a-zA-Z0-9_.-]+$/.test(expression)) {
+            original = expression;
+          } else {
+            // For complex expressions, try to extract the core field name if possible
+            // This helps with expressions like ("![|60](" + cover + ")") as Cover
+            const fieldMatch = expression.match(/\(\s*".*?"\s*\+\s*([a-zA-Z0-9_.-]+)\s*\+\s*".*?"\s*\)/);
+            if (fieldMatch && fieldMatch[1]) {
+              // Use the extracted field name as the original
+              original = fieldMatch[1];
+              Logger.debug(`Extracted field name from complex expression: ${original}`);
+            }
+          }
+          
+          aliases.push({
+            original,
+            alias,
+            expression
+          });
+          
+          Logger.debug(`Found column alias: ${original} as "${alias}"`);
+        }
+      }
+    } catch (error) {
+      Logger.error('Error extracting column aliases:', error);
+    }
+    
+    return aliases;
+  }
+  
+  /**
+   * Split a comma-separated list of columns while preserving expressions
+   * This handles nested parentheses and quotes
+   * 
+   * @param columnsText The text containing comma-separated columns
+   * @returns Array of column expressions
+   */
+  private splitColumnsPreservingExpressions(columnsText: string): string[] {
+    const columns: string[] = [];
+    let currentColumn = '';
+    let parenDepth = 0;
+    let inDoubleQuote = false;
+    let inSingleQuote = false;
+    
+    for (let i = 0; i < columnsText.length; i++) {
+      const char = columnsText[i];
+      
+      // Handle quotes
+      if (char === '"' && !inSingleQuote) {
+        inDoubleQuote = !inDoubleQuote;
+      } else if (char === "'" && !inDoubleQuote) {
+        inSingleQuote = !inSingleQuote;
+      }
+      
+      // Handle parentheses (only if not in quotes)
+      if (!inDoubleQuote && !inSingleQuote) {
+        if (char === '(') {
+          parenDepth++;
+        } else if (char === ')') {
+          parenDepth--;
+        }
+      }
+      
+      // Handle commas (only if not in quotes or parentheses)
+      if (char === ',' && parenDepth === 0 && !inDoubleQuote && !inSingleQuote) {
+        columns.push(currentColumn.trim());
+        currentColumn = '';
+        continue;
+      }
+      
+      currentColumn += char;
+    }
+    
+    // Add the last column
+    if (currentColumn.trim()) {
+      columns.push(currentColumn.trim());
+    }
+    
+    return columns;
   }
 
   /**
