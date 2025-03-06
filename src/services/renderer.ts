@@ -1222,8 +1222,15 @@ export class RendererService {
             'data-type': 'tag'
           }
         });
+      } else if (/<[ubia]>|<\/[ubia]>|<span|<div|<p>|<\/p>|<br>|<hr>/.test(value)) {
+        // Contains HTML tags - render as HTML with sanitization
+        console.log('DATACARDS DEBUG: Rendering HTML content:', value);
+        
+        // Use setInnerHTML for HTML content
+        // This allows <u>, <b>, <i>, <a>, etc. tags to render properly
+        valueEl.innerHTML = value;
       } else {
-        // Regular text
+        // Regular text without HTML
         valueEl.setText(value);
       }
     } else if (typeof value === 'object' && value !== null) {
