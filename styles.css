@@ -165,6 +165,7 @@
 
 .datacards-text-right {
   text-align: right;
+  padding-right: 8px; /* Add padding to create space between text and right edge/scrollbar */
 }
 
 /* Property images */
