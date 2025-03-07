@@ -8,6 +8,11 @@
 export type CardPreset = 'grid' | 'portrait' | 'square' | 'compact' | 'dense';
 
 /**
+ * Font size options
+ */
+export type FontSize = 'larger' | 'large' | 'default' | 'small' | 'smaller';
+
+/**
  * Image fitting options
  */
 export type ImageFit = 'cover' | 'contain';
@@ -49,6 +54,7 @@ export interface DataCardsSettings {
   enableShadows: boolean;
   propertiesAlign: 'left' | 'center' | 'right'; // Alignment for properties and labels
   titleAlign: 'left' | 'center' | 'right'; // Alignment for the title (filename)
+  fontSize: FontSize; // Font size for all text elements
   
   // Formatting settings
   defaultDateFormat: string;
@@ -98,6 +104,7 @@ export const DEFAULT_SETTINGS: DataCardsSettings = {
   enableShadows: true,
   propertiesAlign: 'left', // Default to left alignment
   titleAlign: 'left', // Default to left alignment
+  fontSize: 'default', // Default font size
   
   // Formatting settings
   defaultDateFormat: 'YYYY-MM-DD',

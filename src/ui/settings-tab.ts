@@ -118,6 +118,21 @@ export class DataCardsSettingTab extends PluginSettingTab {
           this.plugin.settings.titleAlign = value as any;
           await this.plugin.saveSettings();
         }));
+        
+    new Setting(containerEl)
+      .setName('Font Size')
+      .setDesc('Text size for all card elements (properties, labels, and title)')
+      .addDropdown(dropdown => dropdown
+        .addOption('larger', 'Larger (120%)')
+        .addOption('large', 'Large (110%)')
+        .addOption('default', 'Default (100%)')
+        .addOption('small', 'Small (90% - similar to dense preset)')
+        .addOption('smaller', 'Smaller (80%)')
+        .setValue(this.plugin.settings.fontSize)
+        .onChange(async (value: string) => {
+          this.plugin.settings.fontSize = value as any;
+          await this.plugin.saveSettings();
+        }));
     
     // Card Content Settings
     containerEl.createEl('h3', { text: 'Card Content Settings' });

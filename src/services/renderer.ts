@@ -108,6 +108,16 @@ export class RendererService {
       cardsContainer.addClass('datacards-no-shadows');
     }
     
+    // Apply font size class if specified
+    if (settings.fontSize && settings.fontSize !== 'default') {
+      cardsContainer.addClass(`datacards-font-${settings.fontSize}`);
+      Logger.debug(`Applied font size class: datacards-font-${settings.fontSize}`);
+    } else if (settings.preset === 'dense' && (!settings.fontSize || settings.fontSize === 'default')) {
+      // For dense preset, automatically use small font size if not explicitly overridden
+      cardsContainer.addClass('datacards-font-small');
+      Logger.debug('Applied small font size for dense preset');
+    }
+    
     // Set only the non-preset specific CSS variables
     // This allows the preset class to control preset-specific variables
     cardsContainer.style.setProperty('--card-gap', `${settings.cardSpacing}px`);
