@@ -47,6 +47,8 @@ export interface DataCardsSettings {
   showLabels: boolean;
   cardSpacing: number;
   enableShadows: boolean;
+  propertiesAlign: 'left' | 'center' | 'right'; // Alignment for properties and labels
+  titleAlign: 'left' | 'center' | 'right'; // Alignment for the title (filename)
   
   // Formatting settings
   defaultDateFormat: string;
@@ -94,6 +96,8 @@ export const DEFAULT_SETTINGS: DataCardsSettings = {
   showLabels: true,
   cardSpacing: 16,
   enableShadows: true,
+  propertiesAlign: 'left', // Default to left alignment
+  titleAlign: 'left', // Default to left alignment
   
   // Formatting settings
   defaultDateFormat: 'YYYY-MM-DD',

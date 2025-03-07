@@ -896,6 +896,11 @@ export class RendererService {
       cls: 'datacards-property',
     });
     
+    // Apply text alignment class to the property element
+    if (settings.propertiesAlign) {
+      propertyEl.addClass(`datacards-text-${settings.propertiesAlign}`);
+    }
+    
     // Get display name from column aliases if available
     let displayName = propertyName;
     
@@ -910,10 +915,15 @@ export class RendererService {
     
     // Add label if enabled
     if (settings.showLabels) {
-      propertyEl.createEl('div', {
+      const labelEl = propertyEl.createEl('div', {
         cls: 'datacards-property-label',
         text: displayName,
       });
+      
+      // Apply text alignment class to the label element
+      if (settings.propertiesAlign) {
+        labelEl.addClass(`datacards-text-${settings.propertiesAlign}`);
+      }
     }
     
     // Check if this is the file property (special handling for file links)
@@ -989,6 +999,16 @@ export class RendererService {
     const valueEl = propertyEl.createEl('div', {
       cls: 'datacards-property-value',
     });
+    
+    // Apply the same text alignment class as the parent property element
+    // This ensures consistent alignment between labels and values
+    if (propertyEl.hasClass('datacards-text-left')) {
+      valueEl.addClass('datacards-text-left');
+    } else if (propertyEl.hasClass('datacards-text-center')) {
+      valueEl.addClass('datacards-text-center');
+    } else if (propertyEl.hasClass('datacards-text-right')) {
+      valueEl.addClass('datacards-text-right');
+    }
     
     if (value === null || value === undefined) {
       valueEl.setText('');
@@ -1411,6 +1431,22 @@ export class RendererService {
     const valueEl = propertyEl.createEl('div', {
       cls: 'datacards-property-value datacards-file-property',
     });
+    
+    // Apply title alignment if this is a file property (title)
+    // Use the titleAlign setting from the current settings
+    if (this.currentSettings?.titleAlign) {
+      valueEl.addClass(`datacards-text-${this.currentSettings.titleAlign}`);
+    } else {
+      // Fallback to the same alignment as the parent property element
+      // This ensures consistent alignment if titleAlign is not set
+      if (propertyEl.hasClass('datacards-text-left')) {
+        valueEl.addClass('datacards-text-left');
+      } else if (propertyEl.hasClass('datacards-text-center')) {
+        valueEl.addClass('datacards-text-center');
+      } else if (propertyEl.hasClass('datacards-text-right')) {
+        valueEl.addClass('datacards-text-right');
+      }
+    }
     
     if (value === null || value === undefined) {
       valueEl.setText('');
