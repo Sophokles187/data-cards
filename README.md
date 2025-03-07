@@ -176,6 +176,8 @@ For large collections with many images, you can enable lazy loading in the plugi
 | `showLabels` | Whether to show property labels | `true` |
 | `cardSpacing` | Space between cards (in pixels) | `16` |
 | `enableShadows` | Add subtle shadows to cards | `true` |
+| `propertiesAlign` | Text alignment for properties and their labels (`left`, `center`, `right`) | `left` |
+| `titleAlign` | Text alignment for the title/filename (`left`, `center`, `right`) | `left` |
 | `defaultDateFormat` | Format for displaying dates (e.g., `YYYY-MM-DD`) | `YYYY-MM-DD` |
 | `mobilePreset` | Preset to use on mobile devices | `grid` |
 | `mobileScrollableProperties` | Whether to make properties scrollable on mobile devices | `true` |
@@ -423,4 +425,3 @@ This project is licensed under the GNU General Public License v3.0 - see the [LI
 ## Acknowledgments
 
 - [Dataview Plugin](https://github.com/blacksmithgu/obsidian-dataview) (MIT License) - This plugin uses the Dataview API
-

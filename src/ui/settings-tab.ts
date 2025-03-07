@@ -92,6 +92,32 @@ export class DataCardsSettingTab extends PluginSettingTab {
           this.plugin.settings.enableShadows = value;
           await this.plugin.saveSettings();
         }));
+        
+    new Setting(containerEl)
+      .setName('Properties Alignment')
+      .setDesc('Text alignment for properties and their labels')
+      .addDropdown(dropdown => dropdown
+        .addOption('left', 'Left')
+        .addOption('center', 'Center')
+        .addOption('right', 'Right')
+        .setValue(this.plugin.settings.propertiesAlign)
+        .onChange(async (value: string) => {
+          this.plugin.settings.propertiesAlign = value as any;
+          await this.plugin.saveSettings();
+        }));
+
+    new Setting(containerEl)
+      .setName('Title Alignment')
+      .setDesc('Text alignment for the title (filename)')
+      .addDropdown(dropdown => dropdown
+        .addOption('left', 'Left')
+        .addOption('center', 'Center')
+        .addOption('right', 'Right')
+        .setValue(this.plugin.settings.titleAlign)
+        .onChange(async (value: string) => {
+          this.plugin.settings.titleAlign = value as any;
+          await this.plugin.saveSettings();
+        }));
     
     // Card Content Settings
     containerEl.createEl('h3', { text: 'Card Content Settings' });

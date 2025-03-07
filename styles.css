@@ -154,6 +154,20 @@
   color: var(--text-normal);
 }
 
+/* Text alignment classes */
+.datacards-text-left {
+  text-align: left;
+}
+
+.datacards-text-center {
+  text-align: center;
+}
+
+.datacards-text-right {
+  text-align: right;
+  padding-right: 8px; /* Add padding to create space between text and right edge/scrollbar */
+}
+
 /* Property images */
 .datacards-property-image {
   max-width: 100%;
