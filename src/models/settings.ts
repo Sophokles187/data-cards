@@ -73,6 +73,9 @@ export interface DataCardsSettings {
   // Performance settings
   enableLazyLoading: boolean;
   
+  // Update settings
+  enableDynamicUpdates: boolean; // Enable automatic updates when properties change
+  
   // Debug settings
   debugMode: boolean; // Enable debug logging
   
@@ -121,6 +124,9 @@ export const DEFAULT_SETTINGS: DataCardsSettings = {
   // Performance settings
   enableLazyLoading: false,
   
+  // Update settings
+  enableDynamicUpdates: false, // Disabled by default to avoid performance issues
+  
   // Debug settings
   debugMode: false // Disabled by default
 };
@@ -142,4 +148,5 @@ export interface BlockSettings extends Partial<DataCardsSettings> {
   // Block-specific settings
   columns?: number; // Allow columns to be set in code blocks
   columnAliases?: ColumnAlias[]; // Mapping of original property names to display names
+  dynamicUpdate?: boolean; // Enable/disable dynamic updates for this specific block
 }

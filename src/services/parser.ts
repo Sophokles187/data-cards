@@ -311,6 +311,11 @@ export class ParserService {
     // Special handling for defaultDateFormat
     if (key === 'defaultDateFormat') {
       settings[key] = value.trim();
+    } 
+    // Special handling for dynamicUpdate
+    else if (key === 'dynamicUpdate') {
+      settings[key] = this.parseValue(value.trim());
+      Logger.debug(`Parsed dynamicUpdate setting: ${settings[key]}`);
     } else {
       // Parse other values based on their format
       settings[key] = this.parseValue(value.trim());

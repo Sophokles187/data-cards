@@ -1,6 +1,6 @@
 {
 	"name": "obsidian-data-cards",
-	"version": "1.0.0-beta.1",
+	"version": "1.0.0-beta.2",
 	"description": "Transform Dataview query results into visually appealing, customizable card layouts.",
 	"main": "main.js",
 	"scripts": {

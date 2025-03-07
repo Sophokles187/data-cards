@@ -238,6 +238,24 @@ export class DataCardsSettingTab extends PluginSettingTab {
           await this.plugin.saveSettings();
         }));
         
+    // Update settings
+    containerEl.createEl('h3', { text: 'Update Settings' });
+    
+    new Setting(containerEl)
+      .setName('Enable Dynamic Updates')
+      .setDesc('Automatically update DataCards when properties change (may impact performance)')
+      .addToggle(toggle => toggle
+        .setValue(this.plugin.settings.enableDynamicUpdates)
+        .onChange(async (value) => {
+          this.plugin.settings.enableDynamicUpdates = value;
+          await this.plugin.saveSettings();
+        }));
+        
+    new Setting(containerEl)
+      .setName('Per-Card Dynamic Updates')
+      .setDesc('Individual cards can override the global setting with "dynamicUpdate: true/false" in their settings')
+      .setDisabled(true);
+        
     // Debug settings
     containerEl.createEl('h3', { text: 'Developer Settings' });
     

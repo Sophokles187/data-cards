@@ -158,6 +158,37 @@ For large collections with many images, you can enable lazy loading in the plugi
 - Shows a placeholder until the image is loaded
 - Provides a smooth fade-in animation when images appear
 
+### Dynamic Updates
+
+DataCards can automatically update when properties of displayed notes change. This is particularly useful when using plugins like Meta Bind that allow editing properties directly in the preview mode:
+
+- **Global Setting**: Enable or disable dynamic updates for all DataCards in the plugin settings
+- **Per-Card Setting**: Individual cards can override the global setting with the `dynamicUpdate` property
+
+```markdown
+```datacards
+TABLE title, status, priority FROM #tasks
+SORT priority DESC
+
+// Settings
+preset: grid
+dynamicUpdate: true
+```
+```
+
+When enabled, DataCards will automatically refresh when properties change, eliminating the need to manually navigate away and back to see updates. This feature is disabled by default to avoid potential performance impacts with large collections.
+
+#### Input Field Focus Preservation
+
+The dynamic updates feature includes intelligent focus preservation when typing in input fields:
+
+- Maintains focus in input fields while typing
+- Uses debouncing to avoid refreshing on every keystroke
+- Only updates after a brief pause in typing
+- Minimizes notifications during typing
+
+This ensures a smooth editing experience when using Meta Bind or similar plugins to edit properties while viewing DataCards.
+
 ### Available Settings
 
 <details>
@@ -185,6 +216,8 @@ For large collections with many images, you can enable lazy loading in the plugi
 | `mobileScrollableProperties` | Whether to make properties scrollable on mobile devices | `true` |
 | `mobileContentHeight` | Height of the scrollable content area on mobile devices | `150px` |
 | `enableLazyLoading` | Whether to enable lazy loading for images | `false` |
+| `enableDynamicUpdates` | Whether to automatically update DataCards when properties change | `false` |
+| `dynamicUpdate` | Enable/disable dynamic updates for a specific card (code block only) | Inherits global setting |
 </details>
 
 ## Examples
