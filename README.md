@@ -158,6 +158,28 @@ For large collections with many images, you can enable lazy loading in the plugi
 - Shows a placeholder until the image is loaded
 - Provides a smooth fade-in animation when images appear
 
+### Dynamic Updates
+
+DataCards can automatically update when properties of displayed notes change. This is particularly useful when using plugins like Meta Bind that allow editing properties directly in the preview mode
+
+- **Global Setting**: Enable or disable dynamic updates for all DataCards in the plugin settings
+- **Per-Card Setting**: Individual cards can override the global setting with the `dynamicUpdate` property
+
+```markdown
+```datacards
+TABLE title, status, priority FROM #tasks
+SORT priority DESC
+
+// Settings
+preset: grid
+dynamicUpdate: true
+```
+```
+
+When enabled, DataCards will automatically refresh when properties change, eliminating the need to manually navigate away and back to see updates. This feature is disabled by default to avoid potential performance impacts with large collections.
+
+> **Note for Meta Bind users**: When editing properties with Meta Bind while dynamic updates are enabled, you may experience the input field losing focus if you pause typing for more than 2.5 seconds. This is due to how the plugins interact and is a known limitation.
+
 ### Available Settings
 
 <details>
@@ -185,6 +207,8 @@ For large collections with many images, you can enable lazy loading in the plugi
 | `mobileScrollableProperties` | Whether to make properties scrollable on mobile devices | `true` |
 | `mobileContentHeight` | Height of the scrollable content area on mobile devices | `150px` |
 | `enableLazyLoading` | Whether to enable lazy loading for images | `false` |
+| `enableDynamicUpdates` | Whether to automatically update DataCards when properties change | `false` |
+| `dynamicUpdate` | Enable/disable dynamic updates for a specific card (code block only) | Inherits global setting |
 </details>
 
 ## Examples

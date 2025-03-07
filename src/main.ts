@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Plugin, MarkdownPostProcessorContext, MarkdownView, Notice } from 'obsidian';
+import { Plugin, MarkdownPostProcessorContext, MarkdownView, Notice, debounce } from 'obsidian';
 import { DataCardsSettings, DEFAULT_SETTINGS } from './models/settings';
 import { DataCardsSettingTab } from './ui/settings-tab';
 import { ParserService } from './services/parser';
@@ -29,6 +29,9 @@ export default class DataCardsPlugin extends Plugin {
   private parserService: ParserService;
   private rendererService: RendererService;
   private dataviewApiUtil: DataviewApiUtil;
+  private isRefreshing: boolean = false;
+  private lastActiveElement: Element | null = null;
+  private refreshDebounceTimeout: number = 2500; // ms to wait before refreshing (1.5 seconds)
 
   async onload() {
     await this.loadSettings();
@@ -52,11 +55,82 @@ export default class DataCardsPlugin extends Plugin {
       id: 'refresh-datacards',
       name: 'Refresh all DataCards',
       callback: () => {
-        this.refreshAllDataCards();
+        this.refreshAllDataCards(true); // true = show notification
       }
     });
 
+    // Register event listener for Dataview metadata changes
+    this.registerDataviewEvents();
+
     Logger.debug('DataCards plugin loaded');
+  }
+
+  /**
+   * Register event listeners for Dataview events
+   */
+  private registerDataviewEvents(): void {
+    // Wait for Dataview to be ready before registering events
+    this.app.workspace.onLayoutReady(() => {
+      // Check if Dataview is enabled
+      if (!this.dataviewApiUtil.isDataviewEnabled()) {
+        Logger.warn('Dataview plugin is not enabled, cannot register for metadata change events');
+        return;
+      }
+
+      // Register for the metadata-change event
+      // Use type assertion to handle the Dataview custom event
+      this.registerEvent(
+        // @ts-ignore - Dataview adds custom events to metadataCache
+        this.app.metadataCache.on('dataview:metadata-change', (type: string, file: any) => {
+          this.handleMetadataChange(type, file);
+        })
+      );
+
+      Logger.debug('Registered for Dataview metadata change events');
+    });
+  }
+
+  /**
+   * Handle Dataview metadata changes
+   * 
+   * @param type The type of change
+   * @param file The file that changed
+   */
+  private handleMetadataChange(type: string, file: any): void {
+    // Only process if dynamic updates are enabled globally
+    if (!this.settings.enableDynamicUpdates) {
+      Logger.debug('Dynamic updates are disabled globally, ignoring metadata change');
+      return;
+    }
+
+    Logger.debug(`Dataview metadata changed: ${type} for file ${file?.path}`);
+    
+    // Refresh the affected views with debouncing
+    this.debouncedRefresh(file);
+  }
+
+  /**
+   * Debounced refresh function to avoid multiple refreshes in quick succession
+   * This helps prevent input field focus loss when typing quickly
+   */
+  private debouncedRefresh = debounce((file: any) => {
+    this.refreshAffectedDataCards(file);
+  }, this.refreshDebounceTimeout);
+
+  /**
+   * Refresh DataCards that might be affected by changes to a specific file
+   * 
+   * @param file The file that changed
+   */
+  private refreshAffectedDataCards(file: any): void {
+    if (!file) return;
+    
+    // Save the currently focused element before refresh
+    this.lastActiveElement = document.activeElement;
+    
+    // For now, we'll just refresh all DataCards since determining which ones
+    // are affected by a specific file change would require tracking query results
+    this.refreshAllDataCards(false); // false = don't show notification during typing
   }
 
   onunload() {
@@ -77,7 +151,7 @@ export default class DataCardsPlugin extends Plugin {
     this.rendererService.updateSettings(this.settings);
     
     // Refresh all datacards blocks to apply the new settings
-    this.refreshAllDataCards();
+    this.refreshAllDataCards(true); // true = show notification
   }
 
   /**
@@ -199,6 +273,11 @@ export default class DataCardsPlugin extends Plugin {
           dataToRender = dataToRender.value;
         }
         
+        // Check if this specific card has a dynamic update setting
+        if (settings.dynamicUpdate !== undefined) {
+          Logger.debug(`Card has dynamicUpdate setting: ${settings.dynamicUpdate}`);
+        }
+        
         // Render the cards with the extracted data
         this.rendererService.renderCards(el, dataToRender, settings);
       } catch (queryError) {
@@ -227,17 +306,40 @@ export default class DataCardsPlugin extends Plugin {
 
   /**
    * Refresh all datacards blocks in the current view
+   * 
+   * @param showNotification Whether to show a notification after refreshing
    */
-  private refreshAllDataCards() {
+  private refreshAllDataCards(showNotification: boolean = true) {
+    // Prevent multiple refreshes from happening at the same time
+    if (this.isRefreshing) return;
+    
+    this.isRefreshing = true;
+    
     const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
     if (activeView) {
       // This triggers a re-render of the view, which will re-process all code blocks
       activeView.previewMode.rerender(true);
       
-      // Show a notification to confirm the refresh
-      new Notice('DataCards refreshed', 3000); // Show for 3 seconds
+      // Show a notification to confirm the refresh if requested
+      if (showNotification) {
+        new Notice('DataCards refreshed', 2000); // Show for 2 seconds
+      }
+      
+      // Restore focus to the previously active element if it exists
+      setTimeout(() => {
+        if (this.lastActiveElement && document.body.contains(this.lastActiveElement)) {
+          // Try to restore focus
+          (this.lastActiveElement as HTMLElement).focus();
+        }
+        
+        // Reset the refreshing flag
+        this.isRefreshing = false;
+      }, 50); // Small delay to allow the DOM to update
     } else {
-      new Notice('No active markdown view to refresh', 3000);
+      if (showNotification) {
+        new Notice('No active markdown view to refresh', 2000);
+      }
+      this.isRefreshing = false;
     }
   }
 }
