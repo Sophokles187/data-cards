@@ -29,6 +29,7 @@ That's it! Your Dataview results will now display as beautiful cards.
 - **Custom Code Block**: Use `datacards` code blocks with Dataview query syntax
 - **Flexible Presets**: Multiple card preset options (grid, portrait, square, compact, dense) optimized for different use cases
 - **Property Customization**: Select which properties to display and how they appear
+- **Font Size Options**: Customize text size independently from presets to mix and match features
 - **Image Support**: Display images from frontmatter properties with customizable dimensions
 - **Global Settings**: Default configuration with per-block overrides
 - **Mobile Optimization**: Dedicated mobile settings for better display on small screens
@@ -178,6 +179,7 @@ For large collections with many images, you can enable lazy loading in the plugi
 | `enableShadows` | Add subtle shadows to cards | `true` |
 | `propertiesAlign` | Text alignment for properties and their labels (`left`, `center`, `right`) | `left` |
 | `titleAlign` | Text alignment for the title/filename (`left`, `center`, `right`) | `left` |
+| `fontSize` | Text size for all card elements (`larger`, `large`, `default`, `small`, `smaller`) | `default` |
 | `defaultDateFormat` | Format for displaying dates (e.g., `YYYY-MM-DD`) | `YYYY-MM-DD` |
 | `mobilePreset` | Preset to use on mobile devices | `grid` |
 | `mobileScrollableProperties` | Whether to make properties scrollable on mobile devices | `true` |
@@ -186,6 +188,32 @@ For large collections with many images, you can enable lazy loading in the plugi
 </details>
 
 ## Examples
+
+### Font Size Options
+
+You can customize the text size of all card elements (properties, labels, and title) independently from the preset:
+
+````markdown
+```datacards
+TABLE title, author, rating, genre, cover FROM #books
+SORT rating DESC
+
+// Settings
+preset: portrait
+fontSize: small
+imageProperty: cover
+```
+````
+
+Available font size options:
+- `larger` (120% of default size)
+- `large` (110% of default size)
+- `default` (normal size)
+- `small` (90% of default size - similar to dense preset)
+- `smaller` (80% of default size)
+
+This allows you to mix features from different presets. For example, you can use the portrait preset with small text, or the grid preset with larger text. The dense preset automatically uses small text by default, but you can override this if desired.
+
 
 ### Preset Options
 
@@ -271,7 +299,7 @@ properties: [title, director, year, rating]
 <details>
 <summary><b>Dense Preset</b> - Maximum information density with 6 columns (click to expand)</summary>
 
-Ideal for maximum information density with many items. Features smaller cards with minimal spacing, reduced font sizes, and 6 columns by default.
+Ideal for maximum information density with many items. Features smaller cards with minimal spacing, small font size (automatically uses the 'small' font size setting), and 6 columns by default.
 
 You can override the default column count for any preset by adding the `columns` setting to your code block:
 
