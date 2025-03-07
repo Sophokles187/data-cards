@@ -317,6 +317,59 @@ a.datacards-tag:hover {
   text-decoration: none;
 }
 
+/* Font size variations */
+/* Larger - 120% of default */
+.datacards-font-larger .datacards-property {
+  font-size: 1.2em;
+}
+
+.datacards-font-larger .datacards-property-label {
+  font-size: 0.96em;
+}
+
+.datacards-font-larger .datacards-file-property .internal-link {
+  font-size: 1.44em;
+}
+
+/* Large - 110% of default */
+.datacards-font-large .datacards-property {
+  font-size: 1.1em;
+}
+
+.datacards-font-large .datacards-property-label {
+  font-size: 0.88em;
+}
+
+.datacards-font-large .datacards-file-property .internal-link {
+  font-size: 1.32em;
+}
+
+/* Small - 90% of default (similar to dense preset) */
+.datacards-font-small .datacards-property {
+  font-size: 0.9em;
+}
+
+.datacards-font-small .datacards-property-label {
+  font-size: 0.72em;
+}
+
+.datacards-font-small .datacards-file-property .internal-link {
+  font-size: 1.08em;
+}
+
+/* Smaller - 80% of default */
+.datacards-font-smaller .datacards-property {
+  font-size: 0.8em;
+}
+
+.datacards-font-smaller .datacards-property-label {
+  font-size: 0.64em;
+}
+
+.datacards-font-smaller .datacards-file-property .internal-link {
+  font-size: 0.96em;
+}
+
 .datacards-file-property .internal-link:hover {
   text-decoration: underline;
 }
@@ -501,19 +554,10 @@ a.datacards-tag:hover {
 
 .datacards-preset-dense .datacards-property {
   margin-bottom: 4px;
-  font-size: 0.9em;
-}
-
-.datacards-preset-dense .datacards-property-label {
-  font-size: 0.7em;
 }
 
 .datacards-preset-dense .datacards-file-property {
   margin-bottom: 6px;
-}
-
-.datacards-preset-dense .datacards-file-property .internal-link {
-  font-size: 1em;
 }
 
 /* Responsive adjustments - these are now handled by the mobile settings in the plugin */
