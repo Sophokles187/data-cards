@@ -160,7 +160,7 @@ For large collections with many images, you can enable lazy loading in the plugi
 
 ### Dynamic Updates
 
-DataCards can automatically update when properties of displayed notes change. This is particularly useful when using plugins like Meta Bind that allow editing properties directly in the preview mode:
+DataCards can automatically update when properties of displayed notes change. This is particularly useful when using plugins like Meta Bind that allow editing properties directly in the preview mode
 
 - **Global Setting**: Enable or disable dynamic updates for all DataCards in the plugin settings
 - **Per-Card Setting**: Individual cards can override the global setting with the `dynamicUpdate` property
@@ -178,16 +178,7 @@ dynamicUpdate: true
 
 When enabled, DataCards will automatically refresh when properties change, eliminating the need to manually navigate away and back to see updates. This feature is disabled by default to avoid potential performance impacts with large collections.
 
-#### Input Field Focus Preservation
-
-The dynamic updates feature includes intelligent focus preservation when typing in input fields:
-
-- Maintains focus in input fields while typing
-- Uses debouncing to avoid refreshing on every keystroke
-- Only updates after a brief pause in typing
-- Minimizes notifications during typing
-
-This ensures a smooth editing experience when using Meta Bind or similar plugins to edit properties while viewing DataCards.
+> **Note for Meta Bind users**: When editing properties with Meta Bind while dynamic updates are enabled, you may experience the input field losing focus if you pause typing for more than 2.5 seconds. This is due to how the plugins interact and is a known limitation.
 
 ### Available Settings
 
