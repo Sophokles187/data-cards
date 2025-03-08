@@ -165,7 +165,6 @@ DataCards can automatically update when properties of displayed notes change. Th
 - **Global Setting**: Enable or disable dynamic updates for all DataCards in the plugin settings
 - **Per-Card Setting**: Individual cards can override the global setting with the `dynamicUpdate` property
 
-```markdown
 ```datacards
 TABLE title, status, priority FROM #tasks
 SORT priority DESC
@@ -174,7 +173,7 @@ SORT priority DESC
 preset: grid
 dynamicUpdate: true
 ```
-```
+
 
 When enabled, DataCards will automatically refresh when properties change, eliminating the need to manually navigate away and back to see updates. This feature is disabled by default to avoid potential performance impacts with large collections.
 
