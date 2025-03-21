@@ -273,6 +273,11 @@ export class RendererService {
           
           // Don't show label for file property
           this.formatFileProperty(filePropertyEl, fileValue);
+          
+          // If clickable cards are enabled, make the card clickable
+          if (settings.enableClickableCards) {
+            this.makeCardClickable(card, fileValue);
+          }
         }
       }
       
@@ -426,6 +431,11 @@ export class RendererService {
         });
         
         this.formatFileProperty(filePropertyEl, item['file']);
+        
+        // If clickable cards are enabled, make the card clickable
+        if (settings.enableClickableCards) {
+          this.makeCardClickable(card, item['file']);
+        }
       }
       
       // Create a properties container
@@ -493,6 +503,11 @@ export class RendererService {
         });
         
         this.formatFileProperty(filePropertyEl, results['file']);
+        
+        // If clickable cards are enabled, make the card clickable
+        if (settings.enableClickableCards) {
+          this.makeCardClickable(card, results['file']);
+        }
       }
       
       // Create a properties container
@@ -540,9 +555,85 @@ export class RendererService {
    * @returns The created card element
    */
   private createCardElement(container: HTMLElement): HTMLElement {
-    return container.createEl('div', {
+    const card = container.createEl('div', {
       cls: 'datacards-card',
     });
+    
+    // If clickable cards are enabled, add a class to indicate it
+    if (this.currentSettings?.enableClickableCards) {
+      card.addClass('datacards-clickable-card');
+    }
+    
+    return card;
+  }
+  
+  /**
+   * Make a card clickable to open the note
+   * 
+   * @param card The card element
+   * @param fileValue The file value (path, link object, etc.)
+   */
+  private makeCardClickable(card: HTMLElement, fileValue: any): void {
+    if (!fileValue) return;
+    
+    // Extract the path from the file value (similar to formatFileProperty)
+    let path: string;
+    
+    if (typeof fileValue === 'object' && fileValue !== null) {
+      if ('path' in fileValue) {
+        path = fileValue.path;
+      } else if ('link' in fileValue) {
+        path = fileValue.link;
+      } else {
+        path = String(fileValue);
+      }
+    } else {
+      path = String(fileValue);
+    }
+    
+    // Extract path from wiki links if needed
+    if (path.includes('[[') && path.includes(']]')) {
+      const wikiLinkMatch = path.match(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/);
+      if (wikiLinkMatch) {
+        path = wikiLinkMatch[1];
+      } else {
+        path = path.substring(2, path.length - 2).split('|')[0];
+      }
+    }
+    
+    // Make the card itself clickable instead of wrapping it
+    card.addClass('datacards-clickable-card');
+    
+    // Add a click event listener to handle navigation to the note
+    card.addEventListener('click', (event) => {
+      // Prevent triggering this event when clicking on inner links (like the title)
+      if ((event.target as HTMLElement).closest('.internal-link')) {
+        return;
+      }
+      
+      // Open the note
+      this.app.workspace.openLinkText(path, '', false, { active: true });
+      
+      // Prevent event bubbling
+      event.stopPropagation();
+    });
+    
+    // If preview on hover is enabled, register with Obsidian's hover system
+    if (this.currentSettings?.showPreviewOnCardHover) {
+      card.setAttribute('data-href', path);
+      card.setAttribute('aria-label', path);
+      
+      // Register for hover events
+      card.addEventListener('mouseover', (event) => {
+        this.app.workspace.trigger('hover-link', {
+          event: event,
+          source: 'preview',
+          hoverEl: card,
+          targetEl: card,
+          linktext: path
+        });
+      });
+    }
   }
 
   /**

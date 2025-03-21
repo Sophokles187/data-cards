@@ -146,6 +146,29 @@ export class DataCardsSettingTab extends PluginSettingTab {
           this.plugin.settings.scrollableProperties = value;
           await this.plugin.saveSettings();
         }));
+        
+    // Card Interaction Settings
+    containerEl.createEl('h3', { text: 'Card Interaction Settings' });
+    
+    new Setting(containerEl)
+      .setName('Enable Clickable Cards')
+      .setDesc('Make the entire card clickable to open the note (not just the title)')
+      .addToggle(toggle => toggle
+        .setValue(this.plugin.settings.enableClickableCards)
+        .onChange(async (value) => {
+          this.plugin.settings.enableClickableCards = value;
+          await this.plugin.saveSettings();
+        }));
+
+    new Setting(containerEl)
+      .setName('Show Preview on Card Hover')
+      .setDesc('Show note preview when hovering over a clickable card (only applies when Enable Clickable Cards is on)')
+      .addToggle(toggle => toggle
+        .setValue(this.plugin.settings.showPreviewOnCardHover)
+        .onChange(async (value) => {
+          this.plugin.settings.showPreviewOnCardHover = value;
+          await this.plugin.saveSettings();
+        }));
     
     new Setting(containerEl)
       .setName('Content Height')

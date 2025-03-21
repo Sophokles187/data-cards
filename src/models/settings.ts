@@ -56,6 +56,10 @@ export interface DataCardsSettings {
   titleAlign: 'left' | 'center' | 'right'; // Alignment for the title (filename)
   fontSize: FontSize; // Font size for all text elements
   
+  // Card interaction settings
+  enableClickableCards: boolean; // Make the entire card clickable to open the note
+  showPreviewOnCardHover: boolean; // Show note preview when hovering over a clickable card
+  
   // Formatting settings
   defaultDateFormat: string;
   propertyFormatters: {
@@ -108,6 +112,10 @@ export const DEFAULT_SETTINGS: DataCardsSettings = {
   propertiesAlign: 'left', // Default to left alignment
   titleAlign: 'left', // Default to left alignment
   fontSize: 'default', // Default font size
+  
+  // Card interaction settings
+  enableClickableCards: false, // Disabled by default
+  showPreviewOnCardHover: false, // Disabled by default
   
   // Formatting settings
   defaultDateFormat: 'YYYY-MM-DD',
