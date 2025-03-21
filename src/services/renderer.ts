@@ -426,13 +426,18 @@ export class RendererService {
               });
               
               // Register the link with Obsidian's click handler
-              this.app.workspace.trigger('hover-link', {
-                event: new MouseEvent('mouseover'),
-                source: 'preview',
-                hoverEl: link,
-                targetEl: link,
-                linktext: path
-              });
+              try {
+                this.app.workspace.trigger('hover-link', {
+                  event: new MouseEvent('mouseover'),
+                  source: 'preview',
+                  hoverEl: link,
+                  targetEl: link,
+                  linktext: path
+                });
+              } catch (error) {
+                // Silently catch errors with hover registration to prevent uncaught exceptions
+                // This prevents the "Cannot read properties of undefined (reading 'hoverPopover')" error
+              }
             } else {
               // Fallback to regular text if we can't parse the wiki link
               valueEl.setText(propValue);
@@ -884,7 +889,8 @@ export class RendererService {
           placeholder.setText('Image not found');
         }
       } catch (error) {
-        Logger.error('Error loading image:', error);
+        // Use warn level for image loading errors since they're handled gracefully
+        Logger.warn('Error loading image:', error);
         // Update placeholder for error
         placeholder.setText('Error loading image');
       }
@@ -923,7 +929,8 @@ export class RendererService {
           placeholder.setText('Image not found');
         }
       } catch (error) {
-        Logger.error('Error loading image:', error);
+        // Use warn level for image loading errors since they're handled gracefully
+        Logger.warn('Error loading image:', error);
         // Update placeholder for error
         placeholder.setText('Error loading image');
       }
@@ -959,7 +966,8 @@ export class RendererService {
     
     // Show placeholder if image fails to load
     img.onerror = (error) => {
-      Logger.error('Failed to load external image with crossorigin attribute:', url, error);
+      // Use warn instead of error for CORS issues since they're expected and handled with fallbacks
+      Logger.warn('Failed to load external image with crossorigin attribute:', url);
       
       // Second attempt: without crossorigin attribute
       Logger.debug('Trying again without crossorigin attribute');
@@ -972,7 +980,8 @@ export class RendererService {
       };
       
       img.onerror = (secondError) => {
-        Logger.error('Failed to load external image without crossorigin:', url, secondError);
+        // Use warn instead of error for CORS issues since they're expected and handled with fallbacks
+        Logger.warn('Failed to load external image without crossorigin:', url);
         
         // Third attempt: using a proxy service if available
         // This is a common approach to bypass CORS issues
@@ -988,7 +997,8 @@ export class RendererService {
         };
         
         img.onerror = (thirdError) => {
-          Logger.error('All attempts to load image failed:', url, thirdError);
+          // Log as warning since this is an expected issue with external images
+          Logger.warn('All attempts to load image failed:', url);
           placeholder.setText('Image not found - URL: ' + url);
           
           // Create a hidden iframe to try to load the image
@@ -1006,7 +1016,8 @@ export class RendererService {
               }
             }, 3000);
           } catch (e) {
-            Logger.error('Error during final test:', e);
+            // Use debug level for this diagnostic error since it's not critical
+            Logger.debug('Error during final test:', e);
           }
         };
       };
@@ -1237,13 +1248,18 @@ export class RendererService {
           Logger.debug('Link element created:', link);
           
           // Register the link with Obsidian's click handler
-          this.app.workspace.trigger('hover-link', {
-            event: new MouseEvent('mouseover'),
-            source: 'preview',
-            hoverEl: link,
-            targetEl: link,
-            linktext: path
-          });
+          try {
+            this.app.workspace.trigger('hover-link', {
+              event: new MouseEvent('mouseover'),
+              source: 'preview',
+              hoverEl: link,
+              targetEl: link,
+              linktext: path
+            });
+          } catch (error) {
+            // Silently catch errors with hover registration to prevent uncaught exceptions
+            // This prevents the "Cannot read properties of undefined (reading 'hoverPopover')" error
+          }
           
           return;
         }
@@ -1277,7 +1293,8 @@ export class RendererService {
         
         // Add error handling for property images
         img.onerror = () => {
-          Logger.error('Failed to load property image:', imageUrl);
+          // Use warn instead of error for image loading issues since they're expected and handled with fallbacks
+          Logger.warn('Failed to load property image:', imageUrl);
           // Remove the image
           img.remove();
           // Add error class and message
@@ -1319,13 +1336,18 @@ export class RendererService {
           Logger.debug('Link element created (direct match):', link);
           
           // Register the link with Obsidian's click handler
-          this.app.workspace.trigger('hover-link', {
-            event: new MouseEvent('mouseover'),
-            source: 'preview',
-            hoverEl: link,
-            targetEl: link,
-            linktext: path
-          });
+          try {
+            this.app.workspace.trigger('hover-link', {
+              event: new MouseEvent('mouseover'),
+              source: 'preview',
+              hoverEl: link,
+              targetEl: link,
+              linktext: path
+            });
+          } catch (error) {
+            // Silently catch errors with hover registration to prevent uncaught exceptions
+            // This prevents the "Cannot read properties of undefined (reading 'hoverPopover')" error
+          }
         } else {
           // Fallback to the old method if the regex doesn't match
           const linkText = value.substring(2, value.length - 2);
@@ -1357,13 +1379,18 @@ export class RendererService {
           });
           
           // Register the link with Obsidian's click handler
-          this.app.workspace.trigger('hover-link', {
-            event: new MouseEvent('mouseover'),
-            source: 'preview',
-            hoverEl: link,
-            targetEl: link,
-            linktext: path
-          });
+          try {
+            this.app.workspace.trigger('hover-link', {
+              event: new MouseEvent('mouseover'),
+              source: 'preview',
+              hoverEl: link,
+              targetEl: link,
+              linktext: path
+            });
+          } catch (error) {
+            // Silently catch errors with hover registration to prevent uncaught exceptions
+            // This prevents the "Cannot read properties of undefined (reading 'hoverPopover')" error
+          }
         }
       } else if (value.startsWith('#')) {
         // Tag - make it a clickable link
@@ -1411,13 +1438,18 @@ export class RendererService {
         });
         
         // Register the link with Obsidian's click handler
-        this.app.workspace.trigger('hover-link', {
-          event: new MouseEvent('mouseover'),
-          source: 'preview',
-          hoverEl: link,
-          targetEl: link,
-          linktext: path
-        });
+        try {
+          this.app.workspace.trigger('hover-link', {
+            event: new MouseEvent('mouseover'),
+            source: 'preview',
+            hoverEl: link,
+            targetEl: link,
+            linktext: path
+          });
+        } catch (error) {
+          // Silently catch errors with hover registration to prevent uncaught exceptions
+          // This prevents the "Cannot read properties of undefined (reading 'hoverPopover')" error
+        }
         
         return;
       }
@@ -1638,13 +1670,18 @@ export class RendererService {
             Logger.debug('Created link element for pipe syntax:', link);
             
             // Register the link with Obsidian's click handler
-            this.app.workspace.trigger('hover-link', {
-              event: new MouseEvent('mouseover'),
-              source: 'preview',
-              hoverEl: link,
-              targetEl: link,
-              linktext: path
-            });
+            try {
+              this.app.workspace.trigger('hover-link', {
+                event: new MouseEvent('mouseover'),
+                source: 'preview',
+                hoverEl: link,
+                targetEl: link,
+                linktext: path
+              });
+            } catch (error) {
+              // Silently catch errors with hover registration to prevent uncaught exceptions
+              // This prevents the "Cannot read properties of undefined (reading 'hoverPopover')" error
+            }
             
             return;
           } else {
