@@ -151,7 +151,7 @@ SORT rating DESC
 
 // Settings
 preset: portrait
-mobileColumns: 2  // Override default single column on mobile
+mobileColumns: 3  // Override default single column on mobile
 mobilePreset: grid  // Use a different preset on mobile
 ```
 
