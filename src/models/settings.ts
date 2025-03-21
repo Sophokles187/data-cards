@@ -58,7 +58,6 @@ export interface DataCardsSettings {
   
   // Card interaction settings
   enableClickableCards: boolean; // Make the entire card clickable to open the note
-  showPreviewOnCardHover: boolean; // Show note preview when hovering over a clickable card
   
   // Formatting settings
   defaultDateFormat: string;
@@ -115,7 +114,6 @@ export const DEFAULT_SETTINGS: DataCardsSettings = {
   
   // Card interaction settings
   enableClickableCards: false, // Disabled by default
-  showPreviewOnCardHover: false, // Disabled by default
   
   // Formatting settings
   defaultDateFormat: 'YYYY-MM-DD',

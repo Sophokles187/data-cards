@@ -618,22 +618,6 @@ export class RendererService {
       event.stopPropagation();
     });
     
-    // If preview on hover is enabled, register with Obsidian's hover system
-    if (this.currentSettings?.showPreviewOnCardHover) {
-      card.setAttribute('data-href', path);
-      card.setAttribute('aria-label', path);
-      
-      // Register for hover events
-      card.addEventListener('mouseover', (event) => {
-        this.app.workspace.trigger('hover-link', {
-          event: event,
-          source: 'preview',
-          hoverEl: card,
-          targetEl: card,
-          linktext: path
-        });
-      });
-    }
   }
 
   /**

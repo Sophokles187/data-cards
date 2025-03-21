@@ -160,15 +160,6 @@ export class DataCardsSettingTab extends PluginSettingTab {
           await this.plugin.saveSettings();
         }));
 
-    new Setting(containerEl)
-      .setName('Show Preview on Card Hover')
-      .setDesc('Show note preview when hovering over a clickable card (only applies when Enable Clickable Cards is on)')
-      .addToggle(toggle => toggle
-        .setValue(this.plugin.settings.showPreviewOnCardHover)
-        .onChange(async (value) => {
-          this.plugin.settings.showPreviewOnCardHover = value;
-          await this.plugin.saveSettings();
-        }));
     
     new Setting(containerEl)
       .setName('Content Height')
