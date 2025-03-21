@@ -177,7 +177,7 @@ export class DataCardsSettingTab extends PluginSettingTab {
     
     new Setting(containerEl)
       .setName('Mobile Preset')
-      .setDesc('Preset to use on mobile devices (all presets default to 1 column on mobile)')
+      .setDesc('Preset to use on mobile devices')
       .addDropdown(dropdown => dropdown
         .addOption('grid', 'Grid (balanced)')
         .addOption('portrait', 'Portrait (optimized for book covers)')
@@ -190,9 +190,17 @@ export class DataCardsSettingTab extends PluginSettingTab {
           await this.plugin.saveSettings();
         }));
     
-    // Mobile columns and image height are now controlled by presets
-    // These settings have been removed from the UI to avoid confusion
-    // All presets default to 1 column on mobile for optimal readability
+    new Setting(containerEl)
+      .setName('Mobile Columns')
+      .setDesc('Number of columns to use on mobile devices (default: 1)')
+      .addSlider(slider => slider
+        .setLimits(1, 3, 1)
+        .setValue(this.plugin.settings.mobileColumns)
+        .setDynamicTooltip()
+        .onChange(async (value) => {
+          this.plugin.settings.mobileColumns = value;
+          await this.plugin.saveSettings();
+        }));
     
     new Setting(containerEl)
       .setName('Mobile Scrollable Properties')

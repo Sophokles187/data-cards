@@ -143,7 +143,19 @@ defaultDateFormat: DD.MM.YYYY
 
 ### Mobile Support
 
-DataCards automatically optimizes the display for mobile devices. By default, all presets switch to a single column on mobile for optimal readability. You can customize the mobile experience in the plugin settings:
+DataCards automatically optimizes the display for mobile devices. By default, all presets switch to a single column on mobile for optimal readability. You can customize the mobile experience in the plugin settings or override them in individual code blocks:
+
+```datacards
+TABLE title, author, rating, genre, cover FROM #books
+SORT rating DESC
+
+// Settings
+preset: portrait
+mobileColumns: 2  // Override default single column on mobile
+mobilePreset: grid  // Use a different preset on mobile
+```
+
+You can customize these mobile settings:
 
 - **Mobile Columns**: Override the default single column behavior (1-3)
 - **Mobile Preset**: Choose a different preset specifically for mobile viewing
@@ -203,6 +215,7 @@ When enabled, DataCards will automatically refresh when properties change, elimi
 | `fontSize` | Text size for all card elements (`larger`, `large`, `default`, `small`, `smaller`) | `default` |
 | `defaultDateFormat` | Format for displaying dates (e.g., `YYYY-MM-DD`) | `YYYY-MM-DD` |
 | `mobilePreset` | Preset to use on mobile devices | `grid` |
+| `mobileColumns` | Number of columns to use on mobile devices (1-3) | `1` |
 | `mobileScrollableProperties` | Whether to make properties scrollable on mobile devices | `true` |
 | `mobileContentHeight` | Height of the scrollable content area on mobile devices | `150px` |
 | `enableLazyLoading` | Whether to enable lazy loading for images | `false` |
