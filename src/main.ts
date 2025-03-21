@@ -202,6 +202,42 @@ export default class DataCardsPlugin extends Plugin {
 
         // Remove the temporary container
         document.body.removeChild(dataviewContainer);
+        
+        // Add detailed logging of the result structure
+        Logger.debug('Query result:', result);
+        if (result && result.value) {
+          Logger.debug('Result value type:', typeof result.value);
+          Logger.debug('Is array?', Array.isArray(result.value));
+          if (typeof result.value === 'object') {
+            const keys = Object.keys(result.value);
+            Logger.debug('Result value keys:', keys);
+            
+            // Log each key and its value
+            keys.forEach(key => {
+              Logger.debug(`result.value["${key}"] =`, result.value[key]);
+              Logger.debug(`result.value["${key}"] type =`, typeof result.value[key]);
+              Logger.debug(`result.value["${key}"] is array? =`, Array.isArray(result.value[key]));
+              
+              // If it's an array, log its length
+              if (Array.isArray(result.value[key])) {
+                Logger.debug(`result.value["${key}"] length =`, result.value[key].length);
+              }
+              
+              // If it's an object, log its keys
+              if (typeof result.value[key] === 'object' && result.value[key] !== null && !Array.isArray(result.value[key])) {
+                Logger.debug(`result.value["${key}"] keys =`, Object.keys(result.value[key]));
+              }
+            });
+            
+            if ('values' in result.value) {
+              Logger.debug('Result.value.values type:', typeof result.value.values);
+              Logger.debug('Result.value.values is array?', Array.isArray(result.value.values));
+              if (Array.isArray(result.value.values)) {
+                Logger.debug('Result.value.values length:', result.value.values.length);
+              }
+            }
+          }
+        }
 
         if (!result) {
           Logger.error('Result is undefined or null');
@@ -247,21 +283,83 @@ export default class DataCardsPlugin extends Plugin {
 
         // Check if the result is empty (no matching files)
         if (Array.isArray(result.value) && result.value.length === 0) {
-          Logger.debug('Dataview returned empty array');
-          el.createEl('div', {
-            cls: 'datacards-info',
-            text: 'No files match your query criteria.'
-          });
+          Logger.debug('Dataview returned empty array - using super simple approach');
+          Logger.debug('Empty array detected, using simple approach');
+          
+          // Create a very simple message with no styling
+          el.innerHTML = '<h3 style="color: red; background-color: yellow; padding: 20px; margin: 20px; border: 3px solid black;">NO NOTES FOUND (Empty Array)</h3>';
+          
+          // Log to console for debugging
+          Logger.debug('Created simple empty state message for empty array');
           return;
         }
 
         if (result.value.values && Array.isArray(result.value.values) && result.value.values.length === 0) {
-          Logger.debug('Dataview returned empty table');
-          el.createEl('div', {
-            cls: 'datacards-info',
-            text: 'No files match your query criteria.'
-          });
+          Logger.debug('Dataview returned empty table - using super simple approach');
+          Logger.debug('Empty table detected, using simple approach');
+          
+          // Create a very simple message with no styling
+          el.innerHTML = '<h3 style="color: red; background-color: yellow; padding: 20px; margin: 20px; border: 3px solid black;">NO NOTES FOUND (Empty Table)</h3>';
+          
+          // Log to console for debugging
+          Logger.debug('Created simple empty state message for empty table');
           return;
+        }
+        
+        // Check for another type of empty result (with data property)
+        if (result.value.data && Array.isArray(result.value.data) && result.value.data.length === 0) {
+          Logger.debug('Dataview returned empty data array - using super simple approach');
+          Logger.debug('Empty data array detected, using simple approach');
+          
+          // Create a very simple message with no styling
+          el.innerHTML = '<h3 style="color: red; background-color: yellow; padding: 20px; margin: 20px; border: 3px solid black;">NO NOTES FOUND (Empty Data Array)</h3>';
+          
+          // Log to console for debugging
+          Logger.debug('Created simple empty state message for empty data array');
+          return;
+        }
+        
+        // Check for yet another type of empty result (with rows property)
+        if (result.value.rows && Array.isArray(result.value.rows) && result.value.rows.length === 0) {
+          Logger.debug('Dataview returned empty rows array - using super simple approach');
+          Logger.debug('Empty rows array detected, using simple approach');
+          
+          // Create a very simple message with no styling
+          el.innerHTML = '<h3 style="color: red; background-color: yellow; padding: 20px; margin: 20px; border: 3px solid black;">NO NOTES FOUND (Empty Rows Array)</h3>';
+          
+          // Log to console for debugging
+          Logger.debug('Created simple empty state message for empty rows array');
+          return;
+        }
+        
+        // Final catch-all check for any other type of empty result
+        // This checks if the result.value is an object with no meaningful properties
+        // or if it's an object with only empty arrays as properties
+        if (typeof result.value === 'object' && result.value !== null && !Array.isArray(result.value)) {
+          const keys = Object.keys(result.value).filter(key => 
+            key !== 'successful' && 
+            key !== 'error' && 
+            key !== 'type' && 
+            key !== 'headers'
+          );
+          
+          // If there are no meaningful keys, or all values are empty arrays, consider it empty
+          const isEmpty = keys.length === 0 || keys.every(key => {
+            const value = result.value[key];
+            return Array.isArray(value) && value.length === 0;
+          });
+          
+          if (isEmpty) {
+            Logger.debug('Dataview returned empty result (catch-all) - using super simple approach');
+            Logger.debug('Empty result detected (catch-all), using simple approach');
+            
+            // Create a very simple message with no styling
+            el.innerHTML = '<h3 style="color: red; background-color: yellow; padding: 20px; margin: 20px; border: 3px solid black;">NO NOTES FOUND (Empty Result)</h3>';
+            
+            // Log to console for debugging
+            Logger.debug('Created simple empty state message for empty result (catch-all)');
+            return;
+          }
         }
 
         // Check if result.value is the actual data or if it's wrapped in a structure
@@ -278,7 +376,57 @@ export default class DataCardsPlugin extends Plugin {
           Logger.debug(`Card has dynamicUpdate setting: ${settings.dynamicUpdate}`);
         }
         
-        // Render the cards with the extracted data
+        // Check if the result is empty in a way that would result in no cards being rendered
+        let isEmpty = false;
+        
+        // Special check for the specific format we're seeing in the console logs
+        Logger.debug('SPECIAL CHECK - dataToRender:', dataToRender);
+        if (dataToRender && typeof dataToRender === 'object' && Object.keys(dataToRender).length === 2) {
+          Logger.debug('Found object with exactly 2 keys');
+          isEmpty = true;
+        }
+        // Check if it's an empty array
+        else if (Array.isArray(dataToRender) && dataToRender.length === 0) {
+          isEmpty = true;
+        }
+        // Check if it's an object with a values array that's empty
+        else if (dataToRender && typeof dataToRender === 'object' && 'values' in dataToRender && 
+                 Array.isArray(dataToRender.values) && dataToRender.values.length === 0) {
+          isEmpty = true;
+        }
+        // Check if it's an object with a data array that's empty
+        else if (dataToRender && typeof dataToRender === 'object' && 'data' in dataToRender && 
+                 Array.isArray(dataToRender.data) && dataToRender.data.length === 0) {
+          isEmpty = true;
+        }
+        // Check if it's an object with a rows array that's empty
+        else if (dataToRender && typeof dataToRender === 'object' && 'rows' in dataToRender && 
+                 Array.isArray(dataToRender.rows) && dataToRender.rows.length === 0) {
+          isEmpty = true;
+        }
+        // Check if it's an object with no meaningful properties or only empty arrays
+        else if (dataToRender && typeof dataToRender === 'object' && !Array.isArray(dataToRender)) {
+          const keys = Object.keys(dataToRender).filter(key => 
+            key !== 'successful' && 
+            key !== 'error' && 
+            key !== 'type' && 
+            key !== 'headers'
+          );
+          
+          isEmpty = keys.length === 0 || keys.every(key => {
+            const value = dataToRender[key];
+            return Array.isArray(value) && value.length === 0;
+          });
+        }
+        
+        // If empty, use the renderEmptyState method
+        if (isEmpty) {
+          Logger.debug('Empty result detected, using renderEmptyState');
+          this.rendererService.renderEmptyState(el, 'No notes found');
+          return;
+        }
+        
+        // If not empty, render the cards with the extracted data
         this.rendererService.renderCards(el, dataToRender, settings);
       } catch (queryError) {
         // Handle query execution errors

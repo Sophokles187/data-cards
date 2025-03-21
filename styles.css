@@ -247,6 +247,28 @@
   color: var(--text-normal);
 }
 
+/* Empty state message */
+.datacards-empty-state {
+  grid-column: 1 / -1;
+  padding: 24px;
+  background-color: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--card-radius);
+  color: var(--text-muted);
+  text-align: center;
+  font-size: 1.1em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 1em 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  transition: background-color 0.2s ease;
+}
+
+.datacards-empty-state:hover {
+  background-color: var(--background-secondary-alt);
+}
+
 /* Stars rating */
 .datacards-stars {
   display: flex;

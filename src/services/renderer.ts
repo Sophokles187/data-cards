@@ -43,6 +43,34 @@ export class RendererService {
    * @param blockSettings The settings for this specific block
    */
   public renderCards(container: HTMLElement, results: any, blockSettings: BlockSettings): void {
+    // SPECIAL CHECK: Log the exact structure of the results
+    Logger.debug('SPECIAL CHECK - renderCards called with results:', results);
+    
+    // Check if the results are empty
+    let isEmpty = false;
+    
+    // Check for table-like results with empty values array
+    if (results && results.values && Array.isArray(results.values) && results.values.length === 0) {
+      Logger.debug('Empty table detected in renderCards');
+      isEmpty = true;
+    }
+    // Check for empty array results
+    else if (Array.isArray(results) && results.length === 0) {
+      Logger.debug('Empty array detected in renderCards');
+      isEmpty = true;
+    }
+    // Check for object with exactly 2 keys (special case from console logs)
+    else if (results && typeof results === 'object' && !Array.isArray(results) && Object.keys(results).length === 2) {
+      Logger.debug('Object with exactly 2 keys detected in renderCards:', Object.keys(results));
+      isEmpty = true;
+    }
+    
+      // If empty, render empty state and return
+      if (isEmpty) {
+        Logger.debug('Rendering empty state from renderCards');
+        this.renderEmptyState(container, 'No notes found');
+        return;
+      }
     // Check if we're on mobile
     const isMobile = this.isMobileDevice();
     Logger.debug('Is mobile device:', isMobile);
@@ -224,6 +252,31 @@ export class RendererService {
   }
 
   /**
+   * Render an empty state message when no results are found
+   * 
+   * @param container The container element
+   * @param message The message to display
+   */
+  public renderEmptyState(container: HTMLElement, message: string = "No notes found"): void {
+    Logger.debug('renderEmptyState called with message:', message);
+    
+    // Create the cards container to maintain consistent styling
+    const cardsContainer = container.createEl('div', {
+      cls: 'datacards-container',
+    });
+    
+    Logger.debug('Created cards container for empty state');
+    
+    // Add the empty state message with appropriate styling
+    const emptyStateEl = cardsContainer.createEl('div', {
+      cls: 'datacards-empty-state',
+      text: message,
+    });
+    
+    Logger.debug('Added empty state element with class:', 'datacards-empty-state');
+  }
+
+  /**
    * Render table-like Dataview results
    * 
    * @param container The container element
@@ -328,12 +381,12 @@ export class RendererService {
           const propValue = row[propIndex];
           
           // Log the property value for debugging
-          console.log(`Property '${property}' value:`, propValue);
-          console.log(`Property '${property}' type:`, typeof propValue);
+          Logger.debug(`Property '${property}' value:`, propValue);
+          Logger.debug(`Property '${property}' type:`, typeof propValue);
           
           // Special handling for wiki links in property values
           if (typeof propValue === 'string' && propValue.includes('[[') && propValue.includes(']]')) {
-            console.log(`Found wiki link in property '${property}':`, propValue);
+            Logger.debug(`Found wiki link in property '${property}':`, propValue);
             
             // Create a special property element for wiki links
             const propertyEl = propertiesContainer.createEl('div', {
@@ -359,7 +412,7 @@ export class RendererService {
               const path = wikiLinkMatch[1];
               const displayText = wikiLinkMatch[2] || this.getCleanFilename(path);
               
-              console.log(`Creating direct link for wiki link: path="${path}", display="${displayText}"`);
+              Logger.debug(`Creating direct link for wiki link: path="${path}", display="${displayText}"`);
               
               // Create link element directly
               const link = valueEl.createEl('a', {
@@ -1153,7 +1206,7 @@ export class RendererService {
       // More general case for wiki links
       // This handles cases where Dataview returns the full wiki link syntax as a string
       if (value.includes('[[') && value.includes(']]')) {
-        console.log('DATACARDS DEBUG: Found wiki link in property value:', value);
+        Logger.debug('Found wiki link in property value:', value);
         Logger.debug('Found wiki link in property value:', value);
         
         // Try to extract the wiki link with a more robust regex that can handle various formats
@@ -1161,7 +1214,6 @@ export class RendererService {
         const wikiLinkMatch = value.match(wikiLinkRegex);
         
         if (wikiLinkMatch) {
-          console.log('DATACARDS DEBUG: Wiki link match:', wikiLinkMatch);
           Logger.debug('Wiki link match:', wikiLinkMatch);
           
           // Extract path and display text
@@ -1169,11 +1221,10 @@ export class RendererService {
           // Use the display text if provided, otherwise use the clean filename
           const displayText = wikiLinkMatch[2] || this.getCleanFilename(path);
           
-          console.log(`DATACARDS DEBUG: Wiki link path: "${path}", display text: "${displayText}"`);
           Logger.debug(`Wiki link path: "${path}", display text: "${displayText}"`);
           
           // Create a proper Obsidian internal link using the same approach as formatFileProperty
-          console.log('DATACARDS DEBUG: Creating link element for wiki link');
+          Logger.debug('Creating link element for wiki link');
           const link = valueEl.createEl('a', {
             cls: 'internal-link datacards-file-link',
             text: displayText,
@@ -1183,7 +1234,7 @@ export class RendererService {
               'data-type': 'link'
             }
           });
-          console.log('DATACARDS DEBUG: Link element created:', link);
+          Logger.debug('Link element created:', link);
           
           // Register the link with Obsidian's click handler
           this.app.workspace.trigger('hover-link', {
@@ -1240,7 +1291,6 @@ export class RendererService {
       
       if (value.startsWith('[[') && value.endsWith(']]')) {
         // Wiki link
-        console.log('DATACARDS DEBUG: Processing wiki link that starts and ends with [[]]:', value);
         Logger.debug('Processing wiki link that starts and ends with [[]]:', value);
         
         // Use the same robust regex as above
@@ -1253,11 +1303,10 @@ export class RendererService {
           // Use the display text if provided, otherwise use the clean filename
           const displayText = wikiLinkMatch[2] || this.getCleanFilename(path);
           
-          console.log(`DATACARDS DEBUG: Wiki link path: "${path}", display text: "${displayText}"`);
           Logger.debug(`Wiki link path: "${path}", display text: "${displayText}"`);
           
           // Create a proper Obsidian internal link using the same approach as formatFileProperty
-          console.log('DATACARDS DEBUG: Creating link element for wiki link (direct match)');
+          Logger.debug('Creating link element for wiki link (direct match)');
           const link = valueEl.createEl('a', {
             cls: 'internal-link datacards-file-link',
             text: displayText,
@@ -1267,7 +1316,7 @@ export class RendererService {
               'data-type': 'link'
             }
           });
-          console.log('DATACARDS DEBUG: Link element created (direct match):', link);
+          Logger.debug('Link element created (direct match):', link);
           
           // Register the link with Obsidian's click handler
           this.app.workspace.trigger('hover-link', {
@@ -1329,7 +1378,7 @@ export class RendererService {
         });
       } else if (/<[ubia]>|<\/[ubia]>|<span|<div|<p>|<\/p>|<br>|<hr>/.test(value)) {
         // Contains HTML tags - render as HTML with sanitization
-        console.log('DATACARDS DEBUG: Rendering HTML content:', value);
+        Logger.debug('Rendering HTML content:', value);
         
         // Use setInnerHTML for HTML content
         // This allows <u>, <b>, <i>, <a>, etc. tags to render properly
@@ -1341,14 +1390,14 @@ export class RendererService {
     } else if (typeof value === 'object' && value !== null) {
       // Check if it's a Dataview Link object
       if ('path' in value && 'type' in value && value.type === 'file') {
-        console.log('Handling Dataview Link object:', value);
+        Logger.debug('Handling Dataview Link object:', value);
         
         // Extract path and display text
         const path = value.path;
         // Use display if available, otherwise use the clean filename
         const displayText = value.display || this.getCleanFilename(path);
         
-        console.log(`Creating link from Dataview Link object: path="${path}", display="${displayText}"`);
+        Logger.debug(`Creating link from Dataview Link object: path="${path}", display="${displayText}"`);
         
         // Create a proper Obsidian internal link
         const link = valueEl.createEl('a', {
@@ -1565,17 +1614,17 @@ export class RendererService {
       // Direct approach for wiki links - just set the text to the display part
       // This is a workaround for when the link is not being properly rendered
       if (typeof value === 'string' && value.includes('[[') && value.includes('|') && value.includes(']]')) {
-        console.log('DATACARDS DEBUG: Found wiki link with pipe character:', value);
+        Logger.debug('Found wiki link with pipe character:', value);
         // Extract the display text part (after the pipe)
         const match = value.match(/\[\[.*\|(.*?)\]\]/);
         if (match && match[1]) {
-          console.log('DATACARDS DEBUG: Extracted display text:', match[1]);
+          Logger.debug('Extracted display text:', match[1]);
           // Instead of just setting text, let's try to create a proper link
           const fullMatch = value.match(/\[\[(.*?)\|(.*?)\]\]/);
           if (fullMatch) {
             const path = fullMatch[1];
             const displayText = fullMatch[2];
-            console.log(`DATACARDS DEBUG: Creating link from pipe syntax - path: "${path}", display: "${displayText}"`);
+            Logger.debug(`Creating link from pipe syntax - path: "${path}", display: "${displayText}"`);
             
             const link = valueEl.createEl('a', {
               cls: 'internal-link datacards-file-link',
@@ -1586,7 +1635,7 @@ export class RendererService {
                 'data-type': 'link'
               }
             });
-            console.log('DATACARDS DEBUG: Created link element for pipe syntax:', link);
+            Logger.debug('Created link element for pipe syntax:', link);
             
             // Register the link with Obsidian's click handler
             this.app.workspace.trigger('hover-link', {
@@ -1600,7 +1649,7 @@ export class RendererService {
             return;
           } else {
             // Fallback to just text if we couldn't parse properly
-            console.log('DATACARDS DEBUG: Fallback to text only for pipe syntax');
+            Logger.debug('Fallback to text only for pipe syntax');
             valueEl.setText(match[1]);
             return;
           }
