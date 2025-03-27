@@ -1,6 +1,6 @@
 {
 	"name": "obsidian-data-cards",
-	"version": "1.0.0-beta.2",
+	"version": "1.0.0-beta.3",
 	"description": "Transform Dataview query results into visually appealing, customizable card layouts.",
 	"main": "main.js",
 	"scripts": {
@@ -8,7 +8,12 @@
 		"build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
 		"version": "node version-bump.mjs && git add manifest.json versions.json"
 	},
-	"keywords": ["obsidian", "dataview", "cards", "visualization"],
+	"keywords": [
+		"obsidian",
+		"dataview",
+		"cards",
+		"visualization"
+	],
 	"author": "Sophokles187",
 	"repository": {
 		"type": "git",
