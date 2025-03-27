@@ -81,7 +81,7 @@ propertiesAlign: left
 scrollableProperties: true
 contentHeight: 300px
 ```
-```
+
 
 ## Using with DataviewJS (Experimental)
 
@@ -92,7 +92,7 @@ While DataCards is designed for standard Dataview queries, not DataviewJS, you c
 // Create a datacards block as a string
 dv.paragraph("```datacards\nTABLE file.link as \"Title\", author, genre, cover FROM #book\nSORT file.ctime DESC\n\n// Settings\npreset: grid\ncolumns: 3\nimageProperty: cover\n```");
 ```
-```
+
 
 This uses DataviewJS to generate a DataCards block in the output.
 
@@ -128,7 +128,7 @@ imageProperty: cover
 properties: [file.link, author, publication, genre]
 \`\`\``);
 ```
-```
+
 
 ## Debug Mode
 
