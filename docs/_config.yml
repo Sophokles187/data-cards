@@ -1,0 +1,24 @@
+remote_theme: just-the-docs/just-the-docs
+title: DataCards Documentation
+description: Official documentation for the DataCards plugin for Obsidian
+url: https://github.com/Sophokles187/data-cards
+
+# Theme settings
+color_scheme: dark
+search_enabled: true
+heading_anchors: true
+
+# Aux links for the upper right navigation
+aux_links:
+  "DataCards on GitHub":
+    - "https://github.com/Sophokles187/data-cards"
+
+# Footer content
+footer_content: "Copyright &copy; 2025 Sophokles187. Licensed under the <a href=\"https://github.com/Sophokles187/data-cards/blob/main/LICENSE\">GPL-3.0 License</a>."
+
+# Back to top link
+back_to_top: true
+back_to_top_text: "Back to top"
+
+# Makes Aux links open in a new tab
+aux_links_new_tab: true
