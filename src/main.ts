@@ -126,8 +126,23 @@ export default class DataCardsPlugin extends Plugin {
             // Extract file path if TFile object is provided
             const filePath = typeof file === 'string' ? file : file?.path;
             if (filePath) {
-              Logger.debug(`Meta Bind onChange event: file=${filePath}, key=${key}, value=${JSON.stringify(value)}`);
-              this.handleMetaBindChange(filePath, key, value);
+              // Add special logging for toggle inputs
+              if (typeof value === 'boolean') {
+                Logger.debug(`Meta Bind onChange event (TOGGLE): file=${filePath}, key=${key}, value=${JSON.stringify(value)}`);
+              } else {
+                Logger.debug(`Meta Bind onChange event: file=${filePath}, key=${key}, value=${JSON.stringify(value)}`);
+              }
+              
+              // Force immediate refresh for toggle inputs to ensure they update properly
+              if (typeof value === 'boolean') {
+                Logger.debug(`Toggle input detected - using immediate refresh`);
+                // Use a very short delay for toggle inputs to ensure the UI updates quickly
+                setTimeout(() => {
+                  this.refreshActiveView(false);
+                }, 50);
+              } else {
+                this.handleMetaBindChange(filePath, key, value);
+              }
             } else {
               Logger.warn('Meta Bind onChange event received without a valid file path.');
             }
@@ -144,8 +159,20 @@ export default class DataCardsPlugin extends Plugin {
           // @ts-ignore - Using Meta Bind's specific API signature
           this.metaBindPlugin.metadataManager.on('changed', (bindTarget: BindTargetDeclaration, value: any) => {
             if (bindTarget && bindTarget.storagePath) {
-              Logger.debug(`Meta Bind metadataManager 'changed' event: path=${bindTarget.storagePath}, prop=${JSON.stringify(bindTarget.storageProp)}, value=${JSON.stringify(value)}`);
-              this.handleMetaBindChange(bindTarget.storagePath, bindTarget.storageProp, value);
+              // Add special logging for toggle inputs
+              if (typeof value === 'boolean') {
+                Logger.debug(`Meta Bind metadataManager 'changed' event (TOGGLE): path=${bindTarget.storagePath}, prop=${JSON.stringify(bindTarget.storageProp)}, value=${JSON.stringify(value)}`);
+                
+                // Force immediate refresh for toggle inputs to ensure they update properly
+                Logger.debug(`Toggle input detected in metadataManager - using immediate refresh`);
+                // Use a very short delay for toggle inputs to ensure the UI updates quickly
+                setTimeout(() => {
+                  this.refreshActiveView(false);
+                }, 50);
+              } else {
+                Logger.debug(`Meta Bind metadataManager 'changed' event: path=${bindTarget.storagePath}, prop=${JSON.stringify(bindTarget.storageProp)}, value=${JSON.stringify(value)}`);
+                this.handleMetaBindChange(bindTarget.storagePath, bindTarget.storageProp, value);
+              }
             } else {
               Logger.warn('Meta Bind metadataManager "changed" event received without a valid bindTarget.');
             }
@@ -159,6 +186,30 @@ export default class DataCardsPlugin extends Plugin {
             if (bindTarget && bindTarget.storagePath) {
               Logger.debug(`Meta Bind metadataManager 'deleted' event: path=${bindTarget.storagePath}, prop=${JSON.stringify(bindTarget.storageProp)}`);
               this.handleMetaBindChange(bindTarget.storagePath, bindTarget.storageProp, null);
+            }
+          })
+        );
+      }
+      
+      // Try to register for specific input field events if available
+      if (this.metaBindPlugin.api && typeof this.metaBindPlugin.api.onFieldChanged === 'function') {
+        Logger.debug('Registering using Meta Bind api.onFieldChanged');
+        this.registerEvent(
+          // @ts-ignore - Using Meta Bind's specific API signature
+          this.metaBindPlugin.api.onFieldChanged((fieldType: string, filePath: string, key: string, value: any) => {
+            if (filePath) {
+              Logger.debug(`Meta Bind onFieldChanged event: fieldType=${fieldType}, file=${filePath}, key=${key}, value=${JSON.stringify(value)}`);
+              
+              // Special handling for toggle fields
+              if (fieldType === 'toggle' || typeof value === 'boolean') {
+                Logger.debug(`Toggle field changed - using immediate refresh`);
+                // Use a very short delay for toggle inputs to ensure the UI updates quickly
+                setTimeout(() => {
+                  this.refreshActiveView(false);
+                }, 50);
+              } else {
+                this.handleMetaBindChange(filePath, key, value);
+              }
             }
           })
         );
@@ -226,8 +277,78 @@ export default class DataCardsPlugin extends Plugin {
 
     Logger.debug(`Meta Bind property changed: ${property} in file ${filePath}, value: ${JSON.stringify(value)}`);
 
-    // Use the debounced refresh
+    // Special handling for boolean values (toggle inputs)
+    if (typeof value === 'boolean') {
+      Logger.debug(`Toggle value detected in handleMetaBindChange: ${value}`);
+      
+      // For toggle inputs, we need to force a Dataview cache refresh
+      this.forceDataviewCacheRefresh(filePath);
+      
+      // For toggle inputs, we'll use a shorter delay to ensure they update quickly
+      setTimeout(() => {
+        this.refreshActiveView(false);
+      }, 50);
+      return;
+    }
+
+    // Use the debounced refresh for other input types
     this.debouncedRefresh();
+  }
+  
+  /**
+   * Force Dataview to refresh its cache for a specific file
+   * This is particularly important for boolean properties which might not be properly updated otherwise
+   * 
+   * @param filePath The path of the file to refresh
+   */
+  private forceDataviewCacheRefresh(filePath: string): void {
+    Logger.debug(`Forcing Dataview cache refresh for file: ${filePath}`);
+    
+    // Check if Dataview is enabled
+    if (!this.dataviewApiUtil.isDataviewEnabled()) {
+      Logger.warn('Dataview plugin is not enabled, cannot force cache refresh');
+      return;
+    }
+    
+    try {
+      // Get the Dataview API
+      const dataviewApi = this.dataviewApiUtil.getDataviewApi();
+      if (!dataviewApi) {
+        Logger.warn('Dataview API not available, cannot force cache refresh');
+        return;
+      }
+      
+      // Get the file from the vault
+      const file = this.app.vault.getAbstractFileByPath(filePath);
+      if (!file || !('stat' in file)) {
+        Logger.warn(`File not found or not a file: ${filePath}`);
+        return;
+      }
+      
+      // Force Dataview to refresh its cache for this file
+      // This is a bit of a hack, but it's the most reliable way to ensure the cache is refreshed
+      // We're using the internal index method which is not officially part of the API
+      try {
+        // Access the internal API using type assertion to avoid TypeScript errors
+        const dataviewIndex = dataviewApi.index as any;
+        if (dataviewIndex && typeof dataviewIndex.refreshFile === 'function') {
+          dataviewIndex.refreshFile(file);
+          Logger.debug(`Successfully forced Dataview cache refresh for file: ${filePath}`);
+        } else {
+          // Fallback: trigger a metadata-change event
+          // This is less reliable but might work in some cases
+          this.app.metadataCache.trigger('dataview:metadata-change', 'update', file);
+          Logger.debug(`Triggered dataview:metadata-change event for file: ${filePath}`);
+        }
+      } catch (refreshError) {
+        Logger.warn(`Error accessing Dataview internal API: ${refreshError}`);
+        // Fallback: trigger a metadata-change event
+        this.app.metadataCache.trigger('dataview:metadata-change', 'update', file);
+        Logger.debug(`Triggered dataview:metadata-change event for file: ${filePath}`);
+      }
+    } catch (error) {
+      Logger.warn(`Error forcing Dataview cache refresh: ${error}`);
+    }
   }
 
   onunload() {
