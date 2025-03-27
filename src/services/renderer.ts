@@ -1283,26 +1283,50 @@ export class RendererService {
         booleanContainer.addClass('datacards-text-right');
       }
       
-      // Add a text representation first for better visibility
-      const textSpan = booleanContainer.createEl('span', {
-        cls: 'datacards-boolean-text',
-        text: value ? 'true' : 'false'
-      });
+      // Get the current settings for boolean display
+      const displayMode = this.currentSettings?.booleanDisplayMode || 'both';
+      const showLabels = this.currentSettings?.showBooleanLabels !== false;
+      const trueText = this.currentSettings?.booleanTrueText || 'true';
+      const falseText = this.currentSettings?.booleanFalseText || 'false';
       
-      // Format as checkbox with a unique class for easier identification
-      const checkbox = booleanContainer.createEl('input', {
-        cls: 'datacards-checkbox',
-        attr: {
-          type: 'checkbox',
-          disabled: 'disabled',
-          'data-boolean-value': value.toString(), // Store the actual value as a data attribute
-        },
-      });
+      // Add text representation if enabled
+      if ((displayMode === 'both' || displayMode === 'text') && showLabels) {
+        // Create a hidden checkbox for styling purposes when in text-only mode
+        if (displayMode === 'text') {
+          const hiddenCheckbox = booleanContainer.createEl('input', {
+            cls: 'datacards-checkbox',
+            attr: {
+              type: 'checkbox',
+              disabled: 'disabled',
+              'data-boolean-value': value.toString(),
+              style: 'display: none;' // Hide it visually
+            },
+          });
+          hiddenCheckbox.checked = value;
+        }
+        
+        const textSpan = booleanContainer.createEl('span', {
+          cls: 'datacards-boolean-text',
+          text: value ? trueText : falseText
+        });
+      }
       
-      // Set the checked property directly (more reliable than the attribute)
-      checkbox.checked = value;
-      
-      Logger.debug(`Created checkbox with checked=${value}, data-boolean-value=${value.toString()}`);
+      // Add checkbox if enabled
+      if (displayMode === 'both' || displayMode === 'checkbox') {
+        const checkbox = booleanContainer.createEl('input', {
+          cls: 'datacards-checkbox',
+          attr: {
+            type: 'checkbox',
+            disabled: 'disabled',
+            'data-boolean-value': value.toString(), // Store the actual value as a data attribute
+          },
+        });
+        
+        // Set the checked property directly (more reliable than the attribute)
+        checkbox.checked = value;
+        
+        Logger.debug(`Created checkbox with checked=${value}, data-boolean-value=${value.toString()}`);
+      }
     } else if (typeof value === 'number') {
       // Format as number
       valueEl.setText(value.toString());

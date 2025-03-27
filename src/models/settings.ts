@@ -31,6 +31,11 @@ export interface PropertyFormatter {
 }
 
 /**
+ * Boolean display mode options
+ */
+export type BooleanDisplayMode = 'both' | 'checkbox' | 'text';
+
+/**
  * Main settings interface for the DataCards plugin
  */
 export interface DataCardsSettings {
@@ -55,6 +60,12 @@ export interface DataCardsSettings {
   propertiesAlign: 'left' | 'center' | 'right'; // Alignment for properties and labels
   titleAlign: 'left' | 'center' | 'right'; // Alignment for the title (filename)
   fontSize: FontSize; // Font size for all text elements
+  
+  // Boolean display settings
+  booleanDisplayMode: BooleanDisplayMode; // How to display boolean values
+  showBooleanLabels: boolean; // Whether to show text labels for boolean values
+  booleanTrueText: string; // Custom text for true values
+  booleanFalseText: string; // Custom text for false values
   
   // Card interaction settings
   enableClickableCards: boolean; // Make the entire card clickable to open the note
@@ -112,6 +123,12 @@ export const DEFAULT_SETTINGS: DataCardsSettings = {
   propertiesAlign: 'left', // Default to left alignment
   titleAlign: 'left', // Default to left alignment
   fontSize: 'default', // Default font size
+  
+  // Boolean display settings
+  booleanDisplayMode: 'both', // Default to showing both checkbox and text
+  showBooleanLabels: true, // Default to showing labels
+  booleanTrueText: 'true', // Default text for true values
+  booleanFalseText: 'false', // Default text for false values
   
   // Card interaction settings
   enableClickableCards: false, // Disabled by default
