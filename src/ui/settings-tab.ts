@@ -186,6 +186,59 @@ export class DataCardsSettingTab extends PluginSettingTab {
           await this.plugin.saveSettings();
         }));
     
+    // Boolean Display Settings
+    containerEl.createEl('h3', { text: 'Boolean Display Settings' });
+    
+    new Setting(containerEl)
+      .setName('Boolean Display Mode')
+      .setDesc('How to display boolean values in cards')
+      .addDropdown(dropdown => dropdown
+        .addOption('both', 'Both checkbox and text')
+        .addOption('checkbox', 'Checkbox only')
+        .addOption('text', 'Text only')
+        .setValue(this.plugin.settings.booleanDisplayMode)
+        .onChange(async (value: string) => {
+          this.plugin.settings.booleanDisplayMode = value as any;
+          await this.plugin.saveSettings();
+        }));
+    
+    new Setting(containerEl)
+      .setName('Show Boolean Labels')
+      .setDesc('Show text labels for boolean values')
+      .addToggle(toggle => toggle
+        .setValue(this.plugin.settings.showBooleanLabels)
+        .onChange(async (value) => {
+          this.plugin.settings.showBooleanLabels = value;
+          await this.plugin.saveSettings();
+        }));
+    
+    new Setting(containerEl)
+      .setName('True Text')
+      .setDesc('Custom text to display for true values')
+      .addText(text => text
+        .setPlaceholder('true')
+        .setValue(this.plugin.settings.booleanTrueText)
+        .onChange(async (value) => {
+          this.plugin.settings.booleanTrueText = value || 'true';
+          await this.plugin.saveSettings();
+        }));
+    
+    new Setting(containerEl)
+      .setName('False Text')
+      .setDesc('Custom text to display for false values')
+      .addText(text => text
+        .setPlaceholder('false')
+        .setValue(this.plugin.settings.booleanFalseText)
+        .onChange(async (value) => {
+          this.plugin.settings.booleanFalseText = value || 'false';
+          await this.plugin.saveSettings();
+        }));
+    
+    new Setting(containerEl)
+      .setName('Per-Card Boolean Settings')
+      .setDesc('Individual cards can override these settings in their code block settings')
+      .setDisabled(true);
+    
     // Mobile settings
     containerEl.createEl('h3', { text: 'Mobile Settings' });
     
