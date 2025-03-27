@@ -42,32 +42,34 @@ That's it! Your Dataview results will now display as beautiful cards.
 
 ## Installation
 
-<details>
-<summary><b>Installation Instructions</b> (click to expand)</summary>
+### Option 1: Community Plugins 
+> **Note**: DataCards is not yet available in the Community Plugins store. Please use BRAT or manual installation until then.
 
-### From Obsidian Community Plugins
-
-!!!! not on Obsidian Community Plugins yet !!!!
 1. Open Obsidian Settings
-1. Go to Community Plugins
-2. Click "Browse" and search for "Data Cards"
-3. Click "Install", then "Enable"
+2. Go to Community Plugins
+3. Click "Browse" and search for "Data Cards"
+4. Click "Install", then "Enable"
 
-### Manual Installation
+### Option 2: BRAT Plugin 
+1. Install the [BRAT plugin](https://github.com/TfTHacker/obsidian42-brat) through Community Plugins
+2. Open BRAT settings in Obsidian
+3. Click "Add Beta Plugin"
+4. Enter the DataCards repository URL: `https://github.com/Sophokles187/data-cards`
+5. Click "Add Plugin"
+6. Enable DataCards in Community Plugins settings
 
+### Option 3: Manual Installation 
 1. Download the latest release from the [releases page](https://github.com/Sophokles187/data-cards/releases)
-2. Download these files:  `main.js`, `manifest.json`, `style.css` 
-3. Go to Obsidian vault's `.obsidian/plugins/` directory
-4. Create a folder `data-cards` and copy over the downloaded files
-5. Enable the plugin in Obsidian's Community Plugins settings
+2. Download these files:
+   - `main.js`
+   - `manifest.json`
+   - `style.css`
+3. Navigate to your Obsidian vault's `.obsidian/plugins/` directory
+4. Create a new folder named `data-cards`
+5. Copy the downloaded files into the `data-cards` folder
+6. Enable the plugin in Obsidian's Community Plugins settings
 
-### Through BRAT Plugin
-
-1. Install the [BRAT plugin](https://github.com/TfTHacker/obsidian42-brat) through community plugins
-2. Add the DataCards GitHub-URL to the BRAT Plugin settings
-3. Easily check for updates 
-
-</details>
+> **Note**: After installation, you may need to restart Obsidian for the changes to take effect.
 
 ## Usage
 
