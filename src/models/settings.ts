@@ -78,6 +78,7 @@ export interface DataCardsSettings {
   
   // Update settings
   enableDynamicUpdates: boolean; // Enable automatic updates when properties change
+  refreshDelay: number; // Delay in milliseconds before refreshing after a property change
   
   // Debug settings
   debugMode: boolean; // Enable debug logging
@@ -132,6 +133,7 @@ export const DEFAULT_SETTINGS: DataCardsSettings = {
   
   // Update settings
   enableDynamicUpdates: false, // Disabled by default to avoid performance issues
+  refreshDelay: 2500, // Default to 2.5 seconds (2500ms)
   
   // Debug settings
   debugMode: false // Disabled by default

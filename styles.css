@@ -177,6 +177,124 @@
   color: var(--text-normal);
 }
 
+/* Boolean property styles */
+.datacards-boolean-container {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* Alignment for boolean containers */
+.datacards-boolean-container.datacards-text-left {
+  justify-content: flex-start;
+}
+
+.datacards-boolean-container.datacards-text-center {
+  justify-content: center;
+}
+
+.datacards-boolean-container.datacards-text-right {
+  justify-content: flex-end;
+}
+
+.datacards-checkbox {
+  cursor: default;
+  vertical-align: middle;
+  margin: 0;
+  order: 2; /* Make checkbox appear after text */
+}
+
+.datacards-boolean-text {
+  font-size: 0.9em;
+  font-family: var(--font-monospace);
+  padding: 2px 5px;
+  border-radius: 3px;
+  vertical-align: middle;
+  order: 1; /* Make text appear before checkbox */
+}
+
+/* Style for true values */
+.datacards-boolean-container:has(input[data-boolean-value="true"]) .datacards-boolean-text {
+  background-color: rgba(0, 128, 0, 0.1);
+  color: var(--text-success, #50fa7b);
+}
+
+/* Style for false values */
+.datacards-boolean-container:has(input[data-boolean-value="false"]) .datacards-boolean-text {
+  background-color: rgba(128, 0, 0, 0.1);
+  color: var(--text-error, #ff5555);
+}
+
+/* Fallback for browsers that don't support :has() */
+.datacards-boolean-text + input[data-boolean-value="true"] {
+  background-color: rgba(0, 128, 0, 0.1);
+}
+
+.datacards-boolean-text + input[data-boolean-value="false"] {
+  background-color: rgba(128, 0, 0, 0.1);
+}
+
+/* Custom checkbox styling to make it more visible */
+.datacards-checkbox {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 3px;
+  position: relative;
+  cursor: default;
+  vertical-align: middle;
+  margin: 0;
+  order: 2;
+}
+
+/* Checked state */
+.datacards-checkbox:checked {
+  background-color: var(--interactive-accent);
+  border-color: var(--interactive-accent);
+}
+
+/* Checkmark */
+.datacards-checkbox:checked::after {
+  content: '✓';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 12px;
+  line-height: 1;
+}
+
+/* Disabled state */
+.datacards-checkbox:disabled {
+  opacity: 0.8;
+}
+
+/* True checkbox */
+input[data-boolean-value="true"].datacards-checkbox {
+  background-color: var(--interactive-accent);
+  border-color: var(--interactive-accent);
+}
+
+input[data-boolean-value="true"].datacards-checkbox::after {
+  content: '✓';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 12px;
+  line-height: 1;
+}
+
+/* False checkbox */
+input[data-boolean-value="false"].datacards-checkbox {
+  background-color: transparent;
+  border-color: var(--background-modifier-border);
+}
+
 /* Text alignment classes */
 .datacards-text-left {
   text-align: left;

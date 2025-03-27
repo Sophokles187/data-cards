@@ -272,6 +272,26 @@ export class DataCardsSettingTab extends PluginSettingTab {
           this.plugin.settings.enableDynamicUpdates = value;
           await this.plugin.saveSettings();
         }));
+    
+    new Setting(containerEl)
+      .setName('Refresh Delay')
+      .setDesc('Delay in milliseconds before refreshing after a property change (higher values give more time to complete typing)')
+      .addSlider(slider => slider
+        .setLimits(500, 5000, 500)
+        .setValue(this.plugin.settings.refreshDelay)
+        .setDynamicTooltip()
+        .onChange(async (value) => {
+          this.plugin.settings.refreshDelay = value;
+          await this.plugin.saveSettings();
+        }))
+      .addExtraButton(button => button
+        .setIcon('reset')
+        .setTooltip('Reset to default (2500ms)')
+        .onClick(async () => {
+          this.plugin.settings.refreshDelay = 2500;
+          await this.plugin.saveSettings();
+          this.display(); // Refresh the settings tab
+        }));
         
     new Setting(containerEl)
       .setName('Per-Card Dynamic Updates')

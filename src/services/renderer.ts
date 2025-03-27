@@ -126,6 +126,9 @@ export class RendererService {
     // Create the cards container
     const cardsContainer = container.createEl('div', {
       cls: 'datacards-container',
+      attr: {
+        'data-datacards-container': 'true' // Add a data attribute for easier selection
+      }
     });
     
     // Add preset class first
@@ -263,6 +266,9 @@ export class RendererService {
     // Create the cards container to maintain consistent styling
     const cardsContainer = container.createEl('div', {
       cls: 'datacards-container',
+      attr: {
+        'data-datacards-container': 'true' // Add a data attribute for easier selection
+      }
     });
     
     Logger.debug('Created cards container for empty state');
@@ -1260,14 +1266,43 @@ export class RendererService {
       // Format as comma-separated list
       valueEl.setText(value.join(', '));
     } else if (typeof value === 'boolean') {
-      // Format as checkbox
-      const checkbox = valueEl.createEl('input', {
+      // Enhanced logging for boolean values
+      Logger.debug(`Formatting boolean property with value: ${value} (${typeof value})`);
+      
+      // Create a container for the checkbox and text
+      const booleanContainer = valueEl.createEl('div', {
+        cls: 'datacards-boolean-container',
+      });
+      
+      // Apply the same text alignment class as the parent property element
+      if (propertyEl.hasClass('datacards-text-left')) {
+        booleanContainer.addClass('datacards-text-left');
+      } else if (propertyEl.hasClass('datacards-text-center')) {
+        booleanContainer.addClass('datacards-text-center');
+      } else if (propertyEl.hasClass('datacards-text-right')) {
+        booleanContainer.addClass('datacards-text-right');
+      }
+      
+      // Add a text representation first for better visibility
+      const textSpan = booleanContainer.createEl('span', {
+        cls: 'datacards-boolean-text',
+        text: value ? 'true' : 'false'
+      });
+      
+      // Format as checkbox with a unique class for easier identification
+      const checkbox = booleanContainer.createEl('input', {
+        cls: 'datacards-checkbox',
         attr: {
           type: 'checkbox',
-          checked: value ? 'checked' : '',
           disabled: 'disabled',
+          'data-boolean-value': value.toString(), // Store the actual value as a data attribute
         },
       });
+      
+      // Set the checked property directly (more reliable than the attribute)
+      checkbox.checked = value;
+      
+      Logger.debug(`Created checkbox with checked=${value}, data-boolean-value=${value.toString()}`);
     } else if (typeof value === 'number') {
       // Format as number
       valueEl.setText(value.toString());
