@@ -384,68 +384,9 @@ export class RendererService {
           Logger.debug(`Property '${property}' value:`, propValue);
           Logger.debug(`Property '${property}' type:`, typeof propValue);
           
-          // Special handling for wiki links in property values
-          if (typeof propValue === 'string' && propValue.includes('[[') && propValue.includes(']]')) {
-            Logger.debug(`Found wiki link in property '${property}':`, propValue);
-            
-            // Create a special property element for wiki links
-            const propertyEl = propertiesContainer.createEl('div', {
-              cls: 'datacards-property',
-            });
-            
-            // Add label if enabled
-            if (settings.showLabels) {
-              propertyEl.createEl('div', {
-                cls: 'datacards-property-label',
-                text: property,
-              });
-            }
-            
-            // Create value container
-            const valueEl = propertyEl.createEl('div', {
-              cls: 'datacards-property-value',
-            });
-            
-            // Extract path and display text from wiki link
-            const wikiLinkMatch = propValue.match(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/);
-            if (wikiLinkMatch) {
-              const path = wikiLinkMatch[1];
-              const displayText = wikiLinkMatch[2] || this.getCleanFilename(path);
-              
-              Logger.debug(`Creating direct link for wiki link: path="${path}", display="${displayText}"`);
-              
-              // Create link element directly
-              const link = valueEl.createEl('a', {
-                cls: 'internal-link',
-                text: displayText,
-                attr: { 
-                  href: path,
-                  'data-href': path,
-                  'data-type': 'link'
-                }
-              });
-              
-              // Register the link with Obsidian's click handler
-              try {
-                this.app.workspace.trigger('hover-link', {
-                  event: new MouseEvent('mouseover'),
-                  source: 'preview',
-                  hoverEl: link,
-                  targetEl: link,
-                  linktext: path
-                });
-              } catch (error) {
-                // Silently catch errors with hover registration to prevent uncaught exceptions
-                // This prevents the "Cannot read properties of undefined (reading 'hoverPopover')" error
-              }
-            } else {
-              // Fallback to regular text if we can't parse the wiki link
-              valueEl.setText(propValue);
-            }
-          } else {
-            // Use the standard property formatting for non-wiki links
-            this.addPropertyToCard(propertiesContainer, property, propValue, settings);
-          }
+          // Use the standard property formatting
+          this.addPropertyToCard(propertiesContainer, property, propValue, settings);
+
         } else {
           Logger.debug(`Property '${property}' not found in headers`);
         }
@@ -1131,6 +1072,161 @@ export class RendererService {
   }
 
   /**
+   * Process rich text content that may contain wiki links, HTML, or both
+   * This unified processor handles mixed content properly
+   * 
+   * @param container The container element to add the processed content to
+   * @param value The text value to process
+   * @returns True if the content was processed, false if it should be handled by other formatters
+   */
+  private processRichText(container: HTMLElement, value: string): boolean {
+    if (typeof value !== 'string') {
+      return false;
+    }
+    
+    Logger.debug('Processing rich text:', value);
+    
+    // Use a more robust regex to detect HTML, including <br>
+    const hasHtml = /<[a-z][\s\S]*>/i.test(value);
+    const hasWikiLinks = value.includes('[['); // No need to check for ']]' if '[[' is present
+    
+    // If it doesn't have either, let other formatters handle it
+    if (!hasWikiLinks && !hasHtml) {
+      Logger.debug('Content is plain text, skipping rich text processing.');
+      return false;
+    }
+    
+    Logger.debug(`Content has wiki links: ${hasWikiLinks}, has HTML: ${hasHtml}`);
+    
+    // Tokenize the content to separate wiki links, HTML tags, and plain text
+    const tokens = this.tokenizeRichText(value);
+    Logger.debug('Tokens:', tokens);
+    
+    // Process each token and add to the container
+    tokens.forEach(token => {
+      if (token.type === 'wikilink') {
+        // Process wiki link
+        this.createWikiLink(container, token.content);
+      } else if (token.type === 'html') {
+        // Process HTML - use createFragment to handle tags like <br> correctly
+        const fragment = document.createDocumentFragment();
+        const tempDiv = fragment.createDiv();
+        tempDiv.innerHTML = token.content; // Use innerHTML to parse the tag
+        // Append all child nodes (including text nodes if any) from tempDiv to the container
+        while (tempDiv.firstChild) {
+          container.appendChild(tempDiv.firstChild);
+        }
+      } else {
+        // Process plain text
+        container.appendChild(document.createTextNode(token.content));
+      }
+    });
+    
+    return true; // Indicate that the content was processed
+  }
+  
+  /**
+   * Tokenize rich text into wiki links, HTML tags/entities, and plain text segments
+   * 
+   * @param text The text to tokenize
+   * @returns Array of tokens with type and content
+   */
+  private tokenizeRichText(text: string): Array<{type: 'wikilink' | 'html' | 'text', content: string}> {
+    const tokens: Array<{type: 'wikilink' | 'html' | 'text', content: string}> = [];
+    
+    // Regex to find wiki links OR HTML tags/entities
+    // [[...]] captures wiki links
+    // <...> captures HTML tags
+    // &...; captures HTML entities
+    const combinedRegex = /(\[\[.*?\]\])|(<[^>]+>|&[a-zA-Z#0-9]+;)/g;
+    
+    let lastIndex = 0;
+    let match;
+    
+    while ((match = combinedRegex.exec(text)) !== null) {
+      // Add preceding plain text if any
+      if (match.index > lastIndex) {
+        tokens.push({ type: 'text', content: text.substring(lastIndex, match.index) });
+      }
+      
+      // Add the matched token (wiki link or HTML)
+      if (match[1]) { // Wiki link
+        tokens.push({ type: 'wikilink', content: match[1] });
+      } else if (match[2]) { // HTML tag or entity
+        tokens.push({ type: 'html', content: match[2] });
+      }
+      
+      lastIndex = match.index + match[0].length;
+    }
+    
+    // Add any remaining plain text after the last match
+    if (lastIndex < text.length) {
+      tokens.push({ type: 'text', content: text.substring(lastIndex) });
+    }
+    
+    return tokens;
+  }
+  
+  /**
+   * Create a wiki link element and register hover/click handlers
+   * 
+   * @param container The container element to add the link to
+   * @param wikiLinkText The full wiki link text (e.g., "[[Page|Display]]")
+   */
+  private createWikiLink(container: HTMLElement, wikiLinkText: string): void {
+    // Extract the link path and display text
+    const wikiLinkRegex = /\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/;
+    const match = wikiLinkText.match(wikiLinkRegex);
+    
+    if (!match) {
+      // If somehow it's not a valid wiki link format, add as plain text
+      container.appendChild(document.createTextNode(wikiLinkText));
+      Logger.warn('Invalid wiki link format passed to createWikiLink:', wikiLinkText);
+      return;
+    }
+    
+    const path = match[1];
+    // Use display text if provided, otherwise clean the path to get a display name
+    const displayText = match[2] || this.getCleanFilename(path);
+    
+    Logger.debug(`Creating wiki link: path="${path}", display="${displayText}"`);
+    
+    // Create the link element
+    const link = container.createEl('a', {
+      cls: 'internal-link', // Use Obsidian's standard class for internal links
+      text: displayText,
+      attr: { 
+        href: path, // href attribute for navigation
+        'data-href': path, // data-href for Obsidian's internal handling
+        'data-type': 'link', // Indicate it's a standard link
+        'target': '_blank', // Open in new tab/pane behavior
+        'rel': 'noopener' // Security measure for target="_blank"
+      }
+    });
+    
+    // Register the link with Obsidian's hover handler for pop-up previews
+    // This needs to be done carefully to avoid errors if hoverPopover is not available
+    try {
+      // Check if hoverPopover exists before trying to use it
+      if ((this.app.workspace as any).hoverPopover) {
+        this.app.workspace.trigger('hover-link', {
+          event: new MouseEvent('mouseover'), // Simulate a mouseover event
+          source: 'preview', // Indicate the source is a preview mode render
+          hoverEl: link, // The element being hovered
+          targetEl: link, // The target element for the popover
+          linktext: path, // The link path
+          sourcePath: this.app.workspace.getActiveFile()?.path // Optional: source file path
+        });
+      } else {
+        Logger.debug('Hover popover not available, skipping hover registration.');
+      }
+    } catch (error) {
+      // Silently catch errors with hover registration, log for debugging
+      Logger.warn('Error registering hover link:', error);
+    }
+  }
+
+  /**
    * Format a property value based on its type
    * 
    * @param propertyEl The property element
@@ -1150,7 +1246,6 @@ export class RendererService {
     });
     
     // Apply the same text alignment class as the parent property element
-    // This ensures consistent alignment between labels and values
     if (propertyEl.hasClass('datacards-text-left')) {
       valueEl.addClass('datacards-text-left');
     } else if (propertyEl.hasClass('datacards-text-center')) {
@@ -1193,82 +1288,19 @@ export class RendererService {
         }
       }
       
-      // Check if the string contains a wiki link or URL and extract it
-      // This helps with expressions that result in strings containing wiki links or URLs
-      const extractedValue = this.extractImageSource(value);
-      if (extractedValue !== value) {
-        // If a wiki link was extracted, format it as a wiki link
-        this.formatPropertyByType(propertyEl, extractedValue);
+      // Try processing as rich text (handles wiki links, HTML, and mixed content)
+      if (this.processRichText(valueEl, value)) {
+        // If processed successfully, we're done
         return;
       }
       
-      // Direct approach for wiki links - just set the text to the display part
-      // This is a workaround for when the link is not being properly rendered
-      if (typeof value === 'string' && value.includes('[[') && value.includes('|') && value.includes(']]')) {
-        // Extract the display text part (after the pipe)
-        const match = value.match(/\[\[.*\|(.*?)\]\]/);
-        if (match && match[1]) {
-          // Just use the display text directly
-          valueEl.setText(match[1]);
-          return;
-        }
-      }
-      
-      // More general case for wiki links
-      // This handles cases where Dataview returns the full wiki link syntax as a string
-      if (value.includes('[[') && value.includes(']]')) {
-        Logger.debug('Found wiki link in property value:', value);
-        Logger.debug('Found wiki link in property value:', value);
-        
-        // Try to extract the wiki link with a more robust regex that can handle various formats
-        const wikiLinkRegex = /\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/;
-        const wikiLinkMatch = value.match(wikiLinkRegex);
-        
-        if (wikiLinkMatch) {
-          Logger.debug('Wiki link match:', wikiLinkMatch);
-          
-          // Extract path and display text
-          const path = wikiLinkMatch[1];
-          // Use the display text if provided, otherwise use the clean filename
-          const displayText = wikiLinkMatch[2] || this.getCleanFilename(path);
-          
-          Logger.debug(`Wiki link path: "${path}", display text: "${displayText}"`);
-          
-          // Create a proper Obsidian internal link using the same approach as formatFileProperty
-          Logger.debug('Creating link element for wiki link');
-          const link = valueEl.createEl('a', {
-            cls: 'internal-link datacards-file-link',
-            text: displayText,
-            attr: { 
-              href: path,
-              'data-href': path,
-              'data-type': 'link'
-            }
-          });
-          Logger.debug('Link element created:', link);
-          
-          // Register the link with Obsidian's click handler
-          try {
-            this.app.workspace.trigger('hover-link', {
-              event: new MouseEvent('mouseover'),
-              source: 'preview',
-              hoverEl: link,
-              targetEl: link,
-              linktext: path
-            });
-          } catch (error) {
-            // Silently catch errors with hover registration to prevent uncaught exceptions
-            // This prevents the "Cannot read properties of undefined (reading 'hoverPopover')" error
-          }
-          
-          return;
-        }
-      }
+      // If not processed as rich text, handle remaining string cases
       
       // Check for markdown image syntax: ![alt text](url) or ![|size](url)
+      // This should ideally be handled by processRichText if it contains HTML, but keep as fallback
       const markdownImageMatch = value.match(/!\[(.*?)\]\((.*?)\)/);
       if (markdownImageMatch) {
-        Logger.debug('Found markdown image in property value');
+        Logger.debug('Found markdown image in property value (fallback)');
         const imageUrl = markdownImageMatch[2];
         const altText = markdownImageMatch[1];
         
@@ -1306,93 +1338,8 @@ export class RendererService {
         return;
       }
       
-      if (value.startsWith('[[') && value.endsWith(']]')) {
-        // Wiki link
-        Logger.debug('Processing wiki link that starts and ends with [[]]:', value);
-        
-        // Use the same robust regex as above
-        const wikiLinkRegex = /\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/;
-        const wikiLinkMatch = value.match(wikiLinkRegex);
-        
-        if (wikiLinkMatch) {
-          // Extract path and display text
-          const path = wikiLinkMatch[1];
-          // Use the display text if provided, otherwise use the clean filename
-          const displayText = wikiLinkMatch[2] || this.getCleanFilename(path);
-          
-          Logger.debug(`Wiki link path: "${path}", display text: "${displayText}"`);
-          
-          // Create a proper Obsidian internal link using the same approach as formatFileProperty
-          Logger.debug('Creating link element for wiki link (direct match)');
-          const link = valueEl.createEl('a', {
-            cls: 'internal-link datacards-file-link',
-            text: displayText,
-            attr: { 
-              href: path,
-              'data-href': path,
-              'data-type': 'link'
-            }
-          });
-          Logger.debug('Link element created (direct match):', link);
-          
-          // Register the link with Obsidian's click handler
-          try {
-            this.app.workspace.trigger('hover-link', {
-              event: new MouseEvent('mouseover'),
-              source: 'preview',
-              hoverEl: link,
-              targetEl: link,
-              linktext: path
-            });
-          } catch (error) {
-            // Silently catch errors with hover registration to prevent uncaught exceptions
-            // This prevents the "Cannot read properties of undefined (reading 'hoverPopover')" error
-          }
-        } else {
-          // Fallback to the old method if the regex doesn't match
-          const linkText = value.substring(2, value.length - 2);
-          
-          // Handle display text if present (format: [[path|displayText]])
-          let displayText = linkText;
-          let path = linkText;
-          
-          if (linkText.includes('|')) {
-            const parts = linkText.split('|');
-            path = parts[0];
-            displayText = parts[1];
-          } else {
-            // No display text provided, extract just the filename without extension
-            displayText = this.getCleanFilename(path);
-          }
-          
-          Logger.debug(`Fallback wiki link path: "${path}", display text: "${displayText}"`);
-          
-          // Create a proper Obsidian internal link using the same approach as formatFileProperty
-          const link = valueEl.createEl('a', {
-            cls: 'internal-link datacards-file-link',
-            text: displayText,
-            attr: { 
-              href: path,
-              'data-href': path,
-              'data-type': 'link'
-            }
-          });
-          
-          // Register the link with Obsidian's click handler
-          try {
-            this.app.workspace.trigger('hover-link', {
-              event: new MouseEvent('mouseover'),
-              source: 'preview',
-              hoverEl: link,
-              targetEl: link,
-              linktext: path
-            });
-          } catch (error) {
-            // Silently catch errors with hover registration to prevent uncaught exceptions
-            // This prevents the "Cannot read properties of undefined (reading 'hoverPopover')" error
-          }
-        }
-      } else if (value.startsWith('#')) {
+      // Check for tags
+      if (value.startsWith('#')) {
         // Tag - make it a clickable link
         const tag = valueEl.createEl('a', {
           cls: 'datacards-tag tag-link',
@@ -1403,17 +1350,13 @@ export class RendererService {
             'data-type': 'tag'
           }
         });
-      } else if (/<[ubia]>|<\/[ubia]>|<span|<div|<p>|<\/p>|<br>|<hr>/.test(value)) {
-        // Contains HTML tags - render as HTML with sanitization
-        Logger.debug('Rendering HTML content:', value);
-        
-        // Use setInnerHTML for HTML content
-        // This allows <u>, <b>, <i>, <a>, etc. tags to render properly
-        valueEl.innerHTML = value;
-      } else {
-        // Regular text without HTML
-        valueEl.setText(value);
+        return;
       }
+      
+      // If none of the above, treat as plain text
+      Logger.debug('Treating value as plain text:', value);
+      valueEl.setText(value);
+      
     } else if (typeof value === 'object' && value !== null) {
       // Check if it's a Dataview Link object
       if ('path' in value && 'type' in value && value.type === 'file') {
@@ -1427,29 +1370,7 @@ export class RendererService {
         Logger.debug(`Creating link from Dataview Link object: path="${path}", display="${displayText}"`);
         
         // Create a proper Obsidian internal link
-        const link = valueEl.createEl('a', {
-          cls: 'internal-link',
-          text: displayText,
-          attr: { 
-            href: path,
-            'data-href': path,
-            'data-type': 'link'
-          }
-        });
-        
-        // Register the link with Obsidian's click handler
-        try {
-          this.app.workspace.trigger('hover-link', {
-            event: new MouseEvent('mouseover'),
-            source: 'preview',
-            hoverEl: link,
-            targetEl: link,
-            linktext: path
-          });
-        } catch (error) {
-          // Silently catch errors with hover registration to prevent uncaught exceptions
-          // This prevents the "Cannot read properties of undefined (reading 'hoverPopover')" error
-        }
+        this.createWikiLink(valueEl, `[[${path}|${displayText}]]`); // Use createWikiLink for consistency
         
         return;
       }
@@ -1470,6 +1391,7 @@ export class RendererService {
       valueEl.setText(String(value));
     }
   }
+
 
   /**
    * Format a value as stars (for ratings)
