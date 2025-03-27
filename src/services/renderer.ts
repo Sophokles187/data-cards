@@ -126,6 +126,9 @@ export class RendererService {
     // Create the cards container
     const cardsContainer = container.createEl('div', {
       cls: 'datacards-container',
+      attr: {
+        'data-datacards-container': 'true' // Add a data attribute for easier selection
+      }
     });
     
     // Add preset class first
@@ -263,6 +266,9 @@ export class RendererService {
     // Create the cards container to maintain consistent styling
     const cardsContainer = container.createEl('div', {
       cls: 'datacards-container',
+      attr: {
+        'data-datacards-container': 'true' // Add a data attribute for easier selection
+      }
     });
     
     Logger.debug('Created cards container for empty state');
