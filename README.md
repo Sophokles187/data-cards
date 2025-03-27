@@ -39,7 +39,7 @@ That's it! Your Dataview results will now display as beautiful cards.
 
 ## Documentation
 
-Visit our [documentation site](https://sophokles187.github.io/data-cards/) for complete guides, examples, and reference materials:
+Visit the [documentation site](https://sophokles187.github.io/data-cards/) for complete guides, examples, and reference materials:
 
 - [Getting Started](https://sophokles187.github.io/data-cards/getting-started.html)
 - [Installation Guide](https://sophokles187.github.io/data-cards/installation.html)
