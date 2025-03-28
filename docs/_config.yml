@@ -2,7 +2,15 @@
 # The Site Configuration
 
 # Import the theme
-theme: jekyll-theme-chirpy
+remote_theme: cotes2020/jekyll-theme-chirpy
+
+# Add plugins required for the theme
+plugins:
+  - jekyll-remote-theme
+  - jekyll-paginate
+  - jekyll-sitemap
+  - jekyll-seo-tag
+  - jekyll-archives
 
 # Change the following value to '/PROJECT_NAME' ONLY IF your site type is GitHub Pages Project sites
 # and doesn't have a custom domain.
