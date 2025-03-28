@@ -2,6 +2,8 @@
 
 Transform Dataview query results into visually appealing, customizable card layouts.
 
+> 📚 [**Settings Reference**](settings-reference.md) - Complete list of all available settings
+
 ## Overview
 
 DataCards is a plugin for [Obsidian](https://obsidian.md) that transforms [Dataview](https://github.com/blacksmithgu/obsidian-dataview) query results into beautiful card layouts. Whether you're organizing books, movies, projects, or any other collection of notes, DataCards helps you visualize your data in an elegant and customizable way.

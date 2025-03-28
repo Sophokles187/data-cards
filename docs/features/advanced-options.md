@@ -2,6 +2,8 @@
 
 DataCards offers several settings to customize your card displays beyond the basic options.
 
+> 📖 For a complete reference of all available settings, see the [Settings Reference](../settings-reference.md).
+
 ## Performance Optimization
 
 ### Lazy Loading

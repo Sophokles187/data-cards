@@ -7,6 +7,8 @@
   - [Installation Methods](#installation-methods)
 - [Basic Usage](#basic-usage)
 - [Your First DataCards Block](#your-first-datacards-block)
+- [Customizing Cards](#customizing-cards)
+- [Settings Reference](#settings-reference)
 
 ## Installation
 
@@ -67,3 +69,32 @@ This will automatically render the results as cards using the default settings.
 6. Preview your note to see the cards
 
 That's it! Your Dataview results will now display as beautiful cards.
+
+## Customizing Cards
+
+You can customize your cards by adding settings after your query:
+
+```markdown
+```datacards
+TABLE author, rating, genre, cover FROM #books
+SORT rating DESC
+
+// Settings
+preset: portrait
+imageProperty: cover
+```
+```
+
+Settings are added after your query, following a line with `// Settings`. Each setting is specified as `key: value` on a new line.
+
+## Settings Reference
+
+For a complete list of all available settings and their options, refer to the **[Settings Reference](settings-reference.md)** page.
+
+This reference includes:
+- All available settings with descriptions
+- Default values
+- Available options for each setting
+- Example usages
+
+You can access this reference at any time to find the exact setting you need.

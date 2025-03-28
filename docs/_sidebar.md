@@ -12,6 +12,7 @@
   * [📱 Mobile Support](features/mobile.md)
   * [🔄 Dynamic Updates](features/dynamic-updates.md)
   * [⚡ Advanced Options](features/advanced-options.md)
+  * [Settings Reference](settings-reference.md)
 
 * 📋 **Examples**
   * [📚 Book Library](examples/books.md)
