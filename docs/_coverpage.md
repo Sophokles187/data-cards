@@ -1,18 +1,28 @@
 <!-- _coverpage.md -->
 
-![logo](assets/images/header-image.png)
+<div class="cover-main-content">
+  <img src="assets/images/header-image.png" alt="DataCards Logo" class="cover-logo" />
 
-# DataCards <small>for Obsidian</small>
+  # DataCards <small>for Obsidian</small>
 
-> Transform Dataview query results into visually appealing, customizable card layouts.
+  > Transform Dataview query results into visually appealing, customizable card layouts
 
-- Multiple card layouts and presets
-- Image support and property customization
-- Mobile optimization and dynamic updates
+  <div class="features-highlights">
+    <span>📊 Multiple card layouts</span>
+    <span>🖼️ Rich image support</span>
+    <span>📱 Mobile optimization</span>
+  </div>
 
-[GitHub](https://github.com/Sophokles187/data-cards)
-[Get Started](getting-started.md)
-[Support ☕](https://ko-fi.com/sophokles)
+  <div class="buttons">
+    <a href="#/getting-started" class="get-started-button">Get Started</a>
+    <a href="https://github.com/Sophokles187/data-cards" target="_blank" class="github-button">GitHub</a>
+    <a href="https://ko-fi.com/sophokles" target="_blank" class="support-button">Support ☕</a>
+  </div>
+
+  <div class="cover-footer">
+    <span>Made with 💙 for the Obsidian community</span>
+  </div>
+</div>
 
 <!-- background color -->
-![color](#3F51B5)
+![color](#202124)

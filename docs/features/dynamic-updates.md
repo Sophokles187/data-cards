@@ -26,15 +26,16 @@ To enable dynamic updates for all DataCards blocks:
 
 1. Open Obsidian Settings
 2. Go to the DataCards plugin settings
-3. Enable "Dynamic Updates"
-4. Optionally adjust the update interval
+3. Navigate to the "Update Settings" section
+4. Enable "Dynamic Updates"
+5. Optionally adjust the "Refresh Delay"
 
 ## How Dynamic Updates Work
 
 When dynamic updates are enabled:
 
 1. DataCards monitors changes to notes that match your query
-2. When a relevant property changes, the cards are automatically refreshed
+2. When a relevant property changes, the cards are automatically refreshed after the configured delay
 3. Only the affected cards are updated, not the entire display
 
 ## Update Triggers
@@ -46,22 +47,15 @@ Cards will update when:
 - You create or delete a note that matches the query
 - You manually trigger a refresh
 
-## Manual Refresh
+## Refresh Delay
 
-You can manually refresh your cards at any time:
-
-1. Command palette: "DataCards: Refresh DataCards in active view"
-2. Right-click on a DataCards block and select "Refresh DataCards"
-
-## Update Interval
-
-Control how frequently DataCards checks for updates:
+Control how long the plugin waits before refreshing after detecting changes:
 
 ```
-updateInterval: 5000  // Check every 5 seconds (in milliseconds)
+refreshDelay: 3000  // Wait 3 seconds before refreshing (in milliseconds)
 ```
 
-The default interval is 2000ms (2 seconds).
+The default delay is 2500ms (2.5 seconds). This delay helps prevent excessive refreshes while you're still typing or making changes.
 
 ## Performance Considerations
 
@@ -74,7 +68,7 @@ Dynamic updates can impact performance, especially with:
 To optimize performance:
 
 - Use specific queries that match fewer notes
-- Increase the update interval
+- Increase the refresh delay
 - Only enable dynamic updates where needed
 
 ## Examples
@@ -89,7 +83,6 @@ SORT dueDate ASC
 // Settings
 preset: grid
 dynamicUpdate: true
-updateInterval: 3000
 ```
 
 ### Reading Progress Tracker
@@ -105,30 +98,13 @@ imageProperty: cover
 dynamicUpdate: true
 ```
 
-### Project Dashboard
-
-```datacards
-TABLE file.link as "Project", status, team, deadline FROM #projects
-SORT deadline ASC
-
-// Settings
-preset: compact
-dynamicUpdate: true
-conditionalFormatting: {
-  "status": [
-    { "condition": "= 'Completed'", "color": "#4CAF50" },
-    { "condition": "= 'In Progress'", "color": "#FFC107" },
-    { "condition": "= 'Not Started'", "color": "#F44336" }
-  ]
-}
-```
-
 ## Troubleshooting
 
 If dynamic updates aren't working:
 
-- Verify that `dynamicUpdate: true` is set
+- Verify that `dynamicUpdate: true` is set or that the global setting is enabled
 - Check that you're in preview mode, not edit mode
 - Make sure the Dataview plugin is up to date
-- Try increasing the `updateInterval` value
-- Check the console for any error messages
+- Try increasing the `refreshDelay` value
+
+> **Note for Meta Bind users**: When editing properties with Meta Bind while dynamic updates are enabled, you may experience the input field losing focus if you pause typing for more than the refresh delay. This is due to how the plugins interact and is a known limitation.

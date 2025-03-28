@@ -1,6 +1,6 @@
 # Advanced Options
 
-DataCards offers a range of advanced options for customizing your card displays beyond the basic settings.
+DataCards offers several settings to customize your card displays beyond the basic options.
 
 ## Performance Optimization
 
@@ -9,201 +9,152 @@ DataCards offers a range of advanced options for customizing your card displays 
 Enable lazy loading to improve performance with many images:
 
 ```
-lazyLoad: true
+enableLazyLoading: true
 ```
 
 This will only load images as they come into view, reducing initial load time.
 
-### Pagination
+> **Note**: Lazy loading is available through the global settings panel and can be enabled for all DataCards blocks.
 
-Break large collections into pages:
+## Content Settings
 
-```
-pagination: true
-cardsPerPage: 12
-```
+### Scrollable Properties
 
-### Virtual Scrolling
-
-For very large collections, enable virtual scrolling:
+For cards with many properties, you can enable scrollable properties to prevent cards from becoming too tall:
 
 ```
-virtualScroll: true
+scrollableProperties: true
+contentHeight: 250px
 ```
 
-This renders only the visible cards, greatly improving performance.
+This creates a scrollable area for properties, keeping your cards at a consistent height.
+
+### Boolean Display Settings
+
+Control how boolean values are displayed:
+
+```
+booleanDisplayMode: "checkbox"  // Options: "both", "checkbox", "text"
+showBooleanLabels: false
+booleanTrueText: "Yes"
+booleanFalseText: "No"
+```
 
 ## Visual Customization
 
-### Custom CSS Classes
+### Font Size
 
-Add custom CSS classes to your cards:
-
-```
-cssClasses: ["my-custom-cards", "dark-theme"]
-```
-
-### Custom Styles
-
-Apply inline styles directly:
+Adjust text size for all card elements:
 
 ```
-styles: {
-  "card": "border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);",
-  "image": "filter: grayscale(100%);",
-  "title": "font-family: 'Georgia', serif; color: #333;"
-}
+fontSize: "small"  // Options: "larger", "large", "default", "small", "smaller"
 ```
 
-### Animation Effects
+### Alignment Options
 
-Add animations to your cards:
-
-```
-animations: {
-  "type": "fade",
-  "duration": 300,
-  "stagger": 50
-}
-```
-
-Available animation types: `fade`, `slide`, `zoom`, `flip`
-
-## Interaction Options
-
-### Click Actions
-
-Define what happens when a card is clicked:
+Customize text alignment:
 
 ```
-clickAction: "open"  // Open the note
+titleAlign: "center"  // Options: "left", "center", "right"
+propertiesAlign: "right"  // Options: "left", "center", "right"
 ```
 
-```
-clickAction: "expand"  // Expand the card to show more details
-```
+### Card Spacing
+
+Adjust the space between cards:
 
 ```
-clickAction: "modal"  // Open a modal with the full note content
+cardSpacing: 8
 ```
 
-### Hover Effects
+### Card Shadows
 
-Add effects when hovering over cards:
-
-```
-hoverEffect: "lift"
-```
-
-Available effects: `lift`, `glow`, `zoom`, `none`
-
-### Sorting Controls
-
-Allow users to sort cards:
+Enable or disable subtle shadows:
 
 ```
-sortControls: true
-sortOptions: ["title", "rating", "date"]
+enableShadows: false
 ```
 
-### Filter Controls
+## Mobile Optimization
 
-Add interactive filters:
-
-```
-filterControls: true
-filterOptions: {
-  "genre": ["Fiction", "Non-Fiction", "Science Fiction", "Biography"],
-  "rating": ["5 Stars", "4+ Stars", "3+ Stars"]
-}
-```
-
-## Data Manipulation
-
-### Calculated Properties
-
-Create new properties based on existing ones:
+Customize how cards appear on mobile devices:
 
 ```
-calculatedProperties: {
-  "displayName": "file.name + ' (' + year + ')'",
-  "isRecent": "file.mtime > (date.now() - (7 * 24 * 60 * 60 * 1000))"
-}
+mobilePreset: "compact"
+mobileColumns: 2
+mobileScrollableProperties: true
+mobileContentHeight: "180px"
 ```
 
-### Data Transformation
+## Interaction Settings
 
-Transform property values before display:
-
-```
-transformations: {
-  "rating": "value + '⭐'",
-  "tags": "value.join(', ')",
-  "date": "moment(value).format('MMM D, YYYY')"
-}
-```
-
-### Default Values
-
-Set default values for missing properties:
+Make cards clickable to open the related note:
 
 ```
-defaultValues: {
-  "rating": "Not rated",
-  "status": "Unspecified",
-  "cover": "assets/default-cover.jpg"
-}
+enableClickableCards: true
 ```
 
-## Integration Options
+## Dynamic Updates
 
-### Dataview Integration
-
-Pass options directly to Dataview:
+Enable automatic updates when properties change:
 
 ```
-dataviewOptions: {
-  "cache": false,
-  "refreshInterval": 5000
-}
+enableDynamicUpdates: true
+refreshDelay: 3000
 ```
 
-### External API Integration
+For individual code blocks:
 
-Connect to external APIs (requires DataviewJS):
-
-```javascript
-```dataviewjs
-// Fetch data from an API
-const response = await fetch('https://api.example.com/books');
-const books = await response.json();
-
-// Convert to Dataview format
-const dv = this.dataview;
-const pages = books.map(book => {
-  return {
-    "file": { "link": book.title },
-    "author": book.author,
-    "rating": book.rating,
-    "cover": book.coverUrl
-  };
-});
-
-// Generate DataCards block
-dv.paragraph(`\`\`\`datacards
-TABLE file.link as "Title", author, rating, cover FROM ${JSON.stringify(pages)}
-SORT rating DESC
-
-// Settings
-preset: portrait
-imageProperty: cover
-\`\`\``);
 ```
+dynamicUpdate: true
 ```
+
+## Date Formatting
+
+Customize how dates are displayed:
+
+```
+defaultDateFormat: "DD.MM.YYYY"
+```
+
+## Available Settings Reference
+
+Here's a complete list of all supported settings:
+
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `preset` | Card preset (`grid`, `portrait`, `square`, `compact`, `dense`) | `grid` |
+| `columns` | Number of columns (code block only, overrides preset default) | Preset-specific |
+| `imageProperty` | Frontmatter property to use for images | `cover` |
+| `imageHeight` | Height of the image (code block only) | Preset-specific |
+| `imageFit` | How the image should fit (`cover`, `contain`) (code block only) | Preset-specific |
+| `properties` | Properties to display (array or `all`) | `all` |
+| `exclude` | Properties to exclude (array) | `[]` |
+| `scrollableProperties` | Whether to make properties scrollable when they exceed content height | `false` (except for `square` and `compact` presets) |
+| `contentHeight` | Height of the scrollable content area | `200px` |
+| `showLabels` | Whether to show property labels | `true` |
+| `cardSpacing` | Space between cards (in pixels) | `16` |
+| `enableShadows` | Add subtle shadows to cards | `true` |
+| `propertiesAlign` | Text alignment for properties and their labels (`left`, `center`, `right`) | `left` |
+| `titleAlign` | Text alignment for the title/filename (`left`, `center`, `right`) | `left` |
+| `fontSize` | Text size for all card elements (`larger`, `large`, `default`, `small`, `smaller`) | `default` |
+| `booleanDisplayMode` | How to display boolean values (`both`, `checkbox`, `text`) | `both` |
+| `showBooleanLabels` | Whether to show text labels for boolean values | `true` |
+| `booleanTrueText` | Custom text for true values | `true` |
+| `booleanFalseText` | Custom text for false values | `false` |
+| `enableClickableCards` | Make the entire card clickable to open the note | `false` |
+| `defaultDateFormat` | Format for displaying dates (e.g., `YYYY-MM-DD`) | `YYYY-MM-DD` |
+| `mobilePreset` | Preset to use on mobile devices | `grid` |
+| `mobileColumns` | Number of columns to use on mobile devices (1-3) | `1` |
+| `mobileScrollableProperties` | Whether to make properties scrollable on mobile devices | `true` |
+| `mobileContentHeight` | Height of the scrollable content area on mobile devices | `150px` |
+| `enableLazyLoading` | Whether to enable lazy loading for images | `false` |
+| `enableDynamicUpdates` | Whether to automatically update DataCards when properties change | `false` |
+| `dynamicUpdate` | Enable/disable dynamic updates for a specific card (code block only) | Inherits global setting |
 
 ## Examples
 
-### Advanced Visual Customization
+### Basic Settings Example
 
 ```datacards
 TABLE file.link, author, rating, genre, cover FROM #books
@@ -212,48 +163,45 @@ SORT rating DESC
 // Settings
 preset: portrait
 imageProperty: cover
-cssClasses: ["premium-cards"]
-styles: {
-  "card": "border-radius: 16px; overflow: hidden;",
-  "image": "filter: brightness(1.1);",
-  "title": "font-weight: 700; font-size: 1.2em;"
-}
-hoverEffect: "lift"
+fontSize: small
+enableShadows: true
 ```
 
-### Interactive Dashboard
+### Mobile Optimization Example
 
 ```datacards
-TABLE file.link, status, priority, dueDate, assignee FROM #tasks
+TABLE file.link, author, rating, genre, cover FROM #books
+SORT rating DESC
+
+// Settings
+preset: grid
+mobilePreset: compact
+mobileColumns: 2
+mobileScrollableProperties: true
+```
+
+### Boolean and Date Formatting Example
+
+```datacards
+TABLE file.link, status, completed, dueDate FROM #tasks
 SORT dueDate ASC
 
 // Settings
 preset: grid
-sortControls: true
-filterControls: true
-filterOptions: {
-  "status": ["Not Started", "In Progress", "Completed"],
-  "priority": ["High", "Medium", "Low"]
-}
-conditionalFormatting: {
-  "priority": [
-    { "condition": "= 'High'", "color": "#F44336" },
-    { "condition": "= 'Medium'", "color": "#FFC107" },
-    { "condition": "= 'Low'", "color": "#4CAF50" }
-  ]
-}
+booleanDisplayMode: checkbox
+defaultDateFormat: DD.MM.YYYY
 ```
 
-### High-Performance Gallery
+### Scrollable Content Example
 
 ```datacards
-TABLE file.link, location, date, image FROM #photos
-SORT date DESC
+TABLE file.link, author, summary, notes, rating FROM #books
+SORT rating DESC
 
 // Settings
-preset: square
-imageProperty: image
-columns: 5
-lazyLoad: true
-pagination: true
-cardsPerPage: 20
+preset: grid
+scrollableProperties: true
+contentHeight: 250px
+titleAlign: center
+propertiesAlign: left
+```
