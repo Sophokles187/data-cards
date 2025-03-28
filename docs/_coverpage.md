@@ -12,6 +12,7 @@
 
 [GitHub](https://github.com/Sophokles187/data-cards)
 [Get Started](getting-started.md)
+[Support ☕](https://ko-fi.com/sophokles)
 
 <!-- background color -->
 ![color](#3F51B5)

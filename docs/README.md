@@ -50,3 +50,7 @@ Optimized for book covers and portrait images. Features taller cards with "conta
 ### Square Preset
 
 Perfect for photo collections and visual content. Features 1:1 square cards with images as the focus.
+
+## Support
+
+If you find DataCards useful, you can [buy me a coffee ☕](https://ko-fi.com/sophokles) to support ongoing development and maintenance.
