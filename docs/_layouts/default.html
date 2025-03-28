@@ -7,6 +7,9 @@
 
 {% seo %}
     <link rel="stylesheet" href="{{ "/assets/css/style.css?v=" | append: site.github.build_revision | relative_url }}">
+    {% if site.github.is_project_page %}
+    <link rel="stylesheet" href="{{ "/assets/css/style.css" | relative_url }}">
+    {% endif %}
     <style>
       .container-lg {
         max-width: 1200px;
@@ -50,8 +53,8 @@
   <body>
     <div class="container-lg px-3 my-5 markdown-body">
       <header class="page-header">
-        <h1><a href="{{ "/" | absolute_url }}">{{ site.title | default: site.github.repository_name }}</a></h1>
-        <p>{{ site.description | default: site.github.project_tagline }}</p>
+        <h1><a href="{{ "/" | absolute_url }}">{{ site.title | default: "DataCards Documentation" }}</a></h1>
+        <p>{{ site.description | default: "Documentation for the DataCards Obsidian plugin" }}</p>
       </header>
 
       <div class="page-content">
@@ -96,7 +99,7 @@
       </div>
 
       <footer class="site-footer">
-        <p>&copy; {{ site.time | date: '%Y' }} {{ site.author.name | default: site.github.owner_name }}</p>
+        <p>&copy; {{ site.time | date: '%Y' }} Sophokles187</p>
         <p>Powered by <a href="https://pages.github.com">GitHub Pages</a></p>
       </footer>
     </div>

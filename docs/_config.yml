@@ -1,9 +1,11 @@
-
 # Site settings
 title: DataCards Documentation
 description: Official documentation for the DataCards plugin for Obsidian
 baseurl: "/data-cards"
 url: "https://sophokles187.github.io"
+
+# Repository information
+repository: Sophokles187/data-cards
 
 # Build settings
 remote_theme: pages-themes/cayman@v0.2.0
