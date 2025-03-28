@@ -1,49 +1,104 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
+<html lang="{{ site.lang | default: "en-US" }}">
+  <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% if page.title %}{{ page.title }} - {% endif %}DataCards Documentation</title>
-    <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
-    <link rel="icon" href="{{ '/favicon.ico' | relative_url }}" type="image/x-icon">
-</head>
-<body>
-    <!-- Skip to content link for accessibility -->
-    <a href="#main-content" class="skip-to-content">Skip to content</a>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <!-- Dark mode toggle button -->
-    <button class="theme-toggle" aria-label="Toggle dark mode">
-        <!-- Moon icon for light mode -->
-        <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-        </svg>
-        <!-- Sun icon for dark mode (hidden initially) -->
-        <svg class="sun-icon" style="display: none;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-            <circle cx="12" cy="12" r="5"></circle>
-            <line x1="12" y1="1" x2="12" y2="3"></line>
-            <line x1="12" y1="21" x2="12" y2="23"></line>
-            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-            <line x1="1" y1="12" x2="3" y2="12"></line>
-            <line x1="21" y1="12" x2="23" y2="12"></line>
-            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-        </svg>
-    </button>
+{% seo %}
+    <link rel="stylesheet" href="{{ "/assets/css/style.css?v=" | append: site.github.build_revision | relative_url }}">
+    <style>
+      .container-lg {
+        max-width: 1200px;
+      }
+      .main-content {
+        max-width: 1000px;
+        margin: 0 auto;
+      }
+      .sidebar {
+        position: sticky;
+        top: 2rem;
+        max-height: calc(100vh - 4rem);
+        overflow-y: auto;
+      }
+      .sidebar h3 {
+        margin-top: 1.5rem;
+        margin-bottom: 0.5rem;
+      }
+      .sidebar ul {
+        padding-left: 1.2rem;
+      }
+      @media screen and (min-width: 800px) {
+        .page-content {
+          display: grid;
+          grid-template-columns: 1fr 3fr;
+          gap: 2rem;
+        }
+      }
+      pre {
+        padding: 1rem;
+        overflow: auto;
+        font-size: 0.9rem;
+        line-height: 1.45;
+        border-radius: 0.3rem;
+      }
+      .nav-item {
+        margin-bottom: 0.25rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container-lg px-3 my-5 markdown-body">
+      <header class="page-header">
+        <h1><a href="{{ "/" | absolute_url }}">{{ site.title | default: site.github.repository_name }}</a></h1>
+        <p>{{ site.description | default: site.github.project_tagline }}</p>
+      </header>
 
-    <!-- Mobile menu toggle -->
-    <button class="mobile-menu-toggle" aria-label="Toggle mobile menu">
-        <span></span>
-    </button>
+      <div class="page-content">
+        <div class="sidebar">
+          <h3>Navigation</h3>
+          <ul class="nav-list">
+            <li class="nav-item"><a href="{{ '/' | relative_url }}">Home</a></li>
+            <li class="nav-item"><a href="{{ '/getting-started' | relative_url }}">Getting Started</a></li>
+            <li class="nav-item"><a href="{{ '/installation' | relative_url }}">Installation</a></li>
+          </ul>
 
-    <div class="container">
-        {% include sidebar.html %}
-        
-        <div id="main-content" class="main-content">
-            {{ content }}
+          <h3>Features</h3>
+          <ul class="nav-list">
+            <li class="nav-item"><a href="{{ '/features' | relative_url }}">Features Overview</a></li>
+            <li class="nav-item"><a href="{{ '/features/presets' | relative_url }}">Card Presets</a></li>
+            <li class="nav-item"><a href="{{ '/features/images' | relative_url }}">Image Support</a></li>
+            <li class="nav-item"><a href="{{ '/features/properties' | relative_url }}">Property Customization</a></li>
+            <li class="nav-item"><a href="{{ '/features/mobile' | relative_url }}">Mobile Support</a></li>
+            <li class="nav-item"><a href="{{ '/features/dynamic-updates' | relative_url }}">Dynamic Updates</a></li>
+            <li class="nav-item"><a href="{{ '/features/advanced-options' | relative_url }}">Advanced Options</a></li>
+          </ul>
+
+          <h3>Examples</h3>
+          <ul class="nav-list">
+            <li class="nav-item"><a href="{{ '/examples' | relative_url }}">Examples Index</a></li>
+            <li class="nav-item"><a href="{{ '/examples/books' | relative_url }}">Book Library</a></li>
+            <li class="nav-item"><a href="{{ '/examples/tasks' | relative_url }}">Task Management</a></li>
+            <li class="nav-item"><a href="{{ '/examples/photos' | relative_url }}">Photo Gallery</a></li>
+            <li class="nav-item"><a href="{{ '/examples/movies' | relative_url }}">Movie Collection</a></li>
+          </ul>
+
+          <h3>Support</h3>
+          <ul class="nav-list">
+            <li class="nav-item"><a href="{{ '/faq' | relative_url }}">FAQ & Troubleshooting</a></li>
+            <li class="nav-item"><a href="https://github.com/Sophokles187/data-cards" target="_blank">GitHub Repository</a></li>
+          </ul>
         </div>
-    </div>
 
-    <script src="{{ '/assets/js/script.js' | relative_url }}"></script>
-</body>
+        <div class="main-content">
+          {{ content }}
+        </div>
+      </div>
+
+      <footer class="site-footer">
+        <p>&copy; {{ site.time | date: '%Y' }} {{ site.author.name | default: site.github.owner_name }}</p>
+        <p>Powered by <a href="https://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+  </body>
 </html>

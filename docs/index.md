@@ -1,6 +1,5 @@
 ---
-layout: home
-# Index page
+title: Home
 ---
 
 # DataCards for Obsidian
