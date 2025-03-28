@@ -1,6 +1,6 @@
 <!-- _coverpage.md -->
 
-![logo](assets/images/header-image.png)
+![logo](/data-cards/assets/images/header-image.png)
 
 # DataCards <small>for Obsidian</small>
 
@@ -11,7 +11,7 @@
 - Mobile optimization and dynamic updates
 
 [GitHub](https://github.com/Sophokles187/data-cards)
-[Get Started](getting-started.md)
+[Get Started](/data-cards/getting-started)
 
 <!-- background color -->
 ![color](#3F51B5)
