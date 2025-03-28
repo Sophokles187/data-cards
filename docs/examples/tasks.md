@@ -1,42 +1,29 @@
----
-layout: default
-title: Task Management
-parent: Examples
-nav_order: 2
----
-
 # Task Management Example
-{: .no_toc }
 
-## Table of contents
-{: .no_toc .text-delta }
+This example shows how to create a task management dashboard with DataCards.
 
-1. TOC
-{:toc}
+## Basic Task Board
 
----
-
-This example shows how to use DataCards for task and project management.
-
-## Task Dashboard
-
-Create a visual task dashboard:
+A simple kanban-style board for your tasks:
 
 ```markdown
 ```datacards
-TABLE file.link as "Task", priority, status, dueDate, assigned FROM #tasks
-WHERE status != "completed"
+TABLE file.link as "Task", status, priority, dueDate FROM #tasks
 SORT dueDate ASC
 
 // Settings
 preset: grid
-columns: 4
-properties: [file.link, priority, status, dueDate, assigned]
-defaultDateFormat: YYYY-MM-DD
+conditionalFormatting: {
+  "status": [
+    { "condition": "= 'Completed'", "color": "#4CAF50" },
+    { "condition": "= 'In Progress'", "color": "#FFC107" },
+    { "condition": "= 'Not Started'", "color": "#F44336" }
+  ]
+}
 ```
 ```
 
-![Task Dashboard Example](../assets/screenshots/example-tasks.png)
+![Task Management Example](../assets/images/screenshot-9.png)
 
 ## Properties to Include in Your Task Notes
 
@@ -45,149 +32,210 @@ For this example to work, make sure your task notes have:
 ```yaml
 ---
 tags: tasks
-priority: High
 status: In Progress
-dueDate: 2023-09-30
-assigned: John Doe
+priority: High
+dueDate: 2023-07-15
+assignee: John Doe
 ---
 ```
 
-## Task Kanban Board
+## Advanced Task Board
 
-Group tasks by status to create a Kanban-like view:
+More detailed version with additional properties:
 
 ```markdown
-# Task Board
-
-## To Do
 ```datacards
-TABLE file.link as "Task", priority, dueDate FROM #tasks
-WHERE status = "To Do"
-SORT priority DESC
+TABLE 
+  file.link as "Task", 
+  status, 
+  priority,
+  dueDate,
+  assignee,
+  progress
+FROM #tasks
+SORT priority DESC, dueDate ASC
 
 // Settings
-preset: dense
-columns: 2
+preset: grid
+dynamicUpdate: true
+conditionalFormatting: {
+  "priority": [
+    { "condition": "= 'High'", "color": "#F44336" },
+    { "condition": "= 'Medium'", "color": "#FFC107" },
+    { "condition": "= 'Low'", "color": "#4CAF50" }
+  ],
+  "status": [
+    { "condition": "= 'Completed'", "color": "#4CAF50" },
+    { "condition": "= 'In Progress'", "color": "#2196F3" },
+    { "condition": "= 'Not Started'", "color": "#9E9E9E" }
+  ]
+}
 ```
 ```
 
-## In Progress
+## Filter by Status
+
+Display tasks with a specific status:
+
+```markdown
 ```datacards
-TABLE file.link as "Task", priority, dueDate FROM #tasks
+TABLE file.link as "Task", priority, dueDate, assignee FROM #tasks
 WHERE status = "In Progress"
-SORT priority DESC
+SORT dueDate ASC
 
 // Settings
-preset: dense
-columns: 2
+preset: grid
 ```
 ```
 
-## Done
-```datacards
-TABLE file.link as "Task", priority, dueDate FROM #tasks
-WHERE status = "Done"
-SORT dueDate DESC
+## Due Today
 
-// Settings
-preset: dense
-columns: 2
-```
-```
-```
-
-## Project Overview
-
-Show tasks organized by project:
+Display tasks due today:
 
 ```markdown
 ```datacards
-TABLE file.link as "Task", priority, status, dueDate FROM #projects
+TABLE file.link as "Task", status, priority, assignee FROM #tasks
+WHERE date(dueDate) = date(today)
 SORT priority DESC
 
 // Settings
 preset: grid
-properties: [file.link, priority, status, dueDate]
-dynamicUpdate: true
+columns: 2
 ```
 ```
 
-## Task Priority Matrix
+## Project-Specific Tasks
 
-Organize tasks by priority:
-
-```markdown
-# Task Priority Matrix
-
-## High Priority
-```datacards
-TABLE file.link as "Task", status, dueDate FROM #tasks
-WHERE priority = "High"
-SORT dueDate ASC
-
-// Settings
-preset: dense
-columns: 3
-```
-```
-
-## Medium Priority
-```datacards
-TABLE file.link as "Task", status, dueDate FROM #tasks
-WHERE priority = "Medium"
-SORT dueDate ASC
-
-// Settings
-preset: dense
-columns: 3
-```
-```
-
-## Low Priority
-```datacards
-TABLE file.link as "Task", status, dueDate FROM #tasks
-WHERE priority = "Low"
-SORT dueDate ASC
-
-// Settings
-preset: dense
-columns: 3
-```
-```
-```
-
-## Tasks with Dynamic Updates
-
-If you're using Meta Bind or other property editing plugins:
+If you use sub-tags for organizing tasks:
 
 ```markdown
 ```datacards
-TABLE file.link as "Task", priority, status, dueDate FROM #tasks
-WHERE status != "completed"
+TABLE file.link as "Task", status, priority, dueDate FROM #tasks/project-alpha
 SORT dueDate ASC
 
 // Settings
 preset: grid
-dynamicUpdate: true
-refreshDelay: 1000
 ```
 ```
 
-This will automatically update the cards when you change task properties.
+## Compact Task List
 
-## Tasks with Boolean Properties
-
-If you track task completion with boolean properties:
+A more compact display for many tasks:
 
 ```markdown
 ```datacards
-TABLE file.link as "Task", completed, priority, dueDate FROM #tasks
+TABLE file.link as "Task", status, priority, dueDate, assignee FROM #tasks
+SORT dueDate ASC
+
+// Settings
+preset: compact
+```
+```
+
+## Task Dashboard with Statistics
+
+Combine statistics with your task board:
+
+```javascript
+```dataviewjs
+// Get all tasks
+const tasks = dv.pages("#tasks");
+
+// Count tasks by status
+const statusCounts = {
+  "Completed": 0,
+  "In Progress": 0,
+  "Not Started": 0
+};
+
+tasks.forEach(task => {
+  if (task.status) {
+    statusCounts[task.status] = (statusCounts[task.status] || 0) + 1;
+  }
+});
+
+// Count tasks by priority
+const priorityCounts = {
+  "High": 0,
+  "Medium": 0,
+  "Low": 0
+};
+
+tasks.forEach(task => {
+  if (task.priority) {
+    priorityCounts[task.priority] = (priorityCounts[task.priority] || 0) + 1;
+  }
+});
+
+// Count overdue tasks
+const today = new Date();
+today.setHours(0, 0, 0, 0);
+const overdueTasks = tasks.filter(task => 
+  task.dueDate && new Date(task.dueDate) < today && task.status !== "Completed"
+).length;
+
+// Output stats
+dv.paragraph(`📋 **Total Tasks**: ${tasks.length}`);
+dv.paragraph(`⏱️ **Status Breakdown**:`);
+Object.entries(statusCounts).forEach(([status, count]) => {
+  dv.paragraph(`- ${status}: ${count} tasks`);
+});
+
+dv.paragraph(`🚨 **Priority Breakdown**:`);
+Object.entries(priorityCounts).forEach(([priority, count]) => {
+  dv.paragraph(`- ${priority}: ${count} tasks`);
+});
+
+dv.paragraph(`⚠️ **Overdue Tasks**: ${overdueTasks}`);
+
+// Generate a DataCards block for high priority tasks
+dv.paragraph("### High Priority Tasks\n");
+dv.paragraph(`\`\`\`datacards
+TABLE file.link as "Task", status, dueDate, assignee FROM #tasks
+WHERE priority = "High" AND status != "Completed"
 SORT dueDate ASC
 
 // Settings
 preset: grid
-booleanDisplayMode: checkbox
-booleanTrueText: "Done"
-booleanFalseText: "Pending"
+conditionalFormatting: {
+  "status": [
+    { "condition": "= 'In Progress'", "color": "#2196F3" },
+    { "condition": "= 'Not Started'", "color": "#9E9E9E" }
+  ]
+}
+\`\`\``);
 ```
+```
+
+## Assignee Workload
+
+View tasks assigned to specific team members:
+
+```markdown
+```datacards
+TABLE file.link as "Task", status, priority, dueDate FROM #tasks
+WHERE assignee = "John Doe"
+SORT dueDate ASC
+
+// Settings
+preset: grid
+```
+```
+
+## Timeline View
+
+Organize tasks by due date:
+
+```markdown
+```datacards
+TABLE file.link as "Task", status, priority, assignee FROM #tasks
+WHERE status != "Completed"
+SORT dueDate ASC
+
+// Settings
+preset: grid
+groupBy: "dueDate"
+dateFormat: {
+  "dueDate": "MMMM D, YYYY"
+}
 ```

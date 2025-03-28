@@ -1,0 +1,6 @@
+<div class="card">
+    {% if include.title %}
+    <h3>{{ include.title }}</h3>
+    {% endif %}
+    {{ include.content | markdownify }}
+</div>

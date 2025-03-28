@@ -1,131 +1,176 @@
----
-layout: default
-title: Image Support
-parent: Features
-nav_order: 2
----
-
 # Image Support
-{: .no_toc }
 
-## Table of contents
-{: .no_toc .text-delta }
+DataCards allows you to display images in your cards, making your data more visual and engaging.
 
-1. TOC
-{:toc}
+## Basic Image Display
 
----
+To display images in your cards, you need to:
 
-DataCards can display images from your notes' frontmatter. This guide explains how to use images with DataCards.
-
-## Specifying Image Properties
-
-To display images, you need to:
-
-1. Have an image property in your notes' frontmatter
+1. Have an image property in your notes (URL, file path, or wiki link)
 2. Include that property in your Dataview query
-3. Specify the image property in your DataCards settings
+3. Specify which property contains the image using the `imageProperty` setting
 
-### Example
-
-```markdown
 ```datacards
-TABLE title, author, rating, cover FROM #books
+TABLE file.link, author, rating, cover FROM #books
 SORT rating DESC
 
 // Settings
-imageProperty: cover
-```
-```
-
-## Supported Image Formats
-
-DataCards supports several ways to specify images:
-
-### 1. External URLs
-
-Use a full URL in your frontmatter:
-
-```yaml
----
-cover: https://example.com/image.jpg
----
-```
-
-### 2. Vault Images (Path)
-
-For images in your vault, use a relative path:
-
-```yaml
----
-cover: path/to/image.jpg
----
-```
-
-### 3. Vault Images (Wiki Link)
-
-Use Obsidian's wiki link format:
-
-```yaml
----
-cover: "[[path/to/image.jpg]]"
----
-```
-
-## Image Settings
-
-You can customize how images are displayed with these settings:
-
-### Image Property
-
-Specify which frontmatter property contains the image:
-
-```
+preset: portrait
 imageProperty: cover
 ```
 
-### Image Height
+## Image Property Types
 
-Set a custom height for images (default is preset-specific):
+DataCards supports several types of image references:
+
+### URLs
+
+```yaml
+---
+cover: https://example.com/book-cover.jpg
+---
+```
+
+### File Paths
+
+```yaml
+---
+cover: "attachments/book-cover.jpg"
+---
+```
+
+### Wiki Links
+
+```yaml
+---
+cover: "[[attachments/book-cover.jpg]]"
+---
+```
+
+### Markdown Image Links
+
+```yaml
+---
+cover: "![Book Cover](attachments/book-cover.jpg)"
+---
+```
+
+## Image Display Options
+
+### Image Fit
+
+Control how images fit within the card:
+
+```
+imageFit: cover    // Fill the space (may crop)
+```
+
+```
+imageFit: contain  // Show the entire image (may leave space)
+```
+
+### Image Position
+
+Control how images are positioned within the card:
+
+```
+imagePosition: center
+```
+
+Options include: `top`, `bottom`, `left`, `right`, `center`
+
+### Image Size
+
+Control the size of the image area:
+
+```
+imageSize: large
+```
+
+Options include: `small`, `medium`, `large`, `xlarge`
+
+Or specify a custom height:
 
 ```
 imageHeight: 300px
 ```
 
-### Image Fit
+## Multiple Images
 
-Control how images fit within their container:
+Display multiple images by using an array in your frontmatter:
 
-- `cover`: Fill the container (may crop)
-- `contain`: Show the entire image (may leave space)
+```yaml
+---
+images: 
+  - "attachments/image1.jpg"
+  - "attachments/image2.jpg"
+  - "attachments/image3.jpg"
+---
+```
+
+Then use the `imageProperty` setting:
 
 ```
-imageFit: contain
+imageProperty: images
+```
+
+## Image Gallery
+
+Create an image gallery with the `gallery` preset:
+
+```datacards
+TABLE file.link, description, images FROM #photos
+SORT file.ctime DESC
+
+// Settings
+preset: gallery
+imageProperty: images
 ```
 
 ## Lazy Loading
 
-For large collections with many images, you can enable lazy loading:
+For better performance with many images, enable lazy loading:
 
 ```
-enableLazyLoading: true
+lazyLoad: true
 ```
 
-This only loads images when they become visible, improving performance.
+This will only load images as they come into view.
 
-## Mobile Image Settings
+## Examples
 
-Set different image heights for mobile devices:
+### Book Covers
 
+```datacards
+TABLE file.link as "Title", author, rating, cover FROM #books
+SORT rating DESC
+
+// Settings
+preset: portrait
+imageProperty: cover
+imageFit: contain
 ```
-mobileImageHeight: 150px
+
+### Photo Gallery
+
+```datacards
+TABLE file.link as "Photo", location, date, image FROM #photos
+SORT date DESC
+
+// Settings
+preset: square
+imageProperty: image
+imageFit: cover
+columns: 4
 ```
 
-## Troubleshooting Images
+### Product Catalog
 
-If images aren't displaying correctly:
+```datacards
+TABLE file.link as "Product", price, category, images FROM #products
+SORT price ASC
 
-- Verify the image path is correct
-- Check that you included the image property in your Dataview query
-- For external images, ensure the URL is accessible
-- Try using a different image format (URL vs. path vs. wiki link)
+// Settings
+preset: grid
+imageProperty: images
+imageSize: large

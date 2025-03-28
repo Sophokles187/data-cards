@@ -1,19 +1,14 @@
----
-layout: default
-title: FAQ & Troubleshooting
-nav_order: 6
----
-
 # FAQ & Troubleshooting
-{: .no_toc }
 
 ## Table of contents
-{: .no_toc .text-delta }
 
-1. TOC
-{:toc}
-
----
+- [Frequently Asked Questions](#frequently-asked-questions)
+  - [General Questions](#general-questions)
+  - [Setup and Configuration](#setup-and-configuration)
+- [Troubleshooting](#troubleshooting)
+  - [Common Issues](#common-issues)
+  - [Error Messages](#error-messages)
+  - [Advanced Troubleshooting](#advanced-troubleshooting)
 
 ## Frequently Asked Questions
 
@@ -59,7 +54,7 @@ Yes, DataCards properly displays wiki links and allows them to be clickable.
 
 #### My DataCards block isn't rendering
 - Make sure the Dataview plugin is installed and enabled
-- Check that your code block uses the correct syntax: \`\`\`datacards (with three backticks)
+- Check that your code block uses the correct syntax: ```datacards (with three backticks)
 - Verify that your Dataview query is correct
 - Check the console for any error messages (Help → Developer → Toggle Developer Tools)
 

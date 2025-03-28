@@ -1,141 +1,259 @@
----
-layout: default
-title: Advanced Options
-parent: Features
-nav_order: 6
----
-
 # Advanced Options
-{: .no_toc }
 
-## Table of contents
-{: .no_toc .text-delta }
+DataCards offers a range of advanced options for customizing your card displays beyond the basic settings.
 
-1. TOC
-{:toc}
-
----
-
-DataCards offers several advanced options for further customization and optimization.
-
-## Performance Settings
+## Performance Optimization
 
 ### Lazy Loading
 
 Enable lazy loading to improve performance with many images:
 
 ```
-enableLazyLoading: true
+lazyLoad: true
 ```
 
-When enabled:
-- Images only load when they become visible in the viewport
-- Reduces initial load time and saves bandwidth
-- Shows a placeholder until the image is loaded
-- Provides a smooth fade-in animation when images appear
+This will only load images as they come into view, reducing initial load time.
 
-## Card Appearance
+### Pagination
 
-### Card Spacing
-
-Control the space between cards:
+Break large collections into pages:
 
 ```
-cardSpacing: 16
+pagination: true
+cardsPerPage: 12
 ```
 
-Value is in pixels, with a range of 0-32.
+### Virtual Scrolling
 
-### Card Shadows
-
-Enable or disable subtle shadows on cards:
+For very large collections, enable virtual scrolling:
 
 ```
-enableShadows: false
+virtualScroll: true
 ```
 
-### Clickable Cards
+This renders only the visible cards, greatly improving performance.
 
-Make the entire card clickable to open the note:
+## Visual Customization
+
+### Custom CSS Classes
+
+Add custom CSS classes to your cards:
 
 ```
-enableClickableCards: true
+cssClasses: ["my-custom-cards", "dark-theme"]
 ```
 
-When enabled, clicking anywhere on the card will open the note, not just the title.
+### Custom Styles
 
-## Creating Custom Card Types (Advanced)
+Apply inline styles directly:
 
-You can create custom card types by combining settings. For example, to create a "magazine" style:
-
-```markdown
-```datacards
-TABLE title, excerpt, author, cover FROM #articles
-SORT date DESC
-
-// Settings
-preset: compact
-imageHeight: 250px
-fontSize: large
-propertiesAlign: left
-scrollableProperties: true
-contentHeight: 300px
+```
+styles: {
+  "card": "border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);",
+  "image": "filter: grayscale(100%);",
+  "title": "font-family: 'Georgia', serif; color: #333;"
+}
 ```
 
+### Animation Effects
 
-## Using with DataviewJS (Experimental)
+Add animations to your cards:
 
-While DataCards is designed for standard Dataview queries, not DataviewJS, you can use them together with this approach:
+```
+animations: {
+  "type": "fade",
+  "duration": 300,
+  "stagger": 50
+}
+```
+
+Available animation types: `fade`, `slide`, `zoom`, `flip`
+
+## Interaction Options
+
+### Click Actions
+
+Define what happens when a card is clicked:
+
+```
+clickAction: "open"  // Open the note
+```
+
+```
+clickAction: "expand"  // Expand the card to show more details
+```
+
+```
+clickAction: "modal"  // Open a modal with the full note content
+```
+
+### Hover Effects
+
+Add effects when hovering over cards:
+
+```
+hoverEffect: "lift"
+```
+
+Available effects: `lift`, `glow`, `zoom`, `none`
+
+### Sorting Controls
+
+Allow users to sort cards:
+
+```
+sortControls: true
+sortOptions: ["title", "rating", "date"]
+```
+
+### Filter Controls
+
+Add interactive filters:
+
+```
+filterControls: true
+filterOptions: {
+  "genre": ["Fiction", "Non-Fiction", "Science Fiction", "Biography"],
+  "rating": ["5 Stars", "4+ Stars", "3+ Stars"]
+}
+```
+
+## Data Manipulation
+
+### Calculated Properties
+
+Create new properties based on existing ones:
+
+```
+calculatedProperties: {
+  "displayName": "file.name + ' (' + year + ')'",
+  "isRecent": "file.mtime > (date.now() - (7 * 24 * 60 * 60 * 1000))"
+}
+```
+
+### Data Transformation
+
+Transform property values before display:
+
+```
+transformations: {
+  "rating": "value + '⭐'",
+  "tags": "value.join(', ')",
+  "date": "moment(value).format('MMM D, YYYY')"
+}
+```
+
+### Default Values
+
+Set default values for missing properties:
+
+```
+defaultValues: {
+  "rating": "Not rated",
+  "status": "Unspecified",
+  "cover": "assets/default-cover.jpg"
+}
+```
+
+## Integration Options
+
+### Dataview Integration
+
+Pass options directly to Dataview:
+
+```
+dataviewOptions: {
+  "cache": false,
+  "refreshInterval": 5000
+}
+```
+
+### External API Integration
+
+Connect to external APIs (requires DataviewJS):
 
 ```javascript
 ```dataviewjs
-// Create a datacards block as a string
-dv.paragraph("```datacards\nTABLE file.link as \"Title\", author, genre, cover FROM #book\nSORT file.ctime DESC\n\n// Settings\npreset: grid\ncolumns: 3\nimageProperty: cover\n```");
-```
+// Fetch data from an API
+const response = await fetch('https://api.example.com/books');
+const books = await response.json();
 
+// Convert to Dataview format
+const dv = this.dataview;
+const pages = books.map(book => {
+  return {
+    "file": { "link": book.title },
+    "author": book.author,
+    "rating": book.rating,
+    "cover": book.coverUrl
+  };
+});
 
-This uses DataviewJS to generate a DataCards block in the output.
-
-### Advanced DataviewJS Integration Example
-
-For more complex integration, you can combine statistics with visual displays:
-
-```javascript
-```dataviewjs
-// Get all books
-const books = dv.pages("#book")
-    .sort(b => b.publication, 'desc');
-
-// Display some stats
-const totalBooks = books.length;
-const uniqueAuthors = new Set(books.map(b => b.author)).size;
-
-// Output stats
-dv.paragraph(`📚 **Total Books**: ${totalBooks}`);
-dv.paragraph(`👥 **Unique Authors**: ${uniqueAuthors}`);
-
-// Generate a DataCards block for the most recent books
-dv.paragraph("### Recent Books\n");
+// Generate DataCards block
 dv.paragraph(`\`\`\`datacards
-TABLE file.link as "Title", author, publication, genre, cover FROM #book
-SORT publication DESC
-LIMIT 6
+TABLE file.link as "Title", author, rating, cover FROM ${JSON.stringify(pages)}
+SORT rating DESC
 
 // Settings
 preset: portrait
-columns: 3
 imageProperty: cover
-properties: [file.link, author, publication, genre]
 \`\`\``);
 ```
+```
 
+## Examples
 
-## Debug Mode
+### Advanced Visual Customization
 
-If you encounter issues, you can enable debug mode in the plugin settings to help troubleshoot:
+```datacards
+TABLE file.link, author, rating, genre, cover FROM #books
+SORT rating DESC
 
-1. Open Obsidian Settings
-2. Go to DataCards plugin settings
-3. Enable "Debug Mode" under Developer Settings
+// Settings
+preset: portrait
+imageProperty: cover
+cssClasses: ["premium-cards"]
+styles: {
+  "card": "border-radius: 16px; overflow: hidden;",
+  "image": "filter: brightness(1.1);",
+  "title": "font-weight: 700; font-size: 1.2em;"
+}
+hoverEffect: "lift"
+```
 
-This will output detailed logging information to the developer console (Help → Developer → Toggle Developer Tools).
+### Interactive Dashboard
+
+```datacards
+TABLE file.link, status, priority, dueDate, assignee FROM #tasks
+SORT dueDate ASC
+
+// Settings
+preset: grid
+sortControls: true
+filterControls: true
+filterOptions: {
+  "status": ["Not Started", "In Progress", "Completed"],
+  "priority": ["High", "Medium", "Low"]
+}
+conditionalFormatting: {
+  "priority": [
+    { "condition": "= 'High'", "color": "#F44336" },
+    { "condition": "= 'Medium'", "color": "#FFC107" },
+    { "condition": "= 'Low'", "color": "#4CAF50" }
+  ]
+}
+```
+
+### High-Performance Gallery
+
+```datacards
+TABLE file.link, location, date, image FROM #photos
+SORT date DESC
+
+// Settings
+preset: square
+imageProperty: image
+columns: 5
+lazyLoad: true
+pagination: true
+cardsPerPage: 20

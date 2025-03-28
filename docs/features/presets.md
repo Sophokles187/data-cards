@@ -1,7 +1,4 @@
----
-layout: page
-title: Card Presets
----
+# Card Presets
 
 DataCards offers several presets to display your data in different layouts. Each preset is optimized for specific use cases and has its own default settings.
 
@@ -21,7 +18,7 @@ preset: grid
 - Standard card sizing
 - Ideal for general collections
 
-![Grid Preset Example](../assets/screenshots/preset-grid.png)
+![Grid Preset Example](../assets/images/screenshot-1.png)
 
 ### Portrait Preset
 
@@ -37,7 +34,7 @@ preset: portrait
 - Taller image area
 - Ideal for books, movies, and other media with cover art
 
-![Portrait Preset Example](../assets/screenshots/preset-portrait.png)
+![Portrait Preset Example](../assets/images/screenshot-2.png)
 
 ### Square Preset
 
@@ -54,7 +51,7 @@ preset: square
 - Shows title at the bottom and reveals all properties on hover
 - Ideal for photo collections and visual-first content
 
-![Square Preset Example](../assets/screenshots/preset-square.png)
+![Square Preset Example](../assets/images/screenshot-3.png)
 
 ### Compact Preset
 
@@ -70,7 +67,7 @@ preset: compact
 - Image on the left, scrollable content on the right
 - Ideal when you need to see image and details at a glance
 
-![Compact Preset Example](../assets/screenshots/preset-compact.png)
+![Compact Preset Example](../assets/images/screenshot-4.png)
 
 ### Dense Preset
 
@@ -86,44 +83,44 @@ preset: dense
 - Smaller text and reduced spacing
 - Ideal for dashboards and when you need to see many items at once
 
-![Dense Preset Example](../assets/screenshots/preset-dense.png)
+![Dense Preset Example](../assets/images/screenshot-5.png)
 
 ## Setting a Preset
 
 You can set a preset in your code block:
 
-{% include code.html title="Setting a Preset" code="```datacards
+```datacards
 TABLE title, author, rating, cover FROM #books
 SORT rating DESC
 
 // Settings
 preset: portrait
-```" %}
+```
 
 ## Overriding Columns
 
 Each preset has a default number of columns, but you can override this:
 
-{% include code.html title="Overriding Columns" code="```datacards
+```datacards
 TABLE title, author, rating, cover FROM #books
 SORT rating DESC
 
 // Settings
 preset: dense
 columns: 4  // Override the default 6 columns for dense preset
-```" %}
+```
 
 ## Mixing Preset Features
 
 You can mix features from different presets using other settings. For example, use the portrait preset with small text:
 
-{% include code.html title="Mixing Features" code="```datacards
+```datacards
 TABLE title, author, rating, cover FROM #books
 SORT rating DESC
 
 // Settings
 preset: portrait
 fontSize: small
-```" %}
+```
 
-{% include note.html content="The preset setting must be specified first, as it sets the base defaults for all other display options." %}
+> **Note:** The preset setting must be specified first, as it sets the base defaults for all other display options.
