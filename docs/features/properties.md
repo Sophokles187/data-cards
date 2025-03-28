@@ -1,191 +1,144 @@
----
-layout: default
-title: Property Customization
-parent: Features
-nav_order: 3
----
-
 # Property Customization
-{: .no_toc }
 
-## Table of contents
-{: .no_toc .text-delta }
+This page explains how to customize the properties displayed on your DataCards.
 
-1. TOC
-{:toc}
+## Controlling Which Properties Appear
 
----
+By default, DataCards displays all properties included in your Dataview query. However, you can control which properties appear and in what order using the `properties` setting.
 
-DataCards allows you to customize which properties are displayed and how they appear on your cards.
+### Including Specific Properties
 
-## Property Selection
+To display only specific properties:
 
-### Including Properties
-
-You must explicitly include all properties you want to display in your Dataview query:
-
-```markdown
-```datacards
-TABLE title, author, rating, genre, cover FROM #books
 ```
+properties: [file.link, author, rating, genre]
 ```
 
-### Filtering Properties
+This will display only the file link (as a clickable title), author, rating, and genre, in that order.
 
-You can filter which properties appear using the `properties` setting:
+### Excluding Properties
 
-```markdown
+To display all properties except certain ones:
+
+```
+exclude: [cover, file.size, file.ctime]
+```
+
+This will display all properties from your query except the cover image, file size, and creation time.
+
+## Property Display Options
+
+### Property Labels
+
+You can customize how property labels appear:
+
+```
+propertyLabels: {
+  "file.link": "Title",
+  "rating": "My Rating"
+}
+```
+
+This will display "Title" instead of "File Link" and "My Rating" instead of "Rating".
+
+### Value Formatting
+
+#### Date Formatting
+
+Format date properties with:
+
+```
+defaultDateFormat: "YYYY-MM-DD"
+```
+
+Or specify formats for specific properties:
+
+```
+dateFormat: {
+  "dateRead": "MMM D, YYYY",
+  "published": "YYYY"
+}
+```
+
+#### Number Formatting
+
+Format number properties with:
+
+```
+numberFormat: {
+  "rating": "0.0",
+  "price": "$0.00"
+}
+```
+
+## Advanced Property Configuration
+
+### Conditional Formatting
+
+Apply conditional formatting based on property values:
+
+```
+conditionalFormatting: {
+  "rating": [
+    { "condition": ">= 4.5", "color": "#4CAF50" },
+    { "condition": ">= 3", "color": "#FFC107" },
+    { "condition": "< 3", "color": "#F44336" }
+  ]
+}
+```
+
+### Property Grouping
+
+Group related properties together:
+
+```
+propertyGroups: {
+  "Publication": ["author", "publisher", "published"],
+  "My Notes": ["rating", "dateRead", "notes"]
+}
+```
+
+## Examples
+
+### Basic Property Selection
+
 ```datacards
-TABLE title, author, rating, genre, cover FROM #books
+TABLE file.link, author, rating, genre, cover FROM #books
+SORT rating DESC
 
 // Settings
-properties: [title, author, rating]
+preset: portrait
+imageProperty: cover
+properties: [file.link, author, rating, genre]
 ```
-```
 
-This will only show title, author, and rating on the cards, even though genre is in the query.
+### Custom Property Labels
 
-### Excluding Specific Properties
-
-You can also exclude specific properties:
-
-```markdown
 ```datacards
-TABLE title, author, rating, genre, cover FROM #books
+TABLE file.link as "Title", author, rating, genre, cover FROM #books
+SORT rating DESC
 
 // Settings
-exclude: [genre]
+preset: portrait
+imageProperty: cover
+propertyLabels: {
+  "author": "Written By",
+  "rating": "My Score"
+}
 ```
-```
 
-### Showing All Properties
+### Formatted Properties
 
-To show all properties from your query:
-
-```markdown
 ```datacards
-TABLE title, author, rating, genre, cover FROM #books
+TABLE file.link, author, rating, dateRead, cover FROM #books
+SORT dateRead DESC
 
 // Settings
-properties: all
-```
-```
-
-## Property Display
-
-### Labels
-
-Control whether property labels (names) are displayed:
-
-```markdown
-```datacards
-TABLE title, author, rating FROM #books
-
-// Settings
-showLabels: false
-```
-```
-
-### Text Alignment
-
-Set the alignment for properties and their labels:
-
-```markdown
-```datacards
-TABLE title, author, rating FROM #books
-
-// Settings
-propertiesAlign: center
-```
-```
-
-Options: `left`, `center`, `right`
-
-### Title Alignment
-
-Set the alignment for just the title (file property):
-
-```markdown
-```datacards
-TABLE file.link as "Title", author, rating FROM #books
-
-// Settings
-titleAlign: center
-```
-```
-
-Options: `left`, `center`, `right`
-
-## Scrollable Properties
-
-For cards with many properties, you can enable scrolling:
-
-```markdown
-```datacards
-TABLE title, author, rating, genre, published, summary, notes FROM #books
-
-// Settings
-scrollableProperties: true
-contentHeight: 250px
-```
-```
-
-The `contentHeight` setting determines the height of the scrollable area.
-
-## Font Size
-
-Adjust the text size for all card elements:
-
-```markdown
-```datacards
-TABLE title, author, rating FROM #books
-
-// Settings
-fontSize: small
-```
-```
-
-Available options:
-- `larger` (120% of default)
-- `large` (110% of default)
-- `default`
-- `small` (90% of default)
-- `smaller` (80% of default)
-
-## Date Formatting
-
-DataCards automatically detects and formats date properties:
-
-```markdown
-```datacards
-TABLE title, author, published FROM #books
-
-// Settings
-defaultDateFormat: DD.MM.YYYY
-```
-```
-
-## Boolean Values
-
-Control how boolean properties are displayed:
-
-```markdown
-```datacards
-TABLE task, completed FROM #tasks
-
-// Settings
-booleanDisplayMode: checkbox
-```
-```
-
-Options:
-- `both` (checkbox and text)
-- `checkbox` (checkbox only)
-- `text` (text only)
-
-You can also customize the text shown for true/false values:
-
-```markdown
-booleanTrueText: "Yes"
-booleanFalseText: "No"
-```
+preset: portrait
+imageProperty: cover
+dateFormat: {
+  "dateRead": "MMMM D, YYYY"
+}
+numberFormat: {
+  "rating": "0.0 ⭐"
+}

@@ -1,11 +1,3 @@
----
-layout: default
-title: Features
-nav_order: 4
-has_children: true
-permalink: /features
----
-
 # Features Overview
 
 DataCards offers a wide range of features to display your Dataview query results as beautiful cards. This section provides detailed information about all the features and how to use them.

@@ -1,19 +1,12 @@
----
-layout: default
-title: Getting Started
-nav_order: 2
----
-
 # Getting Started with DataCards
-{: .no_toc }
 
 ## Table of contents
-{: .no_toc .text-delta }
 
-1. TOC
-{:toc}
-
----
+- [Installation](#installation)
+  - [Requirements](#requirements)
+  - [Installation Methods](#installation-methods)
+- [Basic Usage](#basic-usage)
+- [Your First DataCards Block](#your-first-datacards-block)
 
 ## Installation
 

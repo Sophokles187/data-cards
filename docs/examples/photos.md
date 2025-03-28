@@ -1,39 +1,24 @@
----
-layout: default
-title: Photo Gallery
-parent: Examples
-nav_order: 3
----
-
 # Photo Gallery Example
-{: .no_toc }
-
-## Table of contents
-{: .no_toc .text-delta }
-
-1. TOC
-{:toc}
-
----
 
 This example shows how to create a photo gallery with DataCards.
 
 ## Basic Photo Gallery
 
-Create a simple photo gallery using the square preset:
+A simple gallery display for your photos:
 
 ```markdown
 ```datacards
-TABLE file.link as "Title", location, date, image FROM #photos
+TABLE file.link as "Photo", location, date, image FROM #photos
 SORT date DESC
 
 // Settings
 preset: square
 imageProperty: image
+columns: 4
 ```
 ```
 
-![Photo Gallery Example](../assets/screenshots/example-photos.png)
+![Photo Gallery Example](../assets/images/screenshot-8.png)
 
 ## Properties to Include in Your Photo Notes
 
@@ -42,146 +27,180 @@ For this example to work, make sure your photo notes have:
 ```yaml
 ---
 tags: photos
-location: Paris, France
+location: "Paris, France"
 date: 2023-06-15
-image: [[photos/paris_eiffel.jpg]]
+image: "attachments/paris-photo.jpg"
 ---
 ```
 
 ## Advanced Photo Gallery
 
-A more detailed photo gallery with additional metadata:
+More detailed version with additional properties:
 
 ```markdown
 ```datacards
 TABLE 
   file.link as "Title", 
-  photographer,
-  camera, 
   location, 
-  date, 
-  tags,
-  image 
+  date,
+  camera,
+  "![]("+image+")" as Photo
 FROM #photos
 SORT date DESC
 
 // Settings
 preset: square
 imageProperty: image
+columns: 4
 defaultDateFormat: YYYY-MM-DD
 ```
 ```
 
-## Filtered by Location
+## Filter by Location
 
-Show photos from a specific location:
+Display photos from a specific location:
 
 ```markdown
 ```datacards
-TABLE file.link as "Title", photographer, date, image FROM #photos
-WHERE contains(location, "Paris")
+TABLE file.link as "Photo", date, image FROM #photos
+WHERE contains(location, "Italy")
 SORT date DESC
 
 // Settings
 preset: square
 imageProperty: image
-defaultDateFormat: YYYY-MM-DD
+columns: 4
 ```
 ```
 
 ## Recent Photos
 
-Display only the most recent photos:
+Display your most recent photos:
 
 ```markdown
 ```datacards
-TABLE file.link as "Title", location, date, image FROM #photos
+TABLE file.link as "Photo", location, date, image FROM #photos
 SORT date DESC
 LIMIT 12
 
 // Settings
 preset: square
 imageProperty: image
-defaultDateFormat: YYYY-MM-DD
+columns: 3
 ```
 ```
 
-## Alternative Layout: Compact
-
-Show photos with more visible metadata using the compact layout:
-
-```markdown
-```datacards
-TABLE file.link as "Title", photographer, location, date, camera, image FROM #photos
-SORT date DESC
-
-// Settings
-preset: compact
-imageProperty: image
-defaultDateFormat: YYYY-MM-DD
-```
-```
-
-## Photos by Tag
+## Photo Albums
 
 If you use sub-tags for organizing photos:
 
 ```markdown
 ```datacards
-TABLE file.link as "Title", location, date, image FROM #photos/landscape
+TABLE file.link as "Photo", location, date, image FROM #photos/vacation
 SORT date DESC
 
 // Settings
 preset: square
 imageProperty: image
-defaultDateFormat: YYYY-MM-DD
+columns: 4
 ```
 ```
 
-## Photos by Year
+## Compact Photo List
 
-Group photos by year:
-
-```markdown
-# Photo Archive
-
-## 2023
-```datacards
-TABLE file.link as "Title", location, image FROM #photos
-WHERE date.year = 2023
-SORT date DESC
-
-// Settings
-preset: square
-imageProperty: image
-```
-```
-
-## 2022
-```datacards
-TABLE file.link as "Title", location, image FROM #photos
-WHERE date.year = 2022
-SORT date DESC
-
-// Settings
-preset: square
-imageProperty: image
-```
-```
-```
-
-## Lazy Loading for Large Collections
-
-Enable lazy loading for better performance with many photos:
+A more detailed display with photo information:
 
 ```markdown
 ```datacards
-TABLE file.link as "Title", location, date, image FROM #photos
+TABLE file.link as "Photo", location, date, camera, settings, image FROM #photos
 SORT date DESC
+
+// Settings
+preset: compact
+imageProperty: image
+```
+```
+
+## Photo Map Integration
+
+Combine a map with your photo gallery (requires DataviewJS and a map plugin):
+
+```javascript
+```dataviewjs
+// Get all photos
+const photos = dv.pages("#photos")
+    .sort(p => p.date, 'desc');
+
+// Display a map of photo locations (example - implementation depends on your map plugin)
+const mapPlugin = app.plugins.plugins['obsidian-leaflet-plugin'];
+if (mapPlugin) {
+    // Create a map with markers for each photo location
+    // This is a simplified example - actual implementation will vary
+    dv.paragraph("### Photo Locations\n");
+    dv.paragraph(`\`\`\`leaflet
+    id: photo-locations
+    height: 300px
+    ${photos.filter(p => p.coordinates).map(p => 
+        `marker: ${p.coordinates.lat}, ${p.coordinates.lng}, ${p.file.link}`
+    ).join('\n')}
+    \`\`\``);
+}
+
+// Generate a DataCards block for the photos
+dv.paragraph("### Photo Gallery\n");
+dv.paragraph(`\`\`\`datacards
+TABLE file.link as "Photo", location, date, image FROM #photos
+SORT date DESC
+LIMIT 12
 
 // Settings
 preset: square
 imageProperty: image
-enableLazyLoading: true
+columns: 4
+\`\`\``);
 ```
+```
+
+## Photo Statistics
+
+Display statistics about your photo collection:
+
+```javascript
+```dataviewjs
+// Get all photos
+const photos = dv.pages("#photos");
+
+// Group by location
+const locations = {};
+photos.forEach(photo => {
+    if (photo.location) {
+        locations[photo.location] = (locations[photo.location] || 0) + 1;
+    }
+});
+
+// Group by year
+const years = {};
+photos.forEach(photo => {
+    if (photo.date) {
+        const year = new Date(photo.date).getFullYear();
+        years[year] = (years[year] || 0) + 1;
+    }
+});
+
+// Output stats
+dv.paragraph(`📸 **Total Photos**: ${photos.length}`);
+dv.paragraph(`🌍 **Top Locations**:`);
+Object.entries(locations)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+    .forEach(([location, count]) => {
+        dv.paragraph(`- ${location}: ${count} photos`);
+    });
+
+dv.paragraph(`📅 **Photos by Year**:`);
+Object.entries(years)
+    .sort((a, b) => b[0] - a[0])
+    .forEach(([year, count]) => {
+        dv.paragraph(`- ${year}: ${count} photos`);
+    });
 ```

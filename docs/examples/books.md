@@ -1,22 +1,17 @@
----
-layout: default
-title: Book Library
-parent: Examples
-nav_order: 1
----
-
 # Book Library Example
-{: .no_toc }
-
-## Table of contents
-{: .no_toc .text-delta }
-
-1. TOC
-{:toc}
-
----
 
 This example shows how to create a book library display with DataCards.
+
+## Table of contents
+
+- [Basic Book Display](#basic-book-display)
+- [Properties to Include in Your Book Notes](#properties-to-include-in-your-book-notes)
+- [Advanced Book Library](#advanced-book-library)
+- [Filter by Genre](#filter-by-genre)
+- [Currently Reading Shelf](#currently-reading-shelf)
+- [Tag-Based Organization](#tag-based-organization)
+- [Compact Book List](#compact-book-list)
+- [Integration with DataviewJS (Advanced)](#integration-with-dataviewjs-advanced)
 
 ## Basic Book Display
 
@@ -33,7 +28,7 @@ imageProperty: cover
 ```
 ```
 
-![Book Library Example](../assets/screenshots/example-books.png)
+![Book Library Example](../assets/images/screenshot-6.png)
 
 ## Properties to Include in Your Book Notes
 
@@ -183,5 +178,4 @@ columns: 3
 imageProperty: cover
 properties: [file.link, author, rating, genre]
 \`\`\``);
-```
 ```

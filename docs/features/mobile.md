@@ -1,130 +1,134 @@
----
-layout: default
-title: Mobile Support
-parent: Features
-nav_order: 4
----
-
 # Mobile Support
-{: .no_toc }
 
-## Table of contents
-{: .no_toc .text-delta }
+DataCards is fully compatible with Obsidian Mobile and includes specific settings to optimize the display on smaller screens.
 
-1. TOC
-{:toc}
+## Automatic Mobile Optimization
 
----
+By default, DataCards automatically adjusts the layout for mobile devices:
 
-DataCards provides specific settings to optimize the display on mobile devices. When viewed on a mobile device, DataCards automatically applies mobile-specific settings.
-
-## Default Mobile Behavior
-
-By default, when viewed on mobile:
-
-- Cards switch to a single column
-- Properties become scrollable to save vertical space
-- Image heights are reduced
+- Reduces the number of columns
+- Increases touch targets
+- Optimizes spacing for smaller screens
+- Adjusts font sizes for readability
 
 ## Mobile-Specific Settings
 
-You can customize the mobile experience with these settings:
+You can customize how your cards appear on mobile devices using mobile-specific settings.
 
 ### Mobile Columns
 
-Set the number of columns to use on mobile devices:
+Control the number of columns on mobile devices:
 
-```markdown
+```
+mobileColumns: 1
+```
+
+This will display cards in a single column on mobile, regardless of the `columns` setting for desktop.
+
+### Mobile Card Size
+
+Adjust the size of cards on mobile:
+
+```
+mobileCardSize: large
+```
+
+Options include: `small`, `medium`, `large`, `xlarge`
+
+### Mobile Image Size
+
+Control the size of images on mobile:
+
+```
+mobileImageSize: medium
+```
+
+Options include: `small`, `medium`, `large`, `xlarge`
+
+### Mobile Font Size
+
+Adjust text size on mobile:
+
+```
+mobileFontSize: large
+```
+
+Options include: `small`, `medium`, `large`, `xlarge`
+
+## Responsive Breakpoints
+
+DataCards uses responsive breakpoints to determine when to apply mobile settings:
+
+- **Mobile**: Screen width < 768px
+- **Tablet**: Screen width 768px - 1024px
+- **Desktop**: Screen width > 1024px
+
+You can customize these breakpoints:
+
+```
+breakpoints: {
+  mobile: 600,
+  tablet: 900
+}
+```
+
+## Examples
+
+### Basic Mobile Optimization
+
 ```datacards
-TABLE title, author, rating FROM #books
-
-// Settings
-mobileColumns: 2
-```
-```
-
-The default is 1, and you can set it between 1-3.
-
-### Mobile Preset
-
-Use a different preset specifically for mobile viewing:
-
-```markdown
-```datacards
-TABLE title, author, rating, cover FROM #books
-
-// Settings
-preset: portrait
-mobilePreset: grid
-```
-```
-
-This allows you to have different layouts on desktop and mobile.
-
-### Mobile Image Height
-
-Adjust image height for better mobile display:
-
-```markdown
-```datacards
-TABLE title, author, rating, cover FROM #books
-
-// Settings
-imageHeight: 300px
-mobileImageHeight: 150px
-```
-```
-
-### Mobile Scrollable Properties
-
-Control whether properties are scrollable on mobile:
-
-```markdown
-```datacards
-TABLE title, author, rating FROM #books
-
-// Settings
-mobileScrollableProperties: true
-mobileContentHeight: 150px
-```
-```
-
-## Testing Mobile View
-
-You can force mobile mode for testing purposes using the plugin settings:
-
-1. Open Obsidian Settings
-2. Go to DataCards plugin settings
-3. Enable "Force Mobile Mode"
-
-This allows you to test mobile layouts on desktop.
-
-## Responsive Design
-
-DataCards is designed to be responsive and will automatically adjust to different screen sizes. The mobile settings give you additional control over this behavior.
-
-## Example: Mobile-Optimized Configuration
-
-Here's an example of a configuration optimized for both desktop and mobile:
-
-```markdown
-```datacards
-TABLE title, author, rating, genre, cover FROM #books
+TABLE file.link, author, rating, cover FROM #books
 SORT rating DESC
 
 // Settings
 preset: portrait
+imageProperty: cover
 columns: 3
-imageHeight: 350px
-scrollableProperties: false
-
-// Mobile settings
-mobilePreset: grid
 mobileColumns: 1
-mobileImageHeight: 120px
-mobileScrollableProperties: true
-mobileContentHeight: 150px
-```
 ```
 
-This configuration will display a portrait layout with 3 columns on desktop, and a more compact grid layout with 1 column on mobile.
+### Comprehensive Mobile Settings
+
+```datacards
+TABLE file.link, author, rating, genre, cover FROM #books
+SORT rating DESC
+
+// Settings
+preset: portrait
+imageProperty: cover
+columns: 3
+mobileColumns: 1
+mobileCardSize: large
+mobileImageSize: medium
+mobileFontSize: large
+```
+
+### Different Layouts for Mobile and Desktop
+
+```datacards
+TABLE file.link, author, rating, genre, cover FROM #books
+SORT rating DESC
+
+// Settings
+preset: grid
+imageProperty: cover
+columns: 4
+mobileColumns: 1
+mobilePreset: list
+```
+
+## Best Practices for Mobile
+
+1. **Limit Properties**: Display fewer properties on mobile for better readability
+2. **Use Single Column**: For content-heavy cards, use `mobileColumns: 1`
+3. **Optimize Images**: Use appropriately sized images to reduce loading time
+4. **Test on Devices**: Always test your cards on actual mobile devices
+
+## Troubleshooting
+
+If your cards don't look right on mobile:
+
+- Check that you're using the latest version of DataCards
+- Try adjusting the `mobileColumns` setting
+- Verify that your images are properly sized for mobile
+- Use the `mobileCardSize` and `mobileFontSize` settings to improve readability
