@@ -1,19 +1,6 @@
 ---
-layout: default
+layout: page
 title: Card Presets
-parent: Features
-nav_order: 1
----
-
-# Card Presets
-{: .no_toc }
-
-## Table of contents
-{: .no_toc .text-delta }
-
-1. TOC
-{:toc}
-
 ---
 
 DataCards offers several presets to display your data in different layouts. Each preset is optimized for specific use cases and has its own default settings.
@@ -105,42 +92,38 @@ preset: dense
 
 You can set a preset in your code block:
 
-```markdown
-```datacards
+{% include code.html title="Setting a Preset" code="```datacards
 TABLE title, author, rating, cover FROM #books
 SORT rating DESC
 
 // Settings
 preset: portrait
-```
-```
+```" %}
 
 ## Overriding Columns
 
 Each preset has a default number of columns, but you can override this:
 
-```markdown
-```datacards
+{% include code.html title="Overriding Columns" code="```datacards
 TABLE title, author, rating, cover FROM #books
 SORT rating DESC
 
 // Settings
 preset: dense
 columns: 4  // Override the default 6 columns for dense preset
-```
-```
+```" %}
 
 ## Mixing Preset Features
 
 You can mix features from different presets using other settings. For example, use the portrait preset with small text:
 
-```markdown
-```datacards
+{% include code.html title="Mixing Features" code="```datacards
 TABLE title, author, rating, cover FROM #books
 SORT rating DESC
 
 // Settings
 preset: portrait
 fontSize: small
-```
-```
+```" %}
+
+{% include note.html content="The preset setting must be specified first, as it sets the base defaults for all other display options." %}
