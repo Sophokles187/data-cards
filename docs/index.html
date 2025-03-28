@@ -11,10 +11,10 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsify-themeable@0/dist/css/theme-simple-dark.css">
   
   <!-- Custom Styles -->
-  <link rel="stylesheet" href="/data-cards/assets/css/custom.css">
+  <link rel="stylesheet" href="assets/css/custom.css">
   
   <!-- Favicon -->
-  <link rel="icon" href="/data-cards/favicon.ico">
+  <link rel="icon" href="favicon.ico">
 </head>
 <body>
   <div id="app"></div>
@@ -22,19 +22,16 @@
     window.$docsify = {
       name: 'DataCards',
       repo: 'https://github.com/Sophokles187/data-cards',
-      logo: '/data-cards/assets/images/header-image.png',
+      logo: 'assets/images/header-image.png',
       loadSidebar: true,
       subMaxLevel: 2,
       auto2top: true,
       coverpage: true,
       themeColor: '#3F51B5',
-      basePath: '/data-cards/',
-      relativePath: true,
-      nameLink: '/data-cards/#/',
-      alias: {
-        '/.*/_sidebar.md': '/_sidebar.md',
-        '/.*/_coverpage.md': '/_coverpage.md'
-      },
+      basePath: './',
+      routerMode: 'hash',
+      nameLink: '/',
+      homepage: 'README.md',
       search: {
         maxAge: 86400000,
         paths: 'auto',
@@ -69,6 +66,6 @@
   <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-markdown.min.js"></script>
   
   <!-- Custom Scripts -->
-  <script src="/data-cards/assets/js/custom.js"></script>
+  <script src="assets/js/custom.js"></script>
 </body>
 </html>
