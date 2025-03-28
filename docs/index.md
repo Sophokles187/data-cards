@@ -1,74 +1,53 @@
 ---
-layout: default
-title: Home
+layout: home
+# Index page
 ---
 
 # DataCards for Obsidian
 
 Transform Dataview query results into visually appealing, customizable card layouts.
 
-<a href="{{ '/getting-started' | relative_url }}" class="button">Get Started</a>
-
 ## Overview
 
 DataCards is a plugin for [Obsidian](https://obsidian.md) that transforms [Dataview](https://github.com/blacksmithgu/obsidian-dataview) query results into beautiful card layouts. Whether you're organizing books, movies, projects, or any other collection of notes, DataCards helps you visualize your data in an elegant and customizable way.
 
-{% include card.html title="Quick Start" content="
-1. Install the plugin
-2. Create a code block with the `datacards` language
-3. Write a Dataview query
-4. Add your preferred settings
-" %}
+## Quick Start
 
-{% include code.html title="Example Query" code="```datacards
+1. **Install**: Download the plugin from the releases page or use BRAT
+2. **Enable**: Activate the plugin in Obsidian's Community Plugins settings
+3. **Use**: Create a code block with the `datacards` language and write a Dataview query:
+
+```markdown
+```datacards
 TABLE author, rating, cover FROM #books
 SORT rating DESC
 
 // Settings
 preset: portrait
 imageProperty: cover
-```" %}
+```
+```
+
+That's it! Your Dataview results will now display as beautiful cards.
 
 ## Features
 
 DataCards offers a range of features to help you visualize your data:
 
-<div class="table-wrapper">
-<table>
-    <thead>
-        <tr>
-            <th>Feature</th>
-            <th>Description</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td>Flexible Presets</td>
-            <td>Multiple card layouts optimized for different content types</td>
-        </tr>
-        <tr>
-            <td>Image Support</td>
-            <td>Display images from frontmatter properties</td>
-        </tr>
-        <tr>
-            <td>Property Customization</td>
-            <td>Control which properties appear and how they're displayed</td>
-        </tr>
-        <tr>
-            <td>Mobile Optimization</td>
-            <td>Responsive design with mobile-specific settings</td>
-        </tr>
-    </tbody>
-</table>
-</div>
+| Feature | Description |
+|---------|-------------|
+| Flexible Presets | Multiple card layouts optimized for different content types |
+| Image Support | Display images from frontmatter properties |
+| Property Customization | Control which properties appear and how they're displayed |
+| Mobile Optimization | Responsive design with mobile-specific settings |
 
-{% include note.html content="**Note:** DataCards requires the Dataview plugin to be installed and enabled." %}
+> **Note:** DataCards requires the Dataview plugin to be installed and enabled.
 
 ## Presets
 
 Choose from multiple presets to display your data:
 
-### Grid Preset <span class="badge">Default</span>
+### Grid Preset (Default)
 
 Balanced layout for most use cases with 3 columns by default.
 
@@ -79,3 +58,11 @@ Optimized for book covers and portrait images. Features taller cards with "conta
 ### Square Preset
 
 Perfect for photo collections and visual content. Features 1:1 square cards with images as the focus.
+
+### Compact Preset
+
+Side-by-side image and content layout. Features image on the left with scrollable content on the right.
+
+### Dense Preset 
+
+Maximum information density with minimal spacing. Features 6 columns by default and smaller text.
