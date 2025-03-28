@@ -10,7 +10,7 @@
 - Image support and property customization
 - Mobile optimization and dynamic updates
 
-[GitHub](https://github.com/yourusername/data-cards)
+[GitHub](https://github.com/Sophokles187/data-cards)
 [Get Started](getting-started.md)
 
 <!-- background color -->
