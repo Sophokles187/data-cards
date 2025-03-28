@@ -1,7 +1,7 @@
 # Site settings
 title: DataCards Documentation
 description: Official documentation for the DataCards plugin for Obsidian
-baseurl: "" # the subpath of your site, e.g. /blog
+baseurl: "/data-cards" # the subpath of your site, e.g. /blog
 url: "https://sophokles187.github.io" # the base hostname & protocol for your site
 
 # Build settings
