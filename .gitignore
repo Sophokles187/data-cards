@@ -139,5 +139,3 @@ docs-obsidian
 # Documentation internal files - not visible on GitHub
 docs/preview-instructions.md
 docs/README.md
-docs/Gemfile
-docs/Gemfile.lock
