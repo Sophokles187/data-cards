@@ -1,12 +1,12 @@
-// Sage Mist JavaScript for DataCards documentation
+// Meeres-Dämmerung JavaScript for DataCards documentation
 
 document.addEventListener('DOMContentLoaded', function() {
-  console.log('DataCards documentation loaded with Sage Mist theme');
-  initSageMistTheme();
+  console.log('DataCards documentation loaded with Meeres-Dämmerung theme');
+  initMeeresDammerungTheme();
 });
 
 // Main initialization function
-function initSageMistTheme() {
+function initMeeresDammerungTheme() {
   // Add subtle animations and effects
   addSubtleEffects();
   
@@ -19,6 +19,9 @@ function initSageMistTheme() {
   // Add card and UI enhancements
   enhanceUI();
   
+  // Fix coverpage background
+  fixCoverPageBackground();
+  
   // Hook into Docsify's lifecycle for content-specific enhancements
   window.$docsify = window.$docsify || {};
   const originalDom = window.$docsify.plugins || [];
@@ -30,6 +33,7 @@ function initSageMistTheme() {
       enhanceImages();
       addCardStyleToExamples();
       addAccessibilityFeatures();
+      fixCoverPageBackground(); // Reapply coverpage fix after page changes
       
       // Make sure scrolling is enabled after content loads
       document.documentElement.style.overflow = '';
@@ -96,6 +100,13 @@ function moveGlowWithMouse(e) {
     // Add transition for smoother movement
     glow.style.transition = 'transform 1s cubic-bezier(0.16, 1, 0.3, 1)';
     glow.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+    
+    // Apply Meeres-Dämmerung theme colors
+    if (index === 0) {
+      glow.style.background = 'rgba(95, 122, 138, 0.3)';
+    } else {
+      glow.style.background = 'rgba(122, 147, 160, 0.25)';
+    }
   });
 }
 
@@ -104,7 +115,14 @@ function enhanceCodeBlocks() {
   const codeBlocks = document.querySelectorAll('pre[data-lang]');
   
   codeBlocks.forEach(block => {
-    // Add language label (already handled by CSS)
+    // Remove any existing language labels added by plugins
+    const existingLabels = block.querySelectorAll('.lang-label');
+    existingLabels.forEach(label => label.remove());
+    
+    // Remove potential docsify-generated labels
+    if (block.querySelector('span.docsify-copy-code-button + span')) {
+      block.querySelector('span.docsify-copy-code-button + span').remove();
+    }
     
     // Make sure code blocks have the proper styling
     block.style.background = 'var(--surface-gradient)';
@@ -114,7 +132,7 @@ function enhanceCodeBlocks() {
     // Add a slight hover effect
     block.addEventListener('mouseenter', function() {
       this.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.25)';
-      this.style.borderColor = 'rgba(140, 172, 176, 0.2)';
+      this.style.borderColor = 'rgba(95, 122, 138, 0.2)';
     });
     
     block.addEventListener('mouseleave', function() {
@@ -346,4 +364,35 @@ function handleFocus() {
 // Handle blur for accessibility
 function handleBlur() {
   this.style.outline = 'none';
+}
+
+// Fix coverpage background issues
+function fixCoverPageBackground() {
+  // Wait for cover background to be created
+  setTimeout(() => {
+    const coverBg = document.querySelector('.cover-background');
+    if (coverBg) {
+      // Force our background style
+      coverBg.style.background = 'var(--background-gradient)';
+      coverBg.style.backgroundImage = 'none';
+      
+      // Add grain texture
+      if (!coverBg.classList.contains('grain-added')) {
+        const grainOverlay = document.createElement('div');
+        grainOverlay.className = 'cover-grain-overlay';
+        grainOverlay.style.position = 'absolute';
+        grainOverlay.style.top = '0';
+        grainOverlay.style.left = '0';
+        grainOverlay.style.width = '100%';
+        grainOverlay.style.height = '100%';
+        grainOverlay.style.backgroundImage = "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.1'/%3E%3C/svg%3E\")";
+        grainOverlay.style.opacity = '0.15';
+        grainOverlay.style.pointerEvents = 'none';
+        grainOverlay.style.zIndex = '0';
+        
+        coverBg.appendChild(grainOverlay);
+        coverBg.classList.add('grain-added');
+      }
+    }
+  }, 100);
 }

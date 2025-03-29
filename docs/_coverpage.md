@@ -16,6 +16,7 @@
   <div class="buttons">
     <a href="#/getting-started" class="get-started-button"><i class="ph ph-rocket-launch"></i>Get Started</a>
     <a href="https://github.com/Sophokles187/data-cards" target="_blank" class="github-button"><i class="ph ph-github-logo"></i>GitHub</a>
+    <a href="https://ko-fi.com/sophokles" target="_blank" class="kofi-button"><i class="ph ph-coffee"></i>Support</a>
   </div>
 
   <div class="cover-footer">
@@ -23,5 +24,5 @@
   </div>
 </div>
 
-<!-- background image -->
-![color](#0A0A0A)
+<!-- Remove default background image and set hard background -->
+![](#0A0A0A)
