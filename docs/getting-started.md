@@ -74,7 +74,6 @@ That's it! Your Dataview results will now display as beautiful cards.
 
 You can customize your cards by adding settings after your query:
 
-```markdown
 ```datacards
 TABLE author, rating, genre, cover FROM #books
 SORT rating DESC
@@ -83,7 +82,7 @@ SORT rating DESC
 preset: portrait
 imageProperty: cover
 ```
-```
+
 
 Settings are added after your query, following a line with `// Settings`. Each setting is specified as `key: value` on a new line.
 
