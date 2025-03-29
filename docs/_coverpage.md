@@ -3,7 +3,7 @@
 <div class="cover-main-content">
   <img src="assets/images/header-image.png" alt="DataCards Logo" class="cover-logo" />
 
-  # DataCards <small>for Obsidian</small>
+  # ```DataCards 
 
   > Transform Dataview query results into visually appealing, customizable card layouts
 
@@ -25,4 +25,4 @@
 </div>
 
 <!-- Remove default background image and set hard background -->
-![](#0A0A0A)
+![](#050505)
