@@ -6,15 +6,13 @@ This example shows how to create a movie collection display with DataCards.
 
 A simple card display for your movie collection:
 
-```markdown
-```datacards
-TABLE file.link as "Title", director, rating, genre, poster FROM #movies
+```dataview
+TABLE file.link as "Title", director, year, rating, poster as "Poster" FROM #movies
 SORT rating DESC
 
 // Settings
-preset: portrait
+preset: movie
 imageProperty: poster
-```
 ```
 
 ![Movie Collection Example](../assets/images/screenshot-7.png)
@@ -27,101 +25,87 @@ For this example to work, make sure your movie notes have:
 ---
 tags: movies
 director: Director Name
+year: 2022
 rating: 4.5
-genre: Action
+genre: [Action, Sci-Fi]
 poster: https://example.com/movie-poster.jpg
+watched: 2022-03-15
 ---
 ```
 
-## Advanced Movie Collection
+## Full Movie Database
 
 More detailed version with additional properties:
 
-```markdown
-```datacards
-TABLE 
-  file.link as "Title", 
-  director, 
+```dataview
+TABLE
+  file.link as "Title",
+  director,
   year,
-  rating, 
-  genre, 
-  "![]("+poster+")" as Poster,
+  rating,
+  genre,
   watched,
-  watchDate 
+  runtime,
+  poster
 FROM #movies
 SORT rating DESC
 
 // Settings
-preset: portrait
+preset: movie
 imageProperty: poster
 defaultDateFormat: YYYY-MM-DD
-properties: [file.link, director, year, rating, genre, watched, watchDate]
-```
+properties: [file.link, director, year, rating, genre, watched, runtime]
 ```
 
 ## Filter by Genre
 
 Display only movies from a specific genre:
 
-```markdown
-```datacards
-TABLE file.link as "Title", director, rating, genre, poster FROM #movies
+```dataview
+TABLE file.link as "Title", director, year, rating, poster FROM #movies
 WHERE contains(genre, "Sci-Fi")
 SORT rating DESC
 
 // Settings
-preset: portrait
+preset: movie
 imageProperty: poster
 ```
-```
 
-## Recently Watched
+## Recently Watched Movies
 
-Display movies you've watched recently:
+Display your recently watched movies:
 
-```markdown
-```datacards
-TABLE file.link as "Title", director, rating, genre, poster, watchDate FROM #movies
-WHERE watched = true
-SORT watchDate DESC
+```dataview
+TABLE file.link as "Title", director, year, rating, poster, watched FROM #movies
+WHERE watched
+SORT watched DESC
 LIMIT 10
 
 // Settings
-preset: portrait
+preset: movie
 imageProperty: poster
-columns: 2
-```
-```
-
-## Watchlist
-
-Display movies you want to watch:
-
-```markdown
-```datacards
-TABLE file.link as "Title", director, genre, poster FROM #movies
-WHERE watched = false
-SORT file.ctime DESC
-
-// Settings
-preset: portrait
-imageProperty: poster
-```
 ```
 
 ## Compact Movie List
 
 A more compact display for many movies:
 
-```markdown
-```datacards
-TABLE file.link as "Title", director, year, genre, rating, poster FROM #movies
+```dataview
+TABLE
+  file.link as "Title",
+  director,
+  year,
+  rating,
+  genre,
+  watched,
+  poster
+FROM #movies
 SORT year DESC
 
 // Settings
 preset: compact
 imageProperty: poster
-```
+showImageOnHover: true
 ```
 
 ## Movie Statistics Dashboard
@@ -177,12 +161,59 @@ properties: [file.link, director, rating, genre]
 
 Group movies by director:
 
-```markdown
-```datacards
+```dataview
 TABLE file.link as "Title", year, rating, poster FROM #movies AND [[Christopher Nolan]]
 SORT year DESC
 
 // Settings
-preset: portrait
+preset: movie
 imageProperty: poster
+```
+
+## Integration with DataviewJS (Advanced)
+
+Combine statistics with your movie display:
+
+```javascript
+```dataviewjs
+// Get all movies
+const movies = dv.pages("#movies")
+    .sort(m => m.rating, 'desc');
+
+// Display some stats
+const totalMovies = movies.length;
+const avgRating = movies.map(m => m.rating).reduce((sum, val) => sum + val, 0) / totalMovies;
+const genres = {};
+
+movies.forEach(movie => {
+    if (movie.genre) {
+        const genreName = Array.isArray(movie.genre) ? movie.genre[0] : movie.genre;
+        genres[genreName] = (genres[genreName] || 0) + 1;
+    }
+});
+
+// Output stats
+dv.paragraph(`🎬 **Total Movies**: ${totalMovies}`);
+dv.paragraph(`⭐ **Average Rating**: ${avgRating.toFixed(1)}`);
+dv.paragraph(`🏆 **Top Genres**:`);
+Object.entries(genres)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3)
+    .forEach(([genre, count]) => {
+        dv.paragraph(`- ${genre}: ${count} movies`);
+    });
+
+// Generate a DataCards block for the top-rated movies
+dv.paragraph("### Top-Rated Movies\n");
+dv.paragraph(`\`\`\`datacards
+TABLE file.link as "Title", director, rating, genre, poster FROM #movies
+SORT rating DESC
+LIMIT 6
+
+// Settings
+preset: portrait
+columns: 3
+imageProperty: poster
+properties: [file.link, director, rating, genre]
+\`\`\``);
 ```

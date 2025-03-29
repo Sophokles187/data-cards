@@ -11,7 +11,10 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsify-themeable@0/dist/css/theme-simple-dark.css">
   
   <!-- Custom Fonts -->
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+  
+  <!-- Icon Pack - Phosphor -->
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
   
   <!-- Custom Styles -->
   <link rel="stylesheet" href="assets/css/custom.css">
@@ -19,7 +22,11 @@
   <!-- Favicon -->
   <link rel="icon" href="favicon.ico">
 </head>
-<body>
+<body class="glow-container">
+  <!-- Ambient Glow Elements -->
+  <div class="glow glow-1"></div>
+  <div class="glow glow-2"></div>
+
   <div id="app"></div>
   <script>
     window.$docsify = {
@@ -30,7 +37,7 @@
       subMaxLevel: 3,
       auto2top: true,
       coverpage: true,
-      themeColor: '#3F51B5',
+      themeColor: '#7C9B8B',
       basePath: './',
       routerMode: 'hash',
       nameLink: '/',
@@ -75,7 +82,7 @@
       // Progress bar on the top of the page
       progress: {
         position: "top",
-        color: "var(--theme-color)",
+        color: "var(--accent-primary)",
         height: "3px"
       }
     }
@@ -98,6 +105,7 @@
   <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-markdown.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-yaml.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-css.min.js"></script>
+  <script src="assets/js/prism-datacards.js"></script>
   
   <!-- Additional Plugins -->
   <script src="https://cdn.jsdelivr.net/npm/docsify-themeable@0/dist/js/docsify-themeable.min.js"></script>
