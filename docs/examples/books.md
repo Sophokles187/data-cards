@@ -120,9 +120,3 @@ preset: compact
 imageProperty: cover
 ```
 
-## Integration with DataviewJS (Advanced)
-
-Combine statistics with your book display:
-
-```javascript
-```
