@@ -22,6 +22,9 @@ function initMeeresDammerungTheme() {
   // Fix coverpage background
   fixCoverPageBackground();
   
+  // Add breadcrumb navigation
+  addBreadcrumbNavigation();
+  
   // Hook into Docsify's lifecycle for content-specific enhancements
   window.$docsify = window.$docsify || {};
   const originalDom = window.$docsify.plugins || [];
@@ -62,6 +65,18 @@ function initMeeresDammerungTheme() {
 // Add subtle animations and ambient effects
 function addSubtleEffects() {
   // Add grain texture overlay (handled in CSS)
+  
+  // Add ambient glow elements
+  const glowContainer = document.querySelector('body');
+  if (glowContainer && !document.querySelector('.glow')) {
+    const glow1 = document.createElement('div');
+    glow1.className = 'glow glow-1';
+    const glow2 = document.createElement('div');
+    glow2.className = 'glow glow-2';
+    
+    glowContainer.appendChild(glow1);
+    glowContainer.appendChild(glow2);
+  }
   
   // Add ambient glow elements that follow mouse movement with throttling
   let ticking = false;
@@ -125,7 +140,7 @@ function enhanceCodeBlocks() {
     }
     
     // Make sure code blocks have the proper styling
-    block.style.background = 'var(--surface-gradient)';
+    block.style.background = 'rgba(10, 10, 10, 0.6)';
     block.style.backdropFilter = 'blur(10px)';
     block.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.15)';
     
@@ -139,6 +154,14 @@ function enhanceCodeBlocks() {
       this.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.15)';
       this.style.borderColor = 'rgba(255, 255, 255, 0.05)';
     });
+    
+    // Add code header with language
+    if (!block.querySelector('.code-header') && block.dataset.lang) {
+      const codeHeader = document.createElement('div');
+      codeHeader.className = 'code-header';
+      codeHeader.textContent = block.dataset.lang;
+      block.appendChild(codeHeader);
+    }
   });
 }
 
@@ -184,20 +207,45 @@ function addCardStyleToExamples() {
         const card = document.createElement('div');
         card.className = 'card';
         
+        // Create card header
+        const cardHeader = document.createElement('div');
+        cardHeader.className = 'card-header';
+        
         // Create card title
-        const cardTitle = document.createElement('div');
+        const cardTitle = document.createElement('h3');
         cardTitle.className = 'card-title';
-        cardTitle.textContent = heading.textContent;
+        
+        // Add icon to card title
+        const icon = document.createElement('i');
+        icon.className = 'ph ph-code';
+        cardTitle.appendChild(icon);
+        
+        // Add title text
+        const titleText = document.createTextNode(heading.textContent);
+        cardTitle.appendChild(titleText);
+        
+        // Add title to header
+        cardHeader.appendChild(cardTitle);
+        
+        // Create card body
+        const cardBody = document.createElement('div');
+        cardBody.className = 'card-body';
         
         // Clone the code block
         const codeBlock = nextElement.cloneNode(true);
         
         // Add to card
-        card.appendChild(cardTitle);
-        card.appendChild(codeBlock);
+        card.appendChild(cardHeader);
+        cardBody.appendChild(codeBlock);
+        card.appendChild(cardBody);
         
         // Replace the original code block
         nextElement.parentNode.replaceChild(card, nextElement);
+        
+        // Remove the original heading
+        if (heading.parentNode) {
+          heading.parentNode.removeChild(heading);
+        }
       }
     }
   });
@@ -241,32 +289,122 @@ function enhanceUI() {
   // Add tag styling to certain elements
   document.querySelectorAll('.tag, .label').forEach(el => {
     el.style.display = 'inline-block';
-    el.style.padding = '4px 10px';
+    el.style.padding = '5px 12px';
     el.style.borderRadius = 'var(--radius-small)';
-    el.style.fontSize = '12px';
+    el.style.fontSize = '14px';
     el.style.fontWeight = '500';
     el.style.color = 'var(--accent-primary)';
-    el.style.background = 'rgba(124, 155, 139, 0.05)';
-    el.style.border = '1px solid rgba(124, 155, 139, 0.2)';
+    el.style.background = 'rgba(95, 122, 138, 0.05)';
+    el.style.border = '1px solid rgba(95, 122, 138, 0.2)';
+    el.style.marginRight = '8px';
+    el.style.marginBottom = '8px';
   });
   
   // Add button styling
-  document.querySelectorAll('.get-started-button').forEach(el => {
-    el.style.background = 'var(--accent-gradient)';
+  document.querySelectorAll('.get-started-button, .button').forEach(el => {
+    el.style.background = 'linear-gradient(135deg, var(--accent-primary), var(--accent-secondary))';
     el.style.color = 'white';
-    el.style.borderRadius = 'var(--radius-medium)';
-    el.style.padding = 'var(--spacing-default) var(--spacing-comfortable)';
+    el.style.borderRadius = '6px';
+    el.style.padding = '10px 18px';
+    el.style.display = 'inline-flex';
+    el.style.alignItems = 'center';
+    el.style.gap = '8px';
+    el.style.position = 'relative';
+    el.style.overflow = 'hidden';
     
     // Add hover effect
     el.addEventListener('mouseenter', function() {
       this.style.transform = 'translateY(-2px)';
-      this.style.boxShadow = '0 4px 12px rgba(124, 155, 139, 0.3)';
+      this.style.boxShadow = '0 4px 12px rgba(95, 122, 138, 0.3)';
     });
     
     el.addEventListener('mouseleave', function() {
       this.style.transform = 'translateY(0)';
       this.style.boxShadow = 'none';
     });
+  });
+  
+  // Add secondary button styling
+  document.querySelectorAll('.github-button, .button-secondary').forEach(el => {
+    el.style.backgroundColor = 'rgba(29, 29, 34, 0.5)';
+    el.style.color = 'var(--text-secondary)';
+    el.style.border = '1px solid var(--border-primary)';
+    
+    // Add hover effect
+    el.addEventListener('mouseenter', function() {
+      this.style.backgroundColor = 'rgba(29, 29, 34, 0.7)';
+      this.style.color = 'var(--text-primary)';
+      this.style.borderColor = 'var(--border-secondary)';
+      this.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.3)';
+    });
+    
+    el.addEventListener('mouseleave', function() {
+      this.style.backgroundColor = 'rgba(29, 29, 34, 0.5)';
+      this.style.color = 'var(--text-secondary)';
+      this.style.borderColor = 'var(--border-primary)';
+      this.style.boxShadow = 'none';
+    });
+  });
+  
+  // Convert feature sections to feature cards grid
+  const featureSections = document.querySelectorAll('h2');
+  featureSections.forEach(heading => {
+    if (heading.textContent.toLowerCase().includes('feature') || 
+        heading.textContent.toLowerCase().includes('funktionen')) {
+      
+      // Find all h3 headings that follow this h2 until the next h2
+      const features = [];
+      let nextElement = heading.nextElementSibling;
+      
+      while (nextElement && nextElement.tagName !== 'H2') {
+        if (nextElement.tagName === 'H3') {
+          // Get the description paragraph
+          let description = '';
+          let descElement = nextElement.nextElementSibling;
+          if (descElement && descElement.tagName === 'P') {
+            description = descElement.textContent;
+          }
+          
+          features.push({
+            title: nextElement.textContent,
+            description: description
+          });
+        }
+        nextElement = nextElement.nextElementSibling;
+      }
+      
+      // If we found features, create a feature grid
+      if (features.length > 0) {
+        const featureGrid = document.createElement('div');
+        featureGrid.className = 'features-grid';
+        
+        features.forEach(feature => {
+          const featureCard = document.createElement('div');
+          featureCard.className = 'feature-card';
+          
+          const featureIcon = document.createElement('div');
+          featureIcon.className = 'feature-icon';
+          featureIcon.innerHTML = '<i class="ph ph-star"></i>';
+          
+          const featureTitle = document.createElement('h3');
+          featureTitle.className = 'feature-title';
+          featureTitle.textContent = feature.title;
+          
+          const featureDesc = document.createElement('p');
+          featureDesc.className = 'feature-description';
+          featureDesc.textContent = feature.description;
+          
+          featureCard.appendChild(featureIcon);
+          featureCard.appendChild(featureTitle);
+          featureCard.appendChild(featureDesc);
+          
+          featureGrid.appendChild(featureCard);
+        });
+        
+        // Insert the feature grid after the heading
+        heading.parentNode.insertBefore(featureGrid, heading.nextSibling);
+      }
+    }
   });
 }
 
@@ -373,7 +511,7 @@ function fixCoverPageBackground() {
     const coverBg = document.querySelector('.cover-background');
     if (coverBg) {
       // Force our background style
-      coverBg.style.background = 'var(--background-gradient)';
+      coverBg.style.background = 'var(--background-primary)';
       coverBg.style.backgroundImage = 'none';
       
       // Add grain texture
@@ -386,13 +524,86 @@ function fixCoverPageBackground() {
         grainOverlay.style.width = '100%';
         grainOverlay.style.height = '100%';
         grainOverlay.style.backgroundImage = "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.1'/%3E%3C/svg%3E\")";
-        grainOverlay.style.opacity = '0.15';
+        grainOverlay.style.opacity = '0.12';
         grainOverlay.style.pointerEvents = 'none';
         grainOverlay.style.zIndex = '0';
         
         coverBg.appendChild(grainOverlay);
         coverBg.classList.add('grain-added');
       }
+      
+      // Add ambient glow to cover
+      if (!coverBg.querySelector('.glow')) {
+        const glow1 = document.createElement('div');
+        glow1.className = 'glow glow-1';
+        glow1.style.position = 'absolute';
+        glow1.style.top = '20%';
+        glow1.style.left = '5%';
+        glow1.style.width = '300px';
+        glow1.style.height = '300px';
+        glow1.style.background = 'rgba(95, 122, 138, 0.3)';
+        glow1.style.filter = 'blur(70px)';
+        glow1.style.opacity = '0.3';
+        glow1.style.zIndex = '0';
+        
+        const glow2 = document.createElement('div');
+        glow2.className = 'glow glow-2';
+        glow2.style.position = 'absolute';
+        glow2.style.bottom = '10%';
+        glow2.style.right = '5%';
+        glow2.style.width = '200px';
+        glow2.style.height = '200px';
+        glow2.style.background = 'rgba(122, 147, 160, 0.25)';
+        glow2.style.filter = 'blur(70px)';
+        glow2.style.opacity = '0.3';
+        glow2.style.zIndex = '0';
+        
+        coverBg.appendChild(glow1);
+        coverBg.appendChild(glow2);
+      }
     }
   }, 100);
+}
+
+// Add breadcrumb navigation
+function addBreadcrumbNavigation() {
+  // Only add breadcrumb if we're not on the cover page
+  if (document.querySelector('.cover')) return;
+  
+  // Check if breadcrumb already exists
+  if (document.querySelector('.breadcrumb')) return;
+  
+  // Get current page path
+  const path = window.location.hash.substring(1);
+  if (!path || path === '/') return;
+  
+  // Create breadcrumb container
+  const breadcrumb = document.createElement('div');
+  breadcrumb.className = 'breadcrumb';
+  
+  // Add home link
+  const homeLink = document.createElement('a');
+  homeLink.href = '#/';
+  homeLink.textContent = 'DataCards';
+  breadcrumb.appendChild(homeLink);
+  
+  // Add separator
+  const separator = document.createElement('span');
+  separator.className = 'separator';
+  separator.textContent = '/';
+  breadcrumb.appendChild(separator);
+  
+  // Get current page title
+  const title = document.querySelector('.markdown-section h1')?.textContent || path;
+  
+  // Add current page
+  const currentPage = document.createElement('span');
+  currentPage.textContent = title;
+  breadcrumb.appendChild(currentPage);
+  
+  // Insert breadcrumb at the top of the content
+  const content = document.querySelector('.content');
+  if (content && content.firstChild) {
+    content.insertBefore(breadcrumb, content.firstChild);
+  }
 }
