@@ -50,12 +50,12 @@
 
 Create a `datacards` code block with a Dataview query:
 
-```markdown
+
 ```datacards
 TABLE author, rating, genre FROM #books
 SORT rating DESC
 ```
-```
+
 
 This will automatically render the results as cards using the default settings.
 

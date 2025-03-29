@@ -22,5 +22,5 @@
 
 * <i class="ph ph-question"></i> **Help & Support**
   * [<i class="ph ph-question"></i> FAQ & Troubleshooting](faq.md)
-  * [<i class="ph ph-chats-circle"></i> Community Support](https://github.com/Sophokles187/data-cards/discussions)
+  * [<i class="ph ph-chats-circle"></i> Community Support](https://github.com/Sophokles187/data-cards/issues)
   * [<i class="ph ph-coffee"></i> Support Development](https://ko-fi.com/sophokles)
