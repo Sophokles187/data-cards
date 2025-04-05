@@ -403,7 +403,7 @@ defaultDateFormat: YYYY
     
       <p><strong>Tip:</strong> Data Cards works best with the Editor-Setting "Readable line length" disabled. </p><br>
       
-      <p><a href="https://github.com/Sophokles187/data-cards" target="_blank" rel="noopener">View complete documentation and examples on GitHub</a></p>
+      <p><a href="https://sophokles187.github.io/data-cards/#/" target="_blank" rel="noopener">View complete documentation and examples on GitHub</a></p>
     `;
   }
 }
