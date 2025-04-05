@@ -298,46 +298,66 @@ export class RendererService {
     Logger.debug('- Number of rows:', values.length);
     
     // Create a card for each row
-    values.forEach((row: any[], rowIndex: number) => {
+    values.forEach((row: any[] & { file?: any; path?: any; source?: any; originalFile?: any }, rowIndex: number) => {
       Logger.debug(`Processing row ${rowIndex}`);
+      
       const card = this.createCardElement(container);
       
       // Add image if available
-      if (settings.imageProperty && headers.includes(settings.imageProperty)) {
-        const imageIndex = headers.indexOf(settings.imageProperty);
-        const imageValue = row[imageIndex];
-        Logger.debug(`Image property '${settings.imageProperty}' value:`, imageValue);
-        if (imageValue) {
-          this.addImageToCard(card, imageValue);
-        }
-      } else if (settings.imageProperty) {
-        Logger.debug(`Image property '${settings.imageProperty}' not found in headers:`, headers);
+      if (settings.imageProperty && row[headers.indexOf(settings.imageProperty)] !== undefined) {
+        this.addImageToCard(card, row[headers.indexOf(settings.imageProperty)]);
       }
       
       // Add content container
       const contentEl = card.createEl('div', { cls: 'datacards-content' });
       
-      // First, add the file property separately if it exists in headers
-      // This ensures it's always displayed first, directly under the image
+      // Try to get the file property from different sources
+      let fileValue: any = null;
+      
+      // First check if file is explicitly included in headers
       if (headers.includes('File') || headers.includes('file')) {
         const fileIndex = headers.findIndex((h: string) => h.toLowerCase() === 'file');
         if (fileIndex >= 0) {
-          const fileValue = row[fileIndex];
-          Logger.debug('File property value:', fileValue);
-          
-          // Add file property with special styling
-          const filePropertyEl = contentEl.createEl('div', {
-            cls: 'datacards-property datacards-file-property-container',
-          });
-          
-          // Don't show label for file property
-          this.formatFileProperty(filePropertyEl, fileValue);
-          
-          // If clickable cards are enabled, make the card clickable
-          if (settings.enableClickableCards) {
-            this.makeCardClickable(card, fileValue);
-          }
+          fileValue = row[fileIndex];
         }
+      }
+      
+      // If file is not in headers, try to get it from the row's metadata
+      if (!fileValue && row.file) {
+        fileValue = row.file;
+      }
+      
+      // If still no file value, try to get it from the row's path property
+      if (!fileValue && row.path) {
+        fileValue = row.path;
+      }
+      
+      // If still no file value, try to get it from the row's source property
+      if (!fileValue && row.source) {
+        fileValue = row.source;
+      }
+      
+      // If still no file value, try to get it from the original file
+      if (!fileValue && row.originalFile) {
+        fileValue = row.originalFile;
+      }
+      
+      // If we found a file value and showFileAsTitle is enabled, add it to the card
+      if (fileValue && settings.showFileAsTitle) {
+        const filePropertyEl = contentEl.createEl('div', {
+          cls: 'datacards-property datacards-file-property-container',
+        });
+        
+        this.formatFileProperty(filePropertyEl, fileValue);
+        
+        // If clickable cards are enabled, make the card clickable
+        if (settings.enableClickableCards) {
+          this.makeCardClickable(card, fileValue);
+        }
+      } else if (fileValue && settings.enableClickableCards) {
+        // If we have a file value but don't want to show it as title,
+        // still make the card clickable if enabled
+        this.makeCardClickable(card, fileValue);
       }
       
       // Create a properties container
@@ -429,17 +449,30 @@ export class RendererService {
       // Add content container
       const contentEl = card.createEl('div', { cls: 'datacards-content' });
       
-      // First, add the file property separately if it exists
+      // Try to get the file property from different sources
+      let fileValue: any = null;
+      
+      // First check if file is explicitly included
       if ('file' in item) {
+        fileValue = item.file;
+      }
+      
+      // If file is not found, try to get it from the path property
+      if (!fileValue && 'path' in item) {
+        fileValue = item.path;
+      }
+      
+      // If we found a file value, add it to the card
+      if (fileValue) {
         const filePropertyEl = contentEl.createEl('div', {
           cls: 'datacards-property datacards-file-property-container',
         });
         
-        this.formatFileProperty(filePropertyEl, item['file']);
+        this.formatFileProperty(filePropertyEl, fileValue);
         
         // If clickable cards are enabled, make the card clickable
         if (settings.enableClickableCards) {
-          this.makeCardClickable(card, item['file']);
+          this.makeCardClickable(card, fileValue);
         }
       }
       
@@ -1096,6 +1129,7 @@ export class RendererService {
     const hasHtml = /<[a-z][\s\S]*>/i.test(value);
     const hasWikiLinks = value.includes('[['); // No need to check for ']]' if '[[' is present
     
+    
     // If it doesn't have either, let other formatters handle it
     if (!hasWikiLinks && !hasHtml) {
       Logger.debug('Content is plain text, skipping rich text processing.');
@@ -1706,7 +1740,6 @@ export class RendererService {
             'data-type': 'link'
           }
         });
-        return;
       }
     }
     // Check if it's already a wiki link
