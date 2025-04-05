@@ -20,14 +20,14 @@ export class DataCardsSettingTab extends PluginSettingTab {
     const { containerEl } = this;
     containerEl.empty();
 
-    containerEl.createEl('h2', { text: 'DataCards Settings' });
+    // General settings (no heading)
 
     // Add button to open settings reference website
     new Setting(containerEl)
-      .setName('Settings Reference')
+      .setName('Settings reference')
       .setDesc('Open the complete settings reference guide on the website.')
       .addButton(button => button
-        .setButtonText('Open Reference Website')
+        .setButtonText('Open reference website')
         .setCta() // Make it stand out a bit
         .onClick(() => {
           // Open the external link in the default browser
@@ -35,10 +35,10 @@ export class DataCardsSettingTab extends PluginSettingTab {
         }));
 
     // Preset settings
-    containerEl.createEl('h3', { text: 'Preset Settings' });
+    new Setting(containerEl).setName('Presets').setHeading();
 
     new Setting(containerEl)
-      .setName('Default Preset')
+      .setName('Default preset')
       .setDesc('Choose the default preset for cards')
       .addDropdown(dropdown => dropdown
         .addOption('grid', 'Grid (balanced, 3 columns)')
@@ -56,10 +56,10 @@ export class DataCardsSettingTab extends PluginSettingTab {
     // as presets now define recommended column counts
 
     // Image settings
-    containerEl.createEl('h3', { text: 'Image Settings' });
+    new Setting(containerEl).setName('Images').setHeading();
 
     new Setting(containerEl)
-      .setName('Default Image Property')
+      .setName('Default image property')
       .setDesc('The frontmatter property to use for images')
       .addText(text => text
         .setPlaceholder('cover')
@@ -74,10 +74,10 @@ export class DataCardsSettingTab extends PluginSettingTab {
     // Users can still override them in individual code blocks
 
     // Display settings
-    containerEl.createEl('h3', { text: 'Display Settings' });
+    new Setting(containerEl).setName('Display').setHeading();
 
     new Setting(containerEl)
-      .setName('Show Property Labels')
+      .setName('Show property labels')
       .setDesc('Show labels for properties')
       .addToggle(toggle => toggle
         .setValue(this.plugin.settings.showLabels)
@@ -87,7 +87,7 @@ export class DataCardsSettingTab extends PluginSettingTab {
         }));
 
     new Setting(containerEl)
-      .setName('Card Spacing')
+      .setName('Card spacing')
       .setDesc('Space between cards (in pixels)')
       .addSlider(slider => slider
         .setLimits(0, 32, 4)
@@ -99,7 +99,7 @@ export class DataCardsSettingTab extends PluginSettingTab {
         }));
         
     new Setting(containerEl)
-      .setName('Enable Card Shadows')
+      .setName('Enable card shadows')
       .setDesc('Add subtle shadows to cards for a more three-dimensional appearance')
       .addToggle(toggle => toggle
         .setValue(this.plugin.settings.enableShadows)
@@ -109,7 +109,7 @@ export class DataCardsSettingTab extends PluginSettingTab {
         }));
         
     new Setting(containerEl)
-      .setName('Properties Alignment')
+      .setName('Properties alignment')
       .setDesc('Text alignment for properties and their labels')
       .addDropdown(dropdown => dropdown
         .addOption('left', 'Left')
@@ -122,7 +122,7 @@ export class DataCardsSettingTab extends PluginSettingTab {
         }));
 
     new Setting(containerEl)
-      .setName('Title Alignment')
+      .setName('Title alignment')
       .setDesc('Text alignment for the title (filename)')
       .addDropdown(dropdown => dropdown
         .addOption('left', 'Left')
@@ -136,7 +136,7 @@ export class DataCardsSettingTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName('Show file as title')
-      .setDesc('When using TABLE WITHOUT ID, show the file name as the card title')
+      .setDesc('When using TABLE WITHOUT ID, show the file name as the card title') // Assuming TABLE WITHOUT ID is a specific term
       .addToggle(toggle => toggle
         .setValue(this.plugin.settings.showFileAsTitle)
         .onChange(async (value) => {
@@ -145,7 +145,7 @@ export class DataCardsSettingTab extends PluginSettingTab {
         }));
         
     new Setting(containerEl)
-      .setName('Font Size')
+      .setName('Font size')
       .setDesc('Text size for all card elements (properties, labels, and title)')
       .addDropdown(dropdown => dropdown
         .addOption('larger', 'Larger (120%)')
@@ -160,11 +160,11 @@ export class DataCardsSettingTab extends PluginSettingTab {
         }));
     
     // Card Content Settings
-    containerEl.createEl('h3', { text: 'Card Content Settings' });
+    new Setting(containerEl).setName('Card content').setHeading();
     
     new Setting(containerEl)
-      .setName('Scrollable Properties')
-      .setDesc('Enable scrolling for card properties when they exceed the content height (Note: Square and Compact presets are scrollable by default)')
+      .setName('Scrollable properties')
+      .setDesc('Enable scrolling for card properties when they exceed the content height (Note: Square and Compact presets are scrollable by default)') // Assuming Square and Compact are proper nouns
       .addToggle(toggle => toggle
         .setValue(this.plugin.settings.scrollableProperties)
         .onChange(async (value) => {
@@ -173,10 +173,10 @@ export class DataCardsSettingTab extends PluginSettingTab {
         }));
         
     // Card Interaction Settings
-    containerEl.createEl('h3', { text: 'Card Interaction Settings' });
+    new Setting(containerEl).setName('Card interaction').setHeading();
     
     new Setting(containerEl)
-      .setName('Enable Clickable Cards')
+      .setName('Enable clickable cards')
       .setDesc('Make the entire card clickable to open the note (not just the title)')
       .addToggle(toggle => toggle
         .setValue(this.plugin.settings.enableClickableCards)
@@ -187,7 +187,7 @@ export class DataCardsSettingTab extends PluginSettingTab {
 
     
     new Setting(containerEl)
-      .setName('Content Height')
+      .setName('Content height')
       .setDesc('Height of the scrollable content area (e.g., 200px)')
       .addText(text => text
         .setPlaceholder('200px')
@@ -198,11 +198,11 @@ export class DataCardsSettingTab extends PluginSettingTab {
         }));
         
     // Formatting settings
-    containerEl.createEl('h3', { text: 'Formatting Settings' });
+    new Setting(containerEl).setName('Formatting').setHeading();
     
     new Setting(containerEl)
-      .setName('Default Date Format')
-      .setDesc('Format for displaying dates (YYYY = year, MM = month, DD = day)')
+      .setName('Default date format')
+      .setDesc('Format for displaying dates (YYYY = year, MM = month, DD = day)') // Assuming YYYY, MM, DD are specific format codes
       .addText(text => text
         .setPlaceholder('YYYY-MM-DD')
         .setValue(this.plugin.settings.defaultDateFormat)
@@ -212,10 +212,10 @@ export class DataCardsSettingTab extends PluginSettingTab {
         }));
     
     // Boolean Display Settings
-    containerEl.createEl('h3', { text: 'Boolean Display Settings' });
+    new Setting(containerEl).setName('Boolean display').setHeading();
     
     new Setting(containerEl)
-      .setName('Boolean Display Mode')
+      .setName('Boolean display mode')
       .setDesc('How to display boolean values in cards')
       .addDropdown(dropdown => dropdown
         .addOption('both', 'Both checkbox and text')
@@ -228,7 +228,7 @@ export class DataCardsSettingTab extends PluginSettingTab {
         }));
     
     new Setting(containerEl)
-      .setName('Show Boolean Labels')
+      .setName('Show boolean labels')
       .setDesc('Show text labels for boolean values')
       .addToggle(toggle => toggle
         .setValue(this.plugin.settings.showBooleanLabels)
@@ -238,7 +238,7 @@ export class DataCardsSettingTab extends PluginSettingTab {
         }));
     
     new Setting(containerEl)
-      .setName('True Text')
+      .setName('True text')
       .setDesc('Custom text to display for true values')
       .addText(text => text
         .setPlaceholder('true')
@@ -249,7 +249,7 @@ export class DataCardsSettingTab extends PluginSettingTab {
         }));
     
     new Setting(containerEl)
-      .setName('False Text')
+      .setName('False text')
       .setDesc('Custom text to display for false values')
       .addText(text => text
         .setPlaceholder('false')
@@ -260,15 +260,15 @@ export class DataCardsSettingTab extends PluginSettingTab {
         }));
     
     new Setting(containerEl)
-      .setName('Per-Card Boolean Settings')
+      .setName('Per-card boolean settings')
       .setDesc('Individual cards can override these settings in their code block settings')
       .setDisabled(true);
     
     // Mobile settings
-    containerEl.createEl('h3', { text: 'Mobile Settings' });
+    new Setting(containerEl).setName('Mobile').setHeading();
     
     new Setting(containerEl)
-      .setName('Mobile Preset')
+      .setName('Mobile preset')
       .setDesc('Preset to use on mobile devices')
       .addDropdown(dropdown => dropdown
         .addOption('grid', 'Grid (balanced)')
@@ -283,7 +283,7 @@ export class DataCardsSettingTab extends PluginSettingTab {
         }));
     
     new Setting(containerEl)
-      .setName('Mobile Columns')
+      .setName('Mobile columns')
       .setDesc('Number of columns to use on mobile devices (default: 1)')
       .addSlider(slider => slider
         .setLimits(1, 3, 1)
@@ -295,7 +295,7 @@ export class DataCardsSettingTab extends PluginSettingTab {
         }));
     
     new Setting(containerEl)
-      .setName('Mobile Scrollable Properties')
+      .setName('Mobile scrollable properties')
       .setDesc('Enable scrolling for card properties on mobile devices')
       .addToggle(toggle => toggle
         .setValue(this.plugin.settings.mobileScrollableProperties)
@@ -305,7 +305,7 @@ export class DataCardsSettingTab extends PluginSettingTab {
         }));
     
     new Setting(containerEl)
-      .setName('Mobile Content Height')
+      .setName('Mobile content height')
       .setDesc('Height of the scrollable content area on mobile devices')
       .addText(text => text
         .setPlaceholder('150px')
@@ -316,7 +316,7 @@ export class DataCardsSettingTab extends PluginSettingTab {
         }));
     
     new Setting(containerEl)
-      .setName('Force Mobile Mode')
+      .setName('Force mobile mode')
       .setDesc('Force the plugin to use mobile settings even on desktop (for testing)')
       .addToggle(toggle => toggle
         .setValue(this.plugin.settings.forceMobileMode)
@@ -326,10 +326,10 @@ export class DataCardsSettingTab extends PluginSettingTab {
         }));
     
     // Performance settings
-    containerEl.createEl('h3', { text: 'Performance Settings' });
+    new Setting(containerEl).setName('Performance').setHeading();
     
     new Setting(containerEl)
-      .setName('Enable Lazy Loading')
+      .setName('Enable lazy loading')
       .setDesc('Only load images when they become visible (improves performance with many cards)')
       .addToggle(toggle => toggle
         .setValue(this.plugin.settings.enableLazyLoading)
@@ -339,11 +339,11 @@ export class DataCardsSettingTab extends PluginSettingTab {
         }));
         
     // Update settings
-    containerEl.createEl('h3', { text: 'Update Settings' });
+    new Setting(containerEl).setName('Updates').setHeading();
     
     new Setting(containerEl)
-      .setName('Enable Dynamic Updates')
-      .setDesc('Automatically update DataCards when properties change (may impact performance)')
+      .setName('Enable dynamic updates')
+      .setDesc('Automatically update DataCards when properties change (may impact performance)') // Assuming DataCards is a proper noun
       .addToggle(toggle => toggle
         .setValue(this.plugin.settings.enableDynamicUpdates)
         .onChange(async (value) => {
@@ -352,7 +352,7 @@ export class DataCardsSettingTab extends PluginSettingTab {
         }));
     
     new Setting(containerEl)
-      .setName('Refresh Delay')
+      .setName('Refresh delay')
       .setDesc('Delay in milliseconds before refreshing after a property change (higher values give more time to complete typing)')
       .addSlider(slider => slider
         .setLimits(500, 5000, 500)
@@ -372,15 +372,15 @@ export class DataCardsSettingTab extends PluginSettingTab {
         }));
         
     new Setting(containerEl)
-      .setName('Per-Card Dynamic Updates')
+      .setName('Per-card dynamic updates')
       .setDesc('Individual cards can override the global setting with "dynamicUpdate: true/false" in their settings')
       .setDisabled(true);
         
     // Debug settings
-    containerEl.createEl('h3', { text: 'Developer Settings' });
+    new Setting(containerEl).setName('Developer').setHeading();
     
     new Setting(containerEl)
-      .setName('Debug Mode')
+      .setName('Debug mode')
       .setDesc('Enable debug logging (only use during development or troubleshooting)')
       .addToggle(toggle => toggle
         .setValue(this.plugin.settings.debugMode)
@@ -390,7 +390,7 @@ export class DataCardsSettingTab extends PluginSettingTab {
         }));
 
     // Help section
-    containerEl.createEl('h3', { text: 'Help' });
+    new Setting(containerEl).setName('Help').setHeading();
     
     const helpText = containerEl.createEl('div');
     helpText.innerHTML = `
