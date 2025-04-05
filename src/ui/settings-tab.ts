@@ -1,10 +1,13 @@
-import { App, PluginSettingTab, Setting } from 'obsidian';
+import { App, PluginSettingTab, Setting } from 'obsidian'; // Remove unused imports: Notice, Modal, MarkdownRenderer
 import { DataCardsSettings } from '../models/settings';
 import DataCardsPlugin from '../main';
+// Removed import for settingsReferenceContent
 
 /**
  * Settings tab for the DataCards plugin
  */
+// Removed SettingsReferenceModal class definition
+
 export class DataCardsSettingTab extends PluginSettingTab {
   plugin: DataCardsPlugin;
 
@@ -18,6 +21,18 @@ export class DataCardsSettingTab extends PluginSettingTab {
     containerEl.empty();
 
     containerEl.createEl('h2', { text: 'DataCards Settings' });
+
+    // Add button to open settings reference website
+    new Setting(containerEl)
+      .setName('Settings Reference')
+      .setDesc('Open the complete settings reference guide on the website.')
+      .addButton(button => button
+        .setButtonText('Open Reference Website')
+        .setCta() // Make it stand out a bit
+        .onClick(() => {
+          // Open the external link in the default browser
+          window.open('https://sophokles187.github.io/data-cards/#/settings-reference', '_blank');
+        }));
 
     // Preset settings
     containerEl.createEl('h3', { text: 'Preset Settings' });
@@ -402,8 +417,8 @@ defaultDateFormat: YYYY
       <code>cover: https://example.com/image.jpg</code> or <code>cover: [[path/to/image.jpg]]</code></p>     
     
       <p><strong>Tip:</strong> Data Cards works best with the Editor-Setting "Readable line length" disabled. </p><br>
-      
-      <p><a href="https://sophokles187.github.io/data-cards/#/" target="_blank" rel="noopener">View complete documentation and examples on GitHub</a></p>
+
+      <p><a href="https://sophokles187.github.io/data-cards/#/" target="_blank" rel="noopener">View documentation homepage</a></p>
     `;
   }
 }
