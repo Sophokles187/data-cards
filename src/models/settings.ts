@@ -96,6 +96,9 @@ export interface DataCardsSettings {
   
   // Column aliases (for display names)
   columnAliases?: ColumnAlias[]; // Mapping of original property names to display names
+  
+  // New setting
+  showFileAsTitle: boolean;
 }
 
 /**
@@ -153,7 +156,10 @@ export const DEFAULT_SETTINGS: DataCardsSettings = {
   refreshDelay: 2500, // Default to 2.5 seconds (2500ms)
   
   // Debug settings
-  debugMode: false // Disabled by default
+  debugMode: false, // Disabled by default
+  
+  // New setting
+  showFileAsTitle: true,
 };
 
 /**

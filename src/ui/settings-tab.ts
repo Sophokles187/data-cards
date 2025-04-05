@@ -395,5 +395,15 @@ defaultDateFormat: YYYY
       
       <p><a href="https://github.com/Sophokles187/data-cards" target="_blank" rel="noopener">View complete documentation and examples on GitHub</a></p>
     `;
+
+    new Setting(containerEl)
+      .setName('Show file as title')
+      .setDesc('When using TABLE WITHOUT ID, show the file name as the card title')
+      .addToggle(toggle => toggle
+        .setValue(this.plugin.settings.showFileAsTitle)
+        .onChange(async (value) => {
+          this.plugin.settings.showFileAsTitle = value;
+          await this.plugin.saveSettings();
+        }));
   }
 }

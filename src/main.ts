@@ -384,30 +384,23 @@ export default class DataCardsPlugin extends Plugin {
    */
   private async processDataCardsBlock(source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) {
     Logger.debug('Processing DataCards block');
-    
-    // Check if Dataview is enabled
-    if (!this.dataviewApiUtil.isDataviewEnabled()) {
-      Logger.error('Dataview plugin is not enabled');
-      el.createEl('div', {
-        cls: 'datacards-error',
-        text: 'Dataview plugin is required but not enabled'
-      });
-      return;
-    }
-    
-    // Wait for Dataview to be ready
-    const isDataviewReady = await this.dataviewApiUtil.waitForDataviewReady();
-    if (!isDataviewReady) {
-      Logger.warn('Timed out waiting for Dataview to be ready');
-      // Continue anyway, but log a warning
-    }
 
     try {
-      // Parse the code block content
+      // Parse the block content
       const { query, settings } = this.parserService.parseDataCardsBlock(source);
-      Logger.debug('Parsed query:', query);
-      Logger.debug('Parsed settings:', settings);
-
+      
+      // Check if this is a TABLE WITHOUT ID query
+      const isTableWithoutId = query.toLowerCase().includes('table without id');
+      
+      // If it's a TABLE WITHOUT ID query, we need to modify it to include the file
+      let modifiedQuery = query;
+      if (isTableWithoutId) {
+        // Add file to the query if it's not already included
+        if (!query.toLowerCase().includes('file')) {
+          modifiedQuery = query.replace(/table without id/i, 'TABLE WITHOUT ID file,');
+        }
+      }
+      
       // Get the source file path
       const sourcePath = ctx.sourcePath;
       
@@ -415,94 +408,44 @@ export default class DataCardsPlugin extends Plugin {
       const dataviewContainer = document.createElement('div');
       dataviewContainer.style.display = 'none';
       document.body.appendChild(dataviewContainer); // Temporarily add to DOM for Dataview to work with it
-
-      try {
-        // Execute the Dataview query
-        Logger.debug('Executing Dataview query');
-        const result = await this.dataviewApiUtil.executeSafeQuery(query, sourcePath, dataviewContainer);
-
-        // Remove the temporary container
-        document.body.removeChild(dataviewContainer);
-        
-        if (!result) {
-          Logger.error('Result is undefined or null');
-          el.createEl('div', {
-            cls: 'datacards-error',
-            text: 'Error executing Dataview query: undefined result'
-          });
-          return;
-        }
-
-        if (!result.successful) {
-          // Handle query error
-          const errorMessage = `Error executing Dataview query: ${result.value || 'unknown error'}`;
-          Logger.error(errorMessage);
-          el.createEl('div', {
-            cls: 'datacards-error',
-            text: errorMessage
-          });
-          return;
-        }
-
-        // Check if result.value is undefined, null, or empty
-        if (result.value === undefined || result.value === null) {
-          Logger.error('Dataview returned null or undefined value');
-          el.createEl('div', {
-            cls: 'datacards-error',
-            text: 'Dataview returned no results. Make sure your query is correct and returns data.'
-          });
-          return;
-        }
-
-        // Check if the result is empty (no matching files)
-        if (Array.isArray(result.value) && result.value.length === 0) {
-          Logger.debug('Dataview returned empty array');
-          this.rendererService.renderEmptyState(el, 'No notes found');
-          return;
-        }
-
-        if (result.value.values && Array.isArray(result.value.values) && result.value.values.length === 0) {
-          Logger.debug('Dataview returned empty table');
-          this.rendererService.renderEmptyState(el, 'No notes found');
-          return;
-        }
-
-        // Check if result.value is the actual data or if it's wrapped in a structure
-        let dataToRender = result.value;
-        
-        // If the result is the response object itself, extract the actual data
-        if (dataToRender && typeof dataToRender === 'object' && 'successful' in dataToRender && 'value' in dataToRender) {
-          Logger.debug('Unwrapping nested result structure');
-          dataToRender = dataToRender.value;
-        }
-        
-        // Check if this specific card has a dynamic update setting
-        if (settings.dynamicUpdate !== undefined) {
-          Logger.debug(`Card has dynamicUpdate setting: ${settings.dynamicUpdate}`);
-        }
-        
-        // If not empty, render the cards with the extracted data
-        this.rendererService.renderCards(el, dataToRender, settings);
-      } catch (queryError) {
-        // Handle query execution errors
-        Logger.error('Error executing Dataview query:', queryError);
-        
-        // Make sure to remove the temporary container if there was an error
-        if (document.body.contains(dataviewContainer)) {
-          document.body.removeChild(dataviewContainer);
-        }
-        
-        el.createEl('div', {
-          cls: 'datacards-error',
-          text: `Error executing Dataview query: ${queryError.message || String(queryError)}`
-        });
+      
+      // Execute the Dataview query
+      const result = await this.dataviewApiUtil.executeSafeQuery(modifiedQuery, sourcePath, dataviewContainer);
+      
+      // Remove the temporary container
+      document.body.removeChild(dataviewContainer);
+      
+      // Check if the result is empty (no matching files)
+      if (Array.isArray(result.value) && result.value.length === 0) {
+        Logger.debug('Dataview returned empty array');
+        this.rendererService.renderEmptyState(el, 'No notes found');
+        return;
       }
-    } catch (error) {
-      // Handle any other errors
-      Logger.error('DataCards error:', error);
+
+      if (result.value.values && Array.isArray(result.value.values) && result.value.values.length === 0) {
+        Logger.debug('Dataview returned empty table');
+        this.rendererService.renderEmptyState(el, 'No notes found');
+        return;
+      }
+
+      // Check if result.value is the actual data or if it's wrapped in a structure
+      let dataToRender = result.value;
+      
+      // If the result is the response object itself, extract the actual data
+      if (dataToRender && typeof dataToRender === 'object' && 'successful' in dataToRender && 'value' in dataToRender) {
+        Logger.debug('Unwrapping nested result structure');
+        dataToRender = dataToRender.value;
+      }
+      
+      // If not empty, render the cards with the extracted data
+      this.rendererService.renderCards(el, dataToRender, settings);
+    } catch (queryError) {
+      // Handle query execution errors
+      Logger.error('Error executing Dataview query:', queryError);
+      
       el.createEl('div', {
         cls: 'datacards-error',
-        text: `Error processing DataCards block: ${error.message || String(error)}`
+        text: `Error executing Dataview query: ${queryError.message || String(queryError)}`
       });
     }
   }
