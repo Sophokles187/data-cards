@@ -1157,11 +1157,12 @@ export class RendererService {
           container.appendChild(tempDiv.firstChild);
         }
       } else {
-        // Process plain text
-        container.appendChild(document.createTextNode(token.content));
+        // Process plain text - explicitly create and append a text node
+        const textNode = document.createTextNode(token.content);
+        container.appendChild(textNode);
       }
     });
-    
+
     return true; // Indicate that the content was processed
   }
   
@@ -1214,6 +1215,8 @@ export class RendererService {
    * @param wikiLinkText The full wiki link text (e.g., "[[Page|Display]]")
    */
   private createWikiLink(container: HTMLElement, wikiLinkText: string): void {
+    Logger.debug('Creating wiki link from text:', wikiLinkText);
+    
     // Extract the link path and display text
     const wikiLinkRegex = /\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/;
     const match = wikiLinkText.match(wikiLinkRegex);
@@ -1226,8 +1229,8 @@ export class RendererService {
     }
     
     const path = match[1];
-    // Use display text if provided, otherwise clean the path to get a display name
-    const displayText = match[2] || this.getCleanFilename(path);
+    // Use display text if provided, otherwise use the path itself (not cleaned)
+    const displayText = match[2] || path;
     
     Logger.debug(`Creating wiki link: path="${path}", display="${displayText}"`);
     
@@ -1297,8 +1300,48 @@ export class RendererService {
     if (value === null || value === undefined) {
       valueEl.setText('');
     } else if (Array.isArray(value)) {
-      // Format as comma-separated list
-      valueEl.setText(value.join(', '));
+      Logger.debug('Processing array value:', value);
+      
+      // Process each array item
+      value.forEach((item, index) => {
+        // Add comma separator if not the first item
+        if (index > 0) {
+          valueEl.appendChild(document.createTextNode(', '));
+        }
+
+        // Handle string items (potential wiki links or plain text)
+        if (typeof item === 'string') {
+          // Strip surrounding quotes if present (common in YAML)
+          const cleanItem = item.replace(/^["'](.*?)["']$/, '$1');
+          Logger.debug(`Processing array item ${index}:`, { original: item, cleaned: cleanItem });
+
+          // Check if the cleaned item is a wiki link
+          const wikiLinkMatch = cleanItem.match(/^\[\[(.*?)\]\]$/);
+          if (wikiLinkMatch) {
+            // It's a wiki link, render it using createWikiLink
+            Logger.debug(`Creating wiki link from array item: ${cleanItem}`);
+            this.createWikiLink(valueEl, cleanItem);
+          } else {
+            // Not a wiki link, try processing as rich text (handles HTML like <br>)
+            Logger.debug(`Treating array item as plain/rich text: ${cleanItem}`);
+            // If processRichText returns false, it means it was plain text and wasn't handled
+            if (!this.processRichText(valueEl, cleanItem)) {
+              // Explicitly add the plain text item
+              valueEl.appendChild(document.createTextNode(cleanItem));
+            }
+          }
+        } else if (typeof item === 'object' && item !== null && 'path' in item && 'type' in item && item.type === 'file') {
+          // Handle Dataview Link objects within the array
+          Logger.debug('Handling Dataview Link object within array:', item);
+          const path = item.path;
+          const displayText = item.display || this.getCleanFilename(path);
+          this.createWikiLink(valueEl, `[[${path}|${displayText}]]`);
+        } else {
+          // Handle other types (numbers, booleans, etc.) by converting to string
+          Logger.debug(`Treating array item as other type: ${item}`);
+          valueEl.appendChild(document.createTextNode(String(item)));
+        }
+      });
     } else if (typeof value === 'boolean') {
       // Enhanced logging for boolean values
       Logger.debug(`Formatting boolean property with value: ${value} (${typeof value})`);
