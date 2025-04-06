@@ -65,4 +65,4 @@ This preset maximizes information density with minimal spacing, featuring 6 colu
 
 ## Support
 
-If you find DataCards useful, you can [buy me a coffee ☕](https://ko-fi.com/sophokles) to support ongoing development and maintenance.
+If you find DataCards useful, you can [![Support on Ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/sophokles) to support ongoing development and maintenance.
