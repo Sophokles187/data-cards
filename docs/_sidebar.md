@@ -19,7 +19,7 @@
   * [<i class="ph ph-film-strip"></i> Movie Collection](examples/movies.md)
   * [<i class="ph ph-camera"></i> Photo Gallery](examples/photos.md)
   * [<i class="ph ph-check-square"></i> Task Management](examples/tasks.md)
-  * [<i class="ph ph-images"></i> Showcase](showcase.md)
+  * [<i class="ph ph-camera"></i> Showcase](showcase.md)
 
 * <i class="ph ph-question"></i> **Help & Support**
   * [<i class="ph ph-question"></i> FAQ & Troubleshooting](faq.md)
