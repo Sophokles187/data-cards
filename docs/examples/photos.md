@@ -18,8 +18,6 @@ columns: 4
 ```
 
 
-![Photo Gallery Example](../assets/images/screenshot-8.png)
-
 ## Properties to Include in Your Photo Notes
 
 For this example to work, make sure your photo notes have:

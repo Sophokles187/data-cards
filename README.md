@@ -105,6 +105,12 @@ properties: [author, rating, genre]
 
 See the [documentation](https://sophokles187.github.io/data-cards/examples/) for more detailed examples.
 
+## Support Development
+
+If you find DataCards useful and would like to support its development, consider buying me a coffee:
+
+[![Support on Ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/sophokles)
+
 ## License
 
 GNU General Public License v3.0 (GPL-3.0)

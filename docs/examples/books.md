@@ -26,7 +26,7 @@ preset: portrait
 imageProperty: cover
 ```
 
-![Book Library Example](../assets/images/screenshot-6.png)
+![Book Library Example](../assets/images/examples/example-book-lib-1.png)
 
 ## Properties to Include in Your Book Notes
 
@@ -52,7 +52,7 @@ TABLE
   author, 
   rating, 
   genre, 
-  "![]("+cover+")" as Cover,
+  "![]("+cover+")" as cover,
   status,
   dateRead 
 FROM #books

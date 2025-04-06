@@ -11,7 +11,7 @@ TABLE file.link as "Title", director, year, rating, poster as "Poster" FROM #mov
 SORT rating DESC
 
 // Settings
-preset: movie
+preset: portrait
 imageProperty: poster
 ```
 
@@ -51,7 +51,7 @@ FROM #movies
 SORT rating DESC
 
 // Settings
-preset: movie
+preset: portrait
 imageProperty: poster
 defaultDateFormat: YYYY-MM-DD
 properties: [file.link, director, year, rating, genre, watched, runtime]
@@ -67,7 +67,7 @@ WHERE contains(genre, "Sci-Fi")
 SORT rating DESC
 
 // Settings
-preset: movie
+preset: portrait
 imageProperty: poster
 ```
 
@@ -82,7 +82,7 @@ SORT watched DESC
 LIMIT 10
 
 // Settings
-preset: movie
+preset: portrait
 imageProperty: poster
 ```
 

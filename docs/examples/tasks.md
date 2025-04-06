@@ -22,8 +22,6 @@ conditionalFormatting: {
 ```
 
 
-![Task Management Example](../assets/images/screenshot-9.png)
-
 ## Properties to Include in Your Task Notes
 
 For this example to work, make sure your task notes have:
