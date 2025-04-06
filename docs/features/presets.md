@@ -18,7 +18,7 @@ preset: grid
 - Standard card sizing
 - Ideal for general collections
 
-![Grid Preset Example](../assets/images/screenshot-1.png)
+![Grid Preset Example](../assets/images/examples/preset-example-grid.png)
 
 ### Portrait Preset
 
@@ -34,7 +34,7 @@ preset: portrait
 - Taller image area
 - Ideal for books, movies, and other media with cover art
 
-![Portrait Preset Example](../assets/images/screenshot-2.png)
+![Portrait Preset Example](../assets/images/examples/preset-example-portrait.png)
 
 ### Square Preset
 
@@ -51,7 +51,7 @@ preset: square
 - Shows title at the bottom and reveals all properties on hover
 - Ideal for photo collections and visual-first content
 
-![Square Preset Example](../assets/images/screenshot-3.png)
+![Square Preset Example](../assets/images/examples/preset-example-square.png)
 
 ### Compact Preset
 
@@ -67,7 +67,7 @@ preset: compact
 - Image on the left, scrollable content on the right
 - Ideal when you need to see image and details at a glance
 
-![Compact Preset Example](../assets/images/screenshot-4.png)
+![Compact Preset Example](../assets/images/examples/preset-example-compact.png)
 
 ### Dense Preset
 
@@ -83,7 +83,7 @@ preset: dense
 - Smaller text and reduced spacing
 - Ideal for dashboards and when you need to see many items at once
 
-![Dense Preset Example](../assets/images/screenshot-5.png)
+![Dense Preset Example](../assets/images/examples/preset-example-dense.png)
 
 ## Setting a Preset
 

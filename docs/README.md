@@ -45,15 +45,23 @@ Choose from multiple presets to display your data:
 
 ### Grid Preset (Default)
 
-Balanced layout for most use cases with 3 columns by default.
+The default layout with a balanced design suitable for various use cases. It arranges cards in a grid with 3 columns by default.
 
 ### Portrait Preset
 
-Optimized for book covers and portrait images. Features taller cards with "contain" fit to show full images without cropping.
+Optimized for displaying book covers and portrait images. It features taller cards and uses "contain" fit to display full images without cropping.
 
 ### Square Preset
 
-Perfect for photo collections and visual content. Features 1:1 square cards with images as the focus.
+Ideal for photo collections and other visual content. It displays cards in a 1:1 square format, emphasizing the images, with properties shown as an overlay on mouse hover.
+
+### Compact Preset
+
+This preset offers a side-by-side image and content layout, featuring 4 columns by default, with the image on the left and scrollable content on the right, making it ideal when you need to see both the image and details at a glance.
+
+### Dense Preset
+
+This preset maximizes information density with minimal spacing, featuring 6 columns by default, smaller text, and reduced spacing, making it ideal for dashboards and when you need to see many items at once.
 
 ## Support
 
