@@ -15,7 +15,6 @@ preset: portrait
 imageProperty: poster
 ```
 
-![Movie Collection Example](../assets/images/screenshot-7.png)
 
 ## Properties to Include in Your Movie Notes
 
