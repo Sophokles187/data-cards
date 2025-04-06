@@ -872,12 +872,12 @@ export class RendererService {
           // Update placeholder for missing images
           placeholder.setText('Image not found');
         }
-      } catch (error) {
-        // Use warn level for image loading errors since they're handled gracefully
-        Logger.warn('Error loading image:', error);
-        // Update placeholder for error
-        placeholder.setText('Error loading image');
-      }
+       } catch (error) {
+         // Use debug level for image loading errors since they're handled gracefully
+         Logger.debug('Error loading image:', error);
+         // Update placeholder for error
+         placeholder.setText('Error loading image');
+       }
     } else {
       Logger.debug('Handling as local path');
       // Assume local path in the vault
@@ -912,11 +912,11 @@ export class RendererService {
           // Update placeholder for missing images
           placeholder.setText('Image not found');
         }
-      } catch (error) {
-        // Use warn level for image loading errors since they're handled gracefully
-        Logger.warn('Error loading image:', error);
-        // Update placeholder for error
-        placeholder.setText('Error loading image');
+       } catch (error) {
+         // Use debug level for image loading errors since they're handled gracefully
+         Logger.debug('Error loading image:', error);
+         // Update placeholder for error
+         placeholder.setText('Error loading image');
       }
     }
   }
@@ -948,13 +948,13 @@ export class RendererService {
       img.addClass('loaded');
     };
     
-    // Show placeholder if image fails to load
-    img.onerror = (error) => {
-      // Use warn instead of error for CORS issues since they're expected and handled with fallbacks
-      Logger.warn('Failed to load external image with crossorigin attribute:', url);
-      
-      // Second attempt: without crossorigin attribute
-      Logger.debug('Trying again without crossorigin attribute');
+     // Show placeholder if image fails to load
+     img.onerror = (error) => {
+       // Use debug instead of warn for CORS issues since they're expected and handled with fallbacks
+       Logger.debug('Failed to load external image with crossorigin attribute:', url);
+       
+       // Second attempt: without crossorigin attribute
+       Logger.debug('Trying again without crossorigin attribute');
       img.removeAttribute('crossorigin');
       
       img.onload = () => {
@@ -962,13 +962,13 @@ export class RendererService {
         placeholder.remove();
         img.addClass('loaded');
       };
-      
-      img.onerror = (secondError) => {
-        // Use warn instead of error for CORS issues since they're expected and handled with fallbacks
-        Logger.warn('Failed to load external image without crossorigin:', url);
-        
-        // Third attempt: using a proxy service if available
-        // This is a common approach to bypass CORS issues
+       
+       img.onerror = (secondError) => {
+         // Use debug instead of warn for CORS issues since they're expected and handled with fallbacks
+         Logger.debug('Failed to load external image without crossorigin:', url);
+         
+         // Third attempt: using a proxy service if available
+         // This is a common approach to bypass CORS issues
         const proxyUrl = `https://images.weserv.nl/?url=${encodeURIComponent(url)}`;
         Logger.debug('Trying with image proxy service:', proxyUrl);
         
@@ -979,13 +979,13 @@ export class RendererService {
           placeholder.remove();
           img.addClass('loaded');
         };
-        
-        img.onerror = (thirdError) => {
-          // Log as warning since this is an expected issue with external images
-          Logger.warn('All attempts to load image failed:', url);
-          placeholder.setText('Image not found - URL: ' + url);
-          
-          // Create a hidden iframe to try to load the image
+         
+         img.onerror = (thirdError) => {
+           // Log as debug since this is an expected issue with external images and fallbacks exist
+           Logger.debug('All attempts to load image failed:', url);
+           placeholder.setText('Image not found - URL: ' + url);
+           
+           // Create a hidden iframe to try to load the image
           // This can help diagnose if the image exists but has CORS issues
           try {
             const testImg = document.createElement('img');
@@ -1220,12 +1220,12 @@ export class RendererService {
     const wikiLinkRegex = /\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/;
     const match = wikiLinkText.match(wikiLinkRegex);
     
-    if (!match) {
-      // If somehow it's not a valid wiki link format, add as plain text
-      container.appendChild(document.createTextNode(wikiLinkText));
-      Logger.warn('Invalid wiki link format passed to createWikiLink:', wikiLinkText);
-      return;
-    }
+     if (!match) {
+       // If somehow it's not a valid wiki link format, add as plain text
+       container.appendChild(document.createTextNode(wikiLinkText));
+       Logger.debug('Invalid wiki link format passed to createWikiLink:', wikiLinkText); // Changed to debug
+       return;
+     }
     
     const path = match[1];
     // Use display text if provided, otherwise use the path itself (not cleaned)
@@ -1262,11 +1262,11 @@ export class RendererService {
       } else {
         Logger.debug('Hover popover not available, skipping hover registration.');
       }
-    } catch (error) {
-      // Silently catch errors with hover registration, log for debugging
-      Logger.warn('Error registering hover link:', error);
-    }
-  }
+     } catch (error) {
+       // Silently catch errors with hover registration, log for debugging
+       Logger.debug('Error registering hover link:', error); // Changed to debug
+     }
+   }
 
   /**
    * Format a property value based on its type
@@ -1459,13 +1459,13 @@ export class RendererService {
           img.removeClass('loading');
         };
         
-        // Add error handling for property images
-        img.onerror = () => {
-          // Use warn instead of error for image loading issues since they're expected and handled with fallbacks
-          Logger.warn('Failed to load property image:', imageUrl);
-          // Remove the image
-          img.remove();
-          // Add error class and message
+         // Add error handling for property images
+         img.onerror = () => {
+           // Use debug instead of warn for image loading issues since they're expected and handled with fallbacks
+           Logger.debug('Failed to load property image:', imageUrl);
+           // Remove the image
+           img.remove();
+           // Add error class and message
           valueEl.removeClass('loading');
           valueEl.addClass('image-error');
           valueEl.setText('Image not found: ' + imageUrl);

@@ -89,6 +89,8 @@ export function throttle<T extends (...args: any[]) => any>(
  * @param immediate Specify invoking on the leading edge of the timeout.
  * @returns Returns the new debounced function.
  */
+import { Logger } from './logger'; // Import Logger
+
 export function debounce<T extends (...args: any[]) => any>(
   func: T,
   wait: number,
@@ -100,14 +102,13 @@ export function debounce<T extends (...args: any[]) => any>(
   let result: ReturnType<T> | undefined;
 
   function debounced(this: any, ...args: Parameters<T>): ReturnType<T> | undefined {
-    // We can't use Logger here since it's a utility function, so we use console.log
-    console.log(`[DataCards] Debounce called, wait time: ${wait}ms, has existing timeout: ${timeoutId !== null}`);
+    Logger.debug(`Debounce called, wait time: ${wait}ms, has existing timeout: ${timeoutId !== null}`);
     
     const context = this;
     
     // Always clear the previous timeout if it exists
     if (timeoutId) {
-      console.log(`[DataCards] Clearing previous debounce timeout`);
+      Logger.debug(`Clearing previous debounce timeout`);
       clearTimeout(timeoutId);
       timeoutId = null;
     }
@@ -118,7 +119,7 @@ export function debounce<T extends (...args: any[]) => any>(
 
     // Function to execute after the debounce period
     const later = () => {
-      console.log(`[DataCards] Debounce timeout expired, executing function`);
+      Logger.debug(`Debounce timeout expired, executing function`);
       timeoutId = null;
       if (!immediate) {
         result = func.apply(context, args);
@@ -133,12 +134,12 @@ export function debounce<T extends (...args: any[]) => any>(
     const callNow = immediate && !timeoutId;
     
     // Set a new timeout
-    console.log(`[DataCards] Setting new debounce timeout for ${wait}ms`);
+    Logger.debug(`Setting new debounce timeout for ${wait}ms`);
     timeoutId = setTimeout(later, wait);
 
     // If we should call immediately, do so
     if (callNow) {
-      console.log(`[DataCards] Immediate execution requested`);
+      Logger.debug(`Immediate execution requested`);
       result = func.apply(context, args);
       lastArgs = lastThis = null;
     }
