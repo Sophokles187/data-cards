@@ -1,5 +1,8 @@
-![](images/header-image.png)
+
+
 # DataCards for Obsidian
+
+![Header Image](images/header-image.png)
 
 Transform Dataview query results into visually appealing, customizable card layouts.
 
