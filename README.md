@@ -33,8 +33,7 @@ That's it! Your Dataview results will now display as beautiful cards.
 
 - **Custom Code Block**: Use `datacards` code blocks with Dataview query syntax
 - **Flexible Presets**: Multiple card preset options (grid, portrait, square, compact, dense) optimized for different use cases
-- **Property Customization**: Select which properties to display and how they appear
-- **Font Size Options**: Customize text size independently from presets to mix and match features
+- **Highly Customizable**: Adjust nearly all settings per code block, mixing and matching preset characteristics, including property display and font size options.
 - **Image Support**: Display images from frontmatter properties with customizable dimensions
 - **Global Settings**: Default configuration with per-block overrides
 - **Mobile Optimization**: Dedicated mobile settings for better display on small screens
