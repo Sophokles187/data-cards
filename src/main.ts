@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Plugin, MarkdownPostProcessorContext, MarkdownView, Notice } from 'obsidian';
+import { Plugin, MarkdownPostProcessorContext, MarkdownView, Notice, Component, MarkdownRenderChild } from 'obsidian'; // Added MarkdownRenderChild
 import { DataCardsSettings, DEFAULT_SETTINGS } from './models/settings';
 import { DataCardsSettingTab } from './ui/settings-tab';
 import { ParserService } from './services/parser';
@@ -437,8 +437,13 @@ export default class DataCardsPlugin extends Plugin {
         dataToRender = dataToRender.value;
       }
       
-      // If not empty, render the cards with the extracted data
-      this.rendererService.renderCards(el, dataToRender, settings);
+      // Create a MarkdownRenderChild for lifecycle management tied to the element
+      const child = new MarkdownRenderChild(el);
+      ctx.addChild(child); // ctx.addChild expects a MarkdownRenderChild
+      
+      // If not empty, render the cards with the extracted data, passing the child component
+      // MarkdownRenderChild is a subclass of Component, so it's compatible with the renderCards signature
+      this.rendererService.renderCards(el, dataToRender, settings, child); // Pass child
     } catch (queryError) {
       // Handle query execution errors
       Logger.error('Error executing Dataview query:', queryError);

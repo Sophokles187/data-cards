@@ -1,4 +1,4 @@
-import { App, TFile, Platform } from 'obsidian';
+import { App, TFile, Platform, MarkdownRenderer, Component } from 'obsidian'; // Added Component
 import { DataCardsSettings, BlockSettings } from '../models/settings';
 import { DEFAULT_SETTINGS } from '../models/settings';
 import { Logger } from '../utils/logger';
@@ -41,8 +41,9 @@ export class RendererService {
    * @param container The container element to render into
    * @param results The Dataview query results
    * @param blockSettings The settings for this specific block
+   * @param component The parent component for lifecycle management
    */
-  public renderCards(container: HTMLElement, results: any, blockSettings: BlockSettings): void {
+  public renderCards(container: HTMLElement, results: any, blockSettings: BlockSettings, component: Component): void { // Added component parameter
     // SPECIAL CHECK: Log the exact structure of the results
     Logger.debug('SPECIAL CHECK - renderCards called with results:', results);
     
@@ -225,15 +226,15 @@ export class RendererService {
     if (results && results.values && Array.isArray(results.values)) {
       Logger.debug('Detected table-like results with values array');
       // Handle table-like results (most common)
-      this.renderTableResults(cardsContainer, results, settings);
+      this.renderTableResults(cardsContainer, results, settings, component); // Pass component
     } else if (results && Array.isArray(results)) {
       Logger.debug('Detected array results');
       // Handle array results
-      this.renderArrayResults(cardsContainer, results, settings);
+      this.renderArrayResults(cardsContainer, results, settings, component); // Pass component
     } else if (results && typeof results === 'object') {
       Logger.debug('Detected object results');
       // Handle object results
-      this.renderObjectResults(cardsContainer, results, settings);
+      this.renderObjectResults(cardsContainer, results, settings, component); // Pass component
     } else {
       Logger.debug('No valid results detected');
       // Handle error or empty results
@@ -288,8 +289,9 @@ export class RendererService {
    * @param container The container element
    * @param results The Dataview table results
    * @param settings The merged settings
+   * @param component The parent component for lifecycle management
    */
-  private renderTableResults(container: HTMLElement, results: any, settings: DataCardsSettings): void {
+  private renderTableResults(container: HTMLElement, results: any, settings: DataCardsSettings, component: Component): void { // Added component parameter
     const { values, headers } = results;
     
     // Enhanced debug logging for table structure
@@ -409,9 +411,9 @@ export class RendererService {
           // Log the property value for debugging
           Logger.debug(`Property '${property}' value:`, propValue);
           Logger.debug(`Property '${property}' type:`, typeof propValue);
-          
-          // Use the standard property formatting
-          this.addPropertyToCard(propertiesContainer, property, propValue, settings);
+      
+      // Use the standard property formatting, passing the component
+      this.addPropertyToCard(propertiesContainer, property, propValue, settings, component); // Pass component
 
         } else {
           Logger.debug(`Property '${property}' not found in headers`);
@@ -435,8 +437,9 @@ export class RendererService {
    * @param container The container element
    * @param results The Dataview array results
    * @param settings The merged settings
+   * @param component The parent component for lifecycle management
    */
-  private renderArrayResults(container: HTMLElement, results: any[], settings: DataCardsSettings): void {
+  private renderArrayResults(container: HTMLElement, results: any[], settings: DataCardsSettings, component: Component): void { // Added component parameter
     // Create a card for each item in the array
     results.forEach((item: any) => {
       const card = this.createCardElement(container);
@@ -509,7 +512,7 @@ export class RendererService {
       // Add each property to the properties container
       filteredProperties.forEach((property: string) => {
         if (property in item) {
-          this.addPropertyToCard(propertiesContainer, property, item[property], settings);
+          this.addPropertyToCard(propertiesContainer, property, item[property], settings, component); // Pass component
         }
       });
     });
@@ -521,8 +524,9 @@ export class RendererService {
    * @param container The container element
    * @param results The Dataview object results
    * @param settings The merged settings
+   * @param component The parent component for lifecycle management
    */
-  private renderObjectResults(container: HTMLElement, results: any, settings: DataCardsSettings): void {
+  private renderObjectResults(container: HTMLElement, results: any, settings: DataCardsSettings, component: Component): void { // Added component parameter
     // Create a single card for the object
     const card = this.createCardElement(container);
     
@@ -581,7 +585,7 @@ export class RendererService {
       // Add each property to the properties container
       filteredProperties.forEach((property: string) => {
         if (property in results) {
-          this.addPropertyToCard(propertiesContainer, property, results[property], settings);
+          this.addPropertyToCard(propertiesContainer, property, results[property], settings, component); // Pass component
         }
       });
   }
@@ -1011,12 +1015,14 @@ export class RendererService {
    * @param propertyName The name of the property
    * @param propertyValue The value of the property
    * @param settings The settings
+   * @param component The parent component for lifecycle management
    */
   private addPropertyToCard(
     contentEl: HTMLElement, 
     propertyName: string, 
     propertyValue: any, 
-    settings: DataCardsSettings
+    settings: DataCardsSettings,
+    component: Component // Added component parameter
   ): void {
     Logger.debug(`Adding property to card: ${propertyName} = ${propertyValue}`);
     Logger.debug(`Property type: ${typeof propertyValue}`);
@@ -1066,8 +1072,8 @@ export class RendererService {
         // Use custom formatter
         this.formatPropertyWithCustomFormatter(propertyEl, propertyValue, formatter);
       } else {
-        // Use default formatting based on value type
-        this.formatPropertyByType(propertyEl, propertyValue);
+        // Use default formatting based on value type, passing the component
+        this.formatPropertyByType(propertyEl, propertyValue, component); // Pass component
       }
     }
   }
@@ -1116,9 +1122,10 @@ export class RendererService {
    * 
    * @param container The container element to add the processed content to
    * @param value The text value to process
+   * @param component The parent component for lifecycle management
    * @returns True if the content was processed, false if it should be handled by other formatters
    */
-  private processRichText(container: HTMLElement, value: string): boolean {
+  private processRichText(container: HTMLElement, value: string, component: Component): boolean { // Added component parameter
     if (typeof value !== 'string') {
       return false;
     }
@@ -1147,20 +1154,12 @@ export class RendererService {
       if (token.type === 'wikilink') {
         // Process wiki link
         this.createWikiLink(container, token.content);
-      } else if (token.type === 'html') {
-        // Process HTML - use createFragment to handle tags like <br> correctly
-        const fragment = document.createDocumentFragment();
-        const tempDiv = fragment.createDiv();
-        tempDiv.innerHTML = token.content; // Use innerHTML to parse the tag
-        // Append all child nodes (including text nodes if any) from tempDiv to the container
-        while (tempDiv.firstChild) {
-          container.appendChild(tempDiv.firstChild);
-        }
-      } else {
-        // Process plain text - explicitly create and append a text node
-        const textNode = document.createTextNode(token.content);
-        container.appendChild(textNode);
+      } else if (token.type === 'html' || token.type === 'text') {
+        // NEW: Use MarkdownRenderer for HTML and Text tokens
+        // This safely renders basic HTML (like <br>) and Markdown, while sanitizing scripts.
+        MarkdownRenderer.renderMarkdown(token.content, container, '', component); // Pass component instead of null
       }
+      // The original 'else' block for textNode is removed as it's covered above.
     });
 
     return true; // Indicate that the content was processed
@@ -1274,8 +1273,9 @@ export class RendererService {
    * 
    * @param propertyEl The property element
    * @param value The property value
+   * @param component The parent component for lifecycle management
    */
-  private formatPropertyByType(propertyEl: HTMLElement, value: any): void {
+  private formatPropertyByType(propertyEl: HTMLElement, value: any, component: Component): void { // Added component parameter
     // Add detailed debug logging to see exactly what we're dealing with
     Logger.debug('formatPropertyByType called with value:', value);
     Logger.debug('Value type:', typeof value);
@@ -1325,7 +1325,7 @@ export class RendererService {
             // Not a wiki link, try processing as rich text (handles HTML like <br>)
             Logger.debug(`Treating array item as plain/rich text: ${cleanItem}`);
             // If processRichText returns false, it means it was plain text and wasn't handled
-            if (!this.processRichText(valueEl, cleanItem)) {
+            if (!this.processRichText(valueEl, cleanItem, component)) { // Pass component
               // Explicitly add the plain text item
               valueEl.appendChild(document.createTextNode(cleanItem));
             }
@@ -1425,7 +1425,7 @@ export class RendererService {
       }
       
       // Try processing as rich text (handles wiki links, HTML, and mixed content)
-      if (this.processRichText(valueEl, value)) {
+      if (this.processRichText(valueEl, value, component)) { // Pass component
         // If processed successfully, we're done
         return;
       }
