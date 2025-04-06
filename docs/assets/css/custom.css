@@ -957,7 +957,13 @@ section.cover .cover-main p {
 /* Showcase Gallery Styles */
 .showcase-gallery {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); /* Adjust minmax for desired image size */
   gap: 16px;
   margin-top: 24px;
+}
+
+.showcase-gallery img {
+  width: 100%; /* Make images fill their grid cells */
+  height: auto; /* Maintain aspect ratio */
+  object-fit: cover; /* Crop/resize images to fit */
 }
