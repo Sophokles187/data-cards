@@ -1,5 +1,7 @@
 # DataCards for Obsidian
 
+![Header Image](assets/images/header-image.png)
+
 Transform Dataview query results into visually appealing, customizable card layouts.
 
 > 📚 [**Settings Reference**](settings-reference.md) - Complete list of all available settings
