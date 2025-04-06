@@ -2,7 +2,7 @@
 
 # DataCards for Obsidian
 
-![Header Image](images/header-image.png)
+![](docs/asstes/images/header-image.png)
 
 Transform Dataview query results into visually appealing, customizable card layouts.
 
