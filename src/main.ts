@@ -1,17 +1,17 @@
 /*
  * DataCards for Obsidian
  * Copyright (C) 2025 Sophokles187
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
@@ -66,7 +66,7 @@ export default class DataCardsPlugin extends Plugin {
     // Register a command to refresh all datacards blocks
     this.addCommand({
       id: 'refresh-datacards',
-      name: 'Refresh DataCards in active view',
+      name: 'Refresh cards in active view',
       callback: () => {
         this.refreshActiveView(true); // true = show notification
       }
@@ -132,7 +132,7 @@ export default class DataCardsPlugin extends Plugin {
               } else {
                 Logger.debug(`Meta Bind onChange event: file=${filePath}, key=${key}, value=${JSON.stringify(value)}`);
               }
-              
+
               // Force immediate refresh for toggle inputs to ensure they update properly
               if (typeof value === 'boolean') {
                 Logger.debug(`Toggle input detected - using immediate refresh`);
@@ -149,11 +149,11 @@ export default class DataCardsPlugin extends Plugin {
           })
         );
       }
-      
+
       // Also register with metadata manager events for comprehensive coverage
       if (this.metaBindPlugin.metadataManager && typeof this.metaBindPlugin.metadataManager.on === 'function') {
         Logger.debug('Registering using Meta Bind metadataManager events');
-        
+
         // Listen for 'changed' events
         this.registerEvent(
           // @ts-ignore - Using Meta Bind's specific API signature
@@ -162,7 +162,7 @@ export default class DataCardsPlugin extends Plugin {
               // Add special logging for toggle inputs
               if (typeof value === 'boolean') {
                 Logger.debug(`Meta Bind metadataManager 'changed' event (TOGGLE): path=${bindTarget.storagePath}, prop=${JSON.stringify(bindTarget.storageProp)}, value=${JSON.stringify(value)}`);
-                
+
                 // Force immediate refresh for toggle inputs to ensure they update properly
                 Logger.debug(`Toggle input detected in metadataManager - using immediate refresh`);
                 // Use a very short delay for toggle inputs to ensure the UI updates quickly
@@ -178,7 +178,7 @@ export default class DataCardsPlugin extends Plugin {
             }
           })
         );
-        
+
         // Listen for 'deleted' events
         this.registerEvent(
           // @ts-ignore - Using Meta Bind's specific API signature
@@ -190,7 +190,7 @@ export default class DataCardsPlugin extends Plugin {
           })
         );
       }
-      
+
       // Try to register for specific input field events if available
       if (this.metaBindPlugin.api && typeof this.metaBindPlugin.api.onFieldChanged === 'function') {
         Logger.debug('Registering using Meta Bind api.onFieldChanged');
@@ -199,7 +199,7 @@ export default class DataCardsPlugin extends Plugin {
           this.metaBindPlugin.api.onFieldChanged((fieldType: string, filePath: string, key: string, value: any) => {
             if (filePath) {
               Logger.debug(`Meta Bind onFieldChanged event: fieldType=${fieldType}, file=${filePath}, key=${key}, value=${JSON.stringify(value)}`);
-              
+
               // Special handling for toggle fields
               if (fieldType === 'toggle' || typeof value === 'boolean') {
                 Logger.debug(`Toggle field changed - using immediate refresh`);
@@ -244,7 +244,7 @@ export default class DataCardsPlugin extends Plugin {
 
   /**
    * Handle Dataview metadata changes
-   * 
+   *
    * @param type The type of change
    * @param file The file that changed
    */
@@ -280,10 +280,10 @@ export default class DataCardsPlugin extends Plugin {
     // Special handling for boolean values (toggle inputs)
     if (typeof value === 'boolean') {
       Logger.debug(`Toggle value detected in handleMetaBindChange: ${value}`);
-      
+
       // For toggle inputs, we need to force a Dataview cache refresh
       this.forceDataviewCacheRefresh(filePath);
-      
+
       // For toggle inputs, we'll use a shorter delay to ensure they update quickly
       setTimeout(() => {
         this.refreshActiveView(false);
@@ -294,22 +294,22 @@ export default class DataCardsPlugin extends Plugin {
     // Use the debounced refresh for other input types
     this.debouncedRefresh();
   }
-  
+
   /**
    * Force Dataview to refresh its cache for a specific file
    * This is particularly important for boolean properties which might not be properly updated otherwise
-   * 
+   *
    * @param filePath The path of the file to refresh
    */
   private forceDataviewCacheRefresh(filePath: string): void {
     Logger.debug(`Forcing Dataview cache refresh for file: ${filePath}`);
-    
+
     // Check if Dataview is enabled
     if (!this.dataviewApiUtil.isDataviewEnabled()) {
       Logger.warn('Dataview plugin is not enabled, cannot force cache refresh');
       return;
     }
-    
+
     try {
       // Get the Dataview API
       const dataviewApi = this.dataviewApiUtil.getDataviewApi();
@@ -317,14 +317,14 @@ export default class DataCardsPlugin extends Plugin {
         Logger.warn('Dataview API not available, cannot force cache refresh');
         return;
       }
-      
+
       // Get the file from the vault
       const file = this.app.vault.getAbstractFileByPath(filePath);
       if (!file || !('stat' in file)) {
         Logger.warn(`File not found or not a file: ${filePath}`);
         return;
       }
-      
+
       // Force Dataview to refresh its cache for this file
       // This is a bit of a hack, but it's the most reliable way to ensure the cache is refreshed
       // We're using the internal index method which is not officially part of the API
@@ -361,23 +361,23 @@ export default class DataCardsPlugin extends Plugin {
 
   async saveSettings() {
     await this.saveData(this.settings);
-    
+
     // Update logger debug mode if it changed
     Logger.setDebugMode(this.settings.debugMode);
-    
+
     // Update the renderer service with the new settings
     this.rendererService.updateSettings(this.settings);
-    
+
     // Update the debounced refresh function with the new delay
     this.updateDebouncedRefresh();
-    
+
     // Refresh active view's datacards blocks to apply the new settings
     this.refreshActiveView(true); // true = show notification
   }
 
   /**
    * Process a datacards code block
-   * 
+   *
    * @param source The content of the code block
    * @param el The HTML element to render into
    * @param ctx The markdown post processor context
@@ -388,10 +388,10 @@ export default class DataCardsPlugin extends Plugin {
     try {
       // Parse the block content
       const { query, settings } = this.parserService.parseDataCardsBlock(source);
-      
+
       // Check if this is a TABLE WITHOUT ID query
       const isTableWithoutId = query.toLowerCase().includes('table without id');
-      
+
       // If it's a TABLE WITHOUT ID query, we need to modify it to include the file
       let modifiedQuery = query;
       if (isTableWithoutId) {
@@ -400,21 +400,21 @@ export default class DataCardsPlugin extends Plugin {
           modifiedQuery = query.replace(/table without id/i, 'TABLE WITHOUT ID file,');
         }
       }
-      
+
       // Get the source file path
       const sourcePath = ctx.sourcePath;
-      
+
       // Create a container for the Dataview query result
       const dataviewContainer = document.createElement('div');
       dataviewContainer.style.display = 'none';
       document.body.appendChild(dataviewContainer); // Temporarily add to DOM for Dataview to work with it
-      
+
       // Execute the Dataview query
       const result = await this.dataviewApiUtil.executeSafeQuery(modifiedQuery, sourcePath, dataviewContainer);
-      
+
       // Remove the temporary container
       document.body.removeChild(dataviewContainer);
-      
+
       // Check if the result is empty (no matching files)
       if (Array.isArray(result.value) && result.value.length === 0) {
         Logger.debug('Dataview returned empty array');
@@ -430,24 +430,24 @@ export default class DataCardsPlugin extends Plugin {
 
       // Check if result.value is the actual data or if it's wrapped in a structure
       let dataToRender = result.value;
-      
+
       // If the result is the response object itself, extract the actual data
       if (dataToRender && typeof dataToRender === 'object' && 'successful' in dataToRender && 'value' in dataToRender) {
         Logger.debug('Unwrapping nested result structure');
         dataToRender = dataToRender.value;
       }
-      
+
       // Create a MarkdownRenderChild for lifecycle management tied to the element
       const child = new MarkdownRenderChild(el);
       ctx.addChild(child); // ctx.addChild expects a MarkdownRenderChild
-      
+
       // If not empty, render the cards with the extracted data, passing the child component
       // MarkdownRenderChild is a subclass of Component, so it's compatible with the renderCards signature
       this.rendererService.renderCards(el, dataToRender, settings, child); // Pass child
     } catch (queryError) {
       // Handle query execution errors
       Logger.error('Error executing Dataview query:', queryError);
-      
+
       el.createEl('div', {
         cls: 'datacards-error',
         text: `Error executing Dataview query: ${queryError.message || String(queryError)}`
@@ -457,7 +457,7 @@ export default class DataCardsPlugin extends Plugin {
 
   /**
    * Refresh all datacards blocks in the current view
-   * 
+   *
    * @param showNotification Whether to show a notification after refreshing
    */
   private refreshActiveView(showNotification: boolean = true) {
