@@ -7,7 +7,7 @@
   --card-radius: 8px;
   --image-height: 200px;
   --image-fit: cover;
-  
+
   display: grid;
   grid-template-columns: repeat(var(--card-columns), 1fr);
   gap: var(--card-gap);
@@ -730,23 +730,23 @@ a.datacards-tag:hover {
   .datacards-container:not([style*="--card-columns"]) {
     --card-columns: 2;
   }
-  
+
   /* Adjust compact preset for medium screens */
   .datacards-preset-compact .datacards-card {
     flex-direction: column;
     height: auto;
   }
-  
+
   .datacards-preset-compact .datacards-image-container {
     width: 100%;
     border-right: none;
     border-bottom: 1px solid var(--background-modifier-border);
   }
-  
+
   .datacards-preset-compact .datacards-content {
     width: 100%;
   }
-  
+
   /* Adjust dense preset for medium screens */
   .datacards-preset-dense {
     --card-columns: 4;
@@ -758,27 +758,27 @@ a.datacards-tag:hover {
   .datacards-container:not([style*="--card-columns"]) {
     --card-columns: 1;
   }
-  
+
   /* Adjust image height for better mobile viewing */
   .datacards-container:not([style*="--image-height"]) {
     --image-height: 150px;
   }
-  
+
   /* Force all presets to stack vertically on small screens */
   .datacards-preset-compact .datacards-card {
     flex-direction: column;
     height: auto;
   }
-  
+
   .datacards-preset-compact .datacards-image-container {
     width: 100%;
     height: var(--image-height);
   }
-  
+
   .datacards-preset-compact .datacards-content {
     width: 100%;
   }
-  
+
   /* All presets should default to 1 column on mobile */
   .datacards-preset-grid,
   .datacards-preset-portrait,
@@ -787,23 +787,23 @@ a.datacards-tag:hover {
   .datacards-preset-dense {
     --card-columns: 1;
   }
-  
+
   /* Reduce card spacing on mobile */
   .datacards-container {
     gap: 12px;
     margin: 0.5em 0;
   }
-  
+
   /* Make property text slightly smaller on mobile */
   .datacards-property-value {
     font-size: 0.95em;
   }
-  
+
   /* Ensure cards have adequate minimum width on mobile */
   .datacards-card {
     min-width: 200px;
   }
-  
+
   /* Ensure property labels are readable on mobile */
   .datacards-property-label {
     font-size: 0.75em;
@@ -816,15 +816,48 @@ a.datacards-tag:hover {
   .datacards-container {
     --card-columns: 1 !important;
   }
-  
+
   /* Further reduce spacing */
   .datacards-content {
     padding: 12px;
     gap: 6px;
   }
-  
+
   /* Smaller image height for very small screens */
   .datacards-image-container {
     height: 120px;
   }
+}
+
+/* Hidden container for Dataview queries */
+.datacards-hidden-container {
+  display: none;
+}
+
+/* Progress bar width classes */
+.datacards-progress-width-10 { width: 10%; }
+.datacards-progress-width-20 { width: 20%; }
+.datacards-progress-width-30 { width: 30%; }
+.datacards-progress-width-40 { width: 40%; }
+.datacards-progress-width-50 { width: 50%; }
+.datacards-progress-width-60 { width: 60%; }
+.datacards-progress-width-70 { width: 70%; }
+.datacards-progress-width-80 { width: 80%; }
+.datacards-progress-width-90 { width: 90%; }
+.datacards-progress-width-100 { width: 100%; }
+
+/* Badge colors */
+.datacards-badge-default { background-color: var(--interactive-accent); }
+.datacards-badge-red { background-color: #ff5555; }
+.datacards-badge-green { background-color: #50fa7b; }
+.datacards-badge-blue { background-color: #8be9fd; }
+.datacards-badge-yellow { background-color: #f1fa8c; }
+.datacards-badge-purple { background-color: #bd93f9; }
+.datacards-badge-orange { background-color: #ffb86c; }
+.datacards-badge-pink { background-color: #ff79c6; }
+.datacards-badge-gray { background-color: #bfbfbf; }
+
+/* Hidden elements */
+.datacards-hidden {
+  display: none;
 }

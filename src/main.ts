@@ -406,7 +406,7 @@ export default class DataCardsPlugin extends Plugin {
 
       // Create a container for the Dataview query result
       const dataviewContainer = document.createElement('div');
-      dataviewContainer.style.display = 'none';
+      dataviewContainer.className = 'datacards-hidden-container';
       document.body.appendChild(dataviewContainer); // Temporarily add to DOM for Dataview to work with it
 
       // Execute the Dataview query
