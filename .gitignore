@@ -137,6 +137,7 @@ obsidian-meta-bind-docs
 docs-obsidian
 project-description.md
 website-styles
+main.js
 
 # Documentation internal files - not visible on GitHub
 docs/preview-instructions.md
