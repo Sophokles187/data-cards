@@ -97,7 +97,7 @@ export class DataCardsSettingTab extends PluginSettingTab {
           this.plugin.settings.cardSpacing = value;
           await this.plugin.saveSettings();
         }));
-        
+
     new Setting(containerEl)
       .setName('Enable card shadows')
       .setDesc('Add subtle shadows to cards for a more three-dimensional appearance')
@@ -107,7 +107,7 @@ export class DataCardsSettingTab extends PluginSettingTab {
           this.plugin.settings.enableShadows = value;
           await this.plugin.saveSettings();
         }));
-        
+
     new Setting(containerEl)
       .setName('Properties alignment')
       .setDesc('Text alignment for properties and their labels')
@@ -143,7 +143,7 @@ export class DataCardsSettingTab extends PluginSettingTab {
           this.plugin.settings.showFileAsTitle = value;
           await this.plugin.saveSettings();
         }));
-        
+
     new Setting(containerEl)
       .setName('Font size')
       .setDesc('Text size for all card elements (properties, labels, and title)')
@@ -158,10 +158,10 @@ export class DataCardsSettingTab extends PluginSettingTab {
           this.plugin.settings.fontSize = value as any;
           await this.plugin.saveSettings();
         }));
-    
+
     // Card Content Settings
     new Setting(containerEl).setName('Card content').setHeading();
-    
+
     new Setting(containerEl)
       .setName('Scrollable properties')
       .setDesc('Enable scrolling for card properties when they exceed the content height (Note: Square and Compact presets are scrollable by default)') // Assuming Square and Compact are proper nouns
@@ -171,10 +171,10 @@ export class DataCardsSettingTab extends PluginSettingTab {
           this.plugin.settings.scrollableProperties = value;
           await this.plugin.saveSettings();
         }));
-        
+
     // Card Interaction Settings
     new Setting(containerEl).setName('Card interaction').setHeading();
-    
+
     new Setting(containerEl)
       .setName('Enable clickable cards')
       .setDesc('Make the entire card clickable to open the note (not just the title)')
@@ -185,7 +185,7 @@ export class DataCardsSettingTab extends PluginSettingTab {
           await this.plugin.saveSettings();
         }));
 
-    
+
     new Setting(containerEl)
       .setName('Content height')
       .setDesc('Height of the scrollable content area (e.g., 200px)')
@@ -196,10 +196,10 @@ export class DataCardsSettingTab extends PluginSettingTab {
           this.plugin.settings.contentHeight = value || '200px';
           await this.plugin.saveSettings();
         }));
-        
+
     // Formatting settings
     new Setting(containerEl).setName('Formatting').setHeading();
-    
+
     new Setting(containerEl)
       .setName('Default date format')
       .setDesc('Format for displaying dates (YYYY = year, MM = month, DD = day)') // Assuming YYYY, MM, DD are specific format codes
@@ -210,10 +210,10 @@ export class DataCardsSettingTab extends PluginSettingTab {
           this.plugin.settings.defaultDateFormat = value || 'YYYY-MM-DD';
           await this.plugin.saveSettings();
         }));
-    
+
     // Boolean Display Settings
     new Setting(containerEl).setName('Boolean display').setHeading();
-    
+
     new Setting(containerEl)
       .setName('Boolean display mode')
       .setDesc('How to display boolean values in cards')
@@ -226,7 +226,7 @@ export class DataCardsSettingTab extends PluginSettingTab {
           this.plugin.settings.booleanDisplayMode = value as any;
           await this.plugin.saveSettings();
         }));
-    
+
     new Setting(containerEl)
       .setName('Show boolean labels')
       .setDesc('Show text labels for boolean values')
@@ -236,7 +236,7 @@ export class DataCardsSettingTab extends PluginSettingTab {
           this.plugin.settings.showBooleanLabels = value;
           await this.plugin.saveSettings();
         }));
-    
+
     new Setting(containerEl)
       .setName('True text')
       .setDesc('Custom text to display for true values')
@@ -247,7 +247,7 @@ export class DataCardsSettingTab extends PluginSettingTab {
           this.plugin.settings.booleanTrueText = value || 'true';
           await this.plugin.saveSettings();
         }));
-    
+
     new Setting(containerEl)
       .setName('False text')
       .setDesc('Custom text to display for false values')
@@ -258,15 +258,15 @@ export class DataCardsSettingTab extends PluginSettingTab {
           this.plugin.settings.booleanFalseText = value || 'false';
           await this.plugin.saveSettings();
         }));
-    
+
     new Setting(containerEl)
       .setName('Per-card boolean settings')
       .setDesc('Individual cards can override these settings in their code block settings')
       .setDisabled(true);
-    
+
     // Mobile settings
     new Setting(containerEl).setName('Mobile').setHeading();
-    
+
     new Setting(containerEl)
       .setName('Mobile preset')
       .setDesc('Preset to use on mobile devices')
@@ -281,7 +281,7 @@ export class DataCardsSettingTab extends PluginSettingTab {
           this.plugin.settings.mobilePreset = value as any;
           await this.plugin.saveSettings();
         }));
-    
+
     new Setting(containerEl)
       .setName('Mobile columns')
       .setDesc('Number of columns to use on mobile devices (default: 1)')
@@ -293,7 +293,7 @@ export class DataCardsSettingTab extends PluginSettingTab {
           this.plugin.settings.mobileColumns = value;
           await this.plugin.saveSettings();
         }));
-    
+
     new Setting(containerEl)
       .setName('Mobile scrollable properties')
       .setDesc('Enable scrolling for card properties on mobile devices')
@@ -303,7 +303,7 @@ export class DataCardsSettingTab extends PluginSettingTab {
           this.plugin.settings.mobileScrollableProperties = value;
           await this.plugin.saveSettings();
         }));
-    
+
     new Setting(containerEl)
       .setName('Mobile content height')
       .setDesc('Height of the scrollable content area on mobile devices')
@@ -314,7 +314,7 @@ export class DataCardsSettingTab extends PluginSettingTab {
           this.plugin.settings.mobileContentHeight = value || '150px';
           await this.plugin.saveSettings();
         }));
-    
+
     new Setting(containerEl)
       .setName('Force mobile mode')
       .setDesc('Force the plugin to use mobile settings even on desktop (for testing)')
@@ -324,10 +324,10 @@ export class DataCardsSettingTab extends PluginSettingTab {
           this.plugin.settings.forceMobileMode = value;
           await this.plugin.saveSettings();
         }));
-    
+
     // Performance settings
     new Setting(containerEl).setName('Performance').setHeading();
-    
+
     new Setting(containerEl)
       .setName('Enable lazy loading')
       .setDesc('Only load images when they become visible (improves performance with many cards)')
@@ -337,10 +337,10 @@ export class DataCardsSettingTab extends PluginSettingTab {
           this.plugin.settings.enableLazyLoading = value;
           await this.plugin.saveSettings();
         }));
-        
+
     // Update settings
     new Setting(containerEl).setName('Updates').setHeading();
-    
+
     new Setting(containerEl)
       .setName('Enable dynamic updates')
       .setDesc('Automatically update DataCards when properties change (may impact performance)') // Assuming DataCards is a proper noun
@@ -350,7 +350,7 @@ export class DataCardsSettingTab extends PluginSettingTab {
           this.plugin.settings.enableDynamicUpdates = value;
           await this.plugin.saveSettings();
         }));
-    
+
     new Setting(containerEl)
       .setName('Refresh delay')
       .setDesc('Delay in milliseconds before refreshing after a property change (higher values give more time to complete typing)')
@@ -370,15 +370,15 @@ export class DataCardsSettingTab extends PluginSettingTab {
           await this.plugin.saveSettings();
           this.display(); // Refresh the settings tab
         }));
-        
+
     new Setting(containerEl)
       .setName('Per-card dynamic updates')
       .setDesc('Individual cards can override the global setting with "dynamicUpdate: true/false" in their settings')
       .setDisabled(true);
-        
+
     // Debug settings
     new Setting(containerEl).setName('Developer').setHeading();
-    
+
     new Setting(containerEl)
       .setName('Debug mode')
       .setDesc('Enable debug logging (only use during development or troubleshooting)')
@@ -391,15 +391,25 @@ export class DataCardsSettingTab extends PluginSettingTab {
 
     // Help section
     new Setting(containerEl).setName('Help').setHeading();
-    
+
     const helpText = containerEl.createEl('div');
-    helpText.innerHTML = `
-      <p><strong>Basic Usage:</strong><br>
-      Use the <code>datacards</code> code block to create card layouts from Dataview queries.</p>
-      
-      <p><strong>Example:</strong></p>
-      <pre><code>
-\`\`\`datacards
+
+    // Basic Usage section
+    const basicUsagePara = helpText.createEl('p');
+    const basicUsageStrong = basicUsagePara.createEl('strong', { text: 'Basic Usage:' });
+    basicUsagePara.createEl('br');
+    basicUsagePara.appendText('Use the ');
+    basicUsagePara.createEl('code', { text: 'datacards' });
+    basicUsagePara.appendText(' code block to create card layouts from Dataview queries.');
+
+    // Example section
+    const examplePara = helpText.createEl('p');
+    examplePara.createEl('strong', { text: 'Example:' });
+
+    const preElement = helpText.createEl('pre');
+    const codeElement = preElement.createEl('code');
+    codeElement.setText(
+`\`\`\`datacards
 TABLE title, author, rating, cover FROM #books
 SORT rating DESC
 
@@ -407,18 +417,38 @@ SORT rating DESC
 preset: grid
 imageFit: contain
 defaultDateFormat: YYYY
-\`\`\`
-      </code></pre>
-      
-      <p><strong>Important:</strong> You must explicitly include all properties you want to display in your Dataview query (including the image property).</p>
-      
-      <p><strong>Image Support:</strong><br>
-      The plugin supports external URLs, vault images, and wiki links:<br>
-      <code>cover: https://example.com/image.jpg</code> or <code>cover: [[path/to/image.jpg]]</code></p>     
-    
-      <p><strong>Tip:</strong> Data Cards works best with the Editor-Setting "Readable line length" disabled. </p><br>
+\`\`\``
+    );
 
-      <p><a href="https://sophokles187.github.io/data-cards/#/" target="_blank" rel="noopener">View documentation homepage</a></p>
-    `;
+    // Important note
+    const importantPara = helpText.createEl('p');
+    importantPara.createEl('strong', { text: 'Important:' });
+    importantPara.appendText(' You must explicitly include all properties you want to display in your Dataview query (including the image property).');
+
+    // Image Support section
+    const imageSupportPara = helpText.createEl('p');
+    imageSupportPara.createEl('strong', { text: 'Image Support:' });
+    imageSupportPara.createEl('br');
+    imageSupportPara.appendText('The plugin supports external URLs, vault images, and wiki links:');
+    imageSupportPara.createEl('br');
+    imageSupportPara.createEl('code', { text: 'cover: https://example.com/image.jpg' });
+    imageSupportPara.appendText(' or ');
+    imageSupportPara.createEl('code', { text: 'cover: [[path/to/image.jpg]]' });
+
+    // Tip section
+    const tipPara = helpText.createEl('p');
+    tipPara.createEl('strong', { text: 'Tip:' });
+    tipPara.appendText(' Data Cards works best with the Editor-Setting "Readable line length" disabled.');
+
+    helpText.createEl('br');
+
+    // Documentation link
+    const docLinkPara = helpText.createEl('p');
+    const docLink = docLinkPara.createEl('a', {
+      text: 'View documentation homepage',
+      href: 'https://sophokles187.github.io/data-cards/#/'
+    });
+    docLink.setAttribute('target', '_blank');
+    docLink.setAttribute('rel', 'noopener');
   }
 }
