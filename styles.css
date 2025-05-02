@@ -7,6 +7,8 @@
   --card-radius: 8px;
   --image-height: 200px;
   --image-fit: cover;
+  --content-height: 200px;
+  --card-spacing: 16px;
 
   display: grid;
   grid-template-columns: repeat(var(--card-columns), 1fr);
@@ -14,6 +16,14 @@
   width: 100%;
   margin: 1em 0;
 }
+
+/* Column count classes */
+.datacards-columns-1 { grid-template-columns: repeat(1, 1fr); }
+.datacards-columns-2 { grid-template-columns: repeat(2, 1fr); }
+.datacards-columns-3 { grid-template-columns: repeat(3, 1fr); }
+.datacards-columns-4 { grid-template-columns: repeat(4, 1fr); }
+.datacards-columns-5 { grid-template-columns: repeat(5, 1fr); }
+.datacards-columns-6 { grid-template-columns: repeat(6, 1fr); }
 
 /* Individual card */
 .datacards-card {
@@ -72,12 +82,29 @@
   overflow: hidden;
 }
 
+/* Image height classes */
+.datacards-image-height-100 .datacards-image-container { height: 100px; }
+.datacards-image-height-120 .datacards-image-container { height: 120px; }
+.datacards-image-height-150 .datacards-image-container { height: 150px; }
+.datacards-image-height-200 .datacards-image-container { height: 200px; }
+.datacards-image-height-250 .datacards-image-container { height: 250px; }
+.datacards-image-height-300 .datacards-image-container { height: 300px; }
+.datacards-image-height-350 .datacards-image-container { height: 350px; }
+.datacards-image-height-400 .datacards-image-container { height: 400px; }
+
 /* Image */
 .datacards-image {
   width: 100%;
   height: 100%;
   object-fit: var(--image-fit);
 }
+
+/* Image fit classes */
+.datacards-image-fit-cover .datacards-image { object-fit: cover; }
+.datacards-image-fit-contain .datacards-image { object-fit: contain; }
+.datacards-image-fit-fill .datacards-image { object-fit: fill; }
+.datacards-image-fit-scale-down .datacards-image { object-fit: scale-down; }
+.datacards-image-fit-none .datacards-image { object-fit: none; }
 
 /* Image placeholder */
 .datacards-image-placeholder {
@@ -131,6 +158,15 @@
   max-height: var(--content-height, 200px);
   position: relative;
 }
+
+/* Content height classes */
+.datacards-content-height-100 { --content-height: 100px; }
+.datacards-content-height-150 { --content-height: 150px; }
+.datacards-content-height-200 { --content-height: 200px; }
+.datacards-content-height-250 { --content-height: 250px; }
+.datacards-content-height-300 { --content-height: 300px; }
+.datacards-content-height-350 { --content-height: 350px; }
+.datacards-content-height-400 { --content-height: 400px; }
 
 /* Scrollbar styling for webkit browsers */
 .datacards-scrollable-properties::-webkit-scrollbar {
@@ -411,6 +447,11 @@ input[data-boolean-value="false"].datacards-checkbox {
   font-size: 0.8em;
 }
 
+/* Badge with custom color via data attribute */
+.datacards-badge[data-color] {
+  background-color: var(--badge-color);
+}
+
 /* Progress bar */
 .datacards-progress-container {
   width: 100%;
@@ -424,6 +465,7 @@ input[data-boolean-value="false"].datacards-checkbox {
 .datacards-progress-bar {
   height: 100%;
   background-color: var(--interactive-accent);
+  width: var(--progress-percentage, 0%);
 }
 
 .datacards-progress-text {
@@ -858,6 +900,7 @@ a.datacards-tag:hover {
 .datacards-badge-gray { background-color: #bfbfbf; }
 
 /* Hidden elements */
-.datacards-hidden {
+.datacards-hidden,
+.datacards-hidden-checkbox {
   display: none;
 }

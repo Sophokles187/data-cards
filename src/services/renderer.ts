@@ -153,6 +153,7 @@ export class RendererService {
     // Set card spacing via CSS variable in a data attribute
     // This allows the preset class to control preset-specific variables
     cardsContainer.setAttribute('data-card-gap', `${settings.cardSpacing}`);
+    cardsContainer.style.setProperty('--card-spacing', `${settings.cardSpacing}`);
     cardsContainer.style.setProperty('--card-gap', `${settings.cardSpacing}px`); // Keep for backward compatibility
 
     // Determine columns based on preset and device type
@@ -185,8 +186,6 @@ export class RendererService {
     cardsContainer.setAttribute('data-columns', columnsToUse.toString());
     // Add a class for the specific column count
     cardsContainer.addClass(`datacards-columns-${columnsToUse}`);
-    // Keep the style property for backward compatibility
-    cardsContainer.style.setProperty('--card-columns', columnsToUse.toString(), 'important');
 
     // Set image height and fit based on preset if not explicitly provided
 
@@ -218,8 +217,8 @@ export class RendererService {
 
     // Set image height via data attribute
     cardsContainer.setAttribute('data-image-height', imageHeight);
-    // Keep the style property for backward compatibility
-    cardsContainer.style.setProperty('--image-height', imageHeight);
+    // Add a class for the image height
+    cardsContainer.addClass(`datacards-image-height-${imageHeight.replace('px', '')}`);
 
     // For image fit
     let imageFit: string;
@@ -234,8 +233,6 @@ export class RendererService {
     // Set image fit via data attribute and class
     cardsContainer.setAttribute('data-image-fit', imageFit);
     cardsContainer.addClass(`datacards-image-fit-${imageFit}`);
-    // Keep the style property for backward compatibility
-    cardsContainer.style.setProperty('--image-fit', imageFit);
 
     // Handle different types of Dataview results
     if (results && results.values && Array.isArray(results.values)) {
@@ -392,8 +389,7 @@ export class RendererService {
         // Set content height via data attribute
         const contentHeight = this.getContentHeight(settings);
         propertiesContainer.setAttribute('data-content-height', contentHeight);
-        // Keep the style property for backward compatibility
-        propertiesContainer.style.setProperty('--content-height', contentHeight);
+        propertiesContainer.addClass(`datacards-content-height-${contentHeight.replace('px', '')}`);
       }
 
       // Add properties
@@ -511,8 +507,7 @@ export class RendererService {
         // Set content height via data attribute
         const contentHeight = this.getContentHeight(settings);
         propertiesContainer.setAttribute('data-content-height', contentHeight);
-        // Keep the style property for backward compatibility
-        propertiesContainer.style.setProperty('--content-height', contentHeight);
+        propertiesContainer.addClass(`datacards-content-height-${contentHeight.replace('px', '')}`);
       }
 
       // Determine which properties to show
@@ -586,8 +581,7 @@ export class RendererService {
         // Set content height via data attribute
         const contentHeight = this.getContentHeight(settings);
         propertiesContainer.setAttribute('data-content-height', contentHeight);
-        // Keep the style property for backward compatibility
-        propertiesContainer.style.setProperty('--content-height', contentHeight);
+        propertiesContainer.addClass(`datacards-content-height-${contentHeight.replace('px', '')}`);
       }
 
       // Determine which properties to show
@@ -865,12 +859,11 @@ export class RendererService {
       try {
         // Get the file from the vault
         const abstractFile = this.app.vault.getAbstractFileByPath(path);
-        // Check if it's a TFile (has a stat property which is a characteristic of TFile)
-        if (abstractFile && 'stat' in abstractFile) {
+        // Check if it's a TFile using instanceof
+        if (abstractFile && abstractFile instanceof TFile) {
           Logger.debug('Found file in vault:', abstractFile);
-          // Cast to TFile and get the URL for the file
-          const file = abstractFile as TFile;
-          const resourcePath = this.app.vault.getResourcePath(file);
+          // Use the file directly without casting
+          const resourcePath = this.app.vault.getResourcePath(abstractFile);
           Logger.debug('Resource path:', resourcePath);
 
           const img = imageContainer.createEl('img', {
@@ -905,12 +898,11 @@ export class RendererService {
       try {
         // Get the file from the vault
         const abstractFile = this.app.vault.getAbstractFileByPath(imagePath);
-        // Check if it's a TFile (has a stat property which is a characteristic of TFile)
-        if (abstractFile && 'stat' in abstractFile) {
+        // Check if it's a TFile using instanceof
+        if (abstractFile && abstractFile instanceof TFile) {
           Logger.debug('Found file in vault:', abstractFile);
-          // Cast to TFile and get the URL for the file
-          const file = abstractFile as TFile;
-          const resourcePath = this.app.vault.getResourcePath(file);
+          // Use the file directly without casting
+          const resourcePath = this.app.vault.getResourcePath(abstractFile);
           Logger.debug('Resource path:', resourcePath);
 
           const img = imageContainer.createEl('img', {
@@ -1393,12 +1385,11 @@ export class RendererService {
         // Create a hidden checkbox for styling purposes when in text-only mode
         if (displayMode === 'text') {
           const hiddenCheckbox = booleanContainer.createEl('input', {
-            cls: 'datacards-checkbox',
+            cls: 'datacards-checkbox datacards-hidden-checkbox',
             attr: {
               type: 'checkbox',
               disabled: 'disabled',
-              'data-boolean-value': value.toString(),
-              style: 'display: none;' // Hide it visually
+              'data-boolean-value': value.toString()
             },
           });
           hiddenCheckbox.checked = value;
@@ -1617,9 +1608,9 @@ export class RendererService {
       if (options.color.toLowerCase() in colorMap) {
         badge.addClass(colorMap[options.color.toLowerCase()]);
       } else {
-        // For custom colors, set data attribute and keep inline style for backward compatibility
+        // For custom colors, set data attribute and CSS variable
         badge.setAttribute('data-color', options.color);
-        badge.style.backgroundColor = options.color;
+        badge.style.setProperty('--badge-color', options.color);
       }
     } else {
       // Default color class
@@ -1651,8 +1642,8 @@ export class RendererService {
 
     // Set data attribute for exact percentage
     progressBar.setAttribute('data-percentage', `${percentage}`);
-    // Keep the style property for backward compatibility
-    progressBar.style.width = `${percentage}%`;
+    // Set CSS variable for the width
+    progressBar.style.setProperty('--progress-percentage', `${percentage}%`);
 
     // Add text if specified
     if (options?.showText) {
