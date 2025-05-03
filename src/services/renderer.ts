@@ -1,4 +1,4 @@
-import { App, TFile, Platform, MarkdownRenderer, Component } from 'obsidian'; // Added Component
+import { App, TFile, Platform, MarkdownRenderer, Component, requestUrl } from 'obsidian'; // Added Component and requestUrl
 import { DataCardsSettings, BlockSettings } from '../models/settings';
 import { DEFAULT_SETTINGS } from '../models/settings';
 import { Logger } from '../utils/logger';
@@ -724,7 +724,12 @@ export class RendererService {
     if (this.currentSettings?.enableLazyLoading) {
       this.lazyLoadImage(imageContainer, placeholder, imagePath);
     } else {
-      this.loadImage(imageContainer, placeholder, imagePath);
+      // Handle the Promise but don't await it since this method is not async
+      this.loadImage(imageContainer, placeholder, imagePath)
+        .catch(error => {
+          Logger.debug('Error loading image:', error);
+          placeholder.setText('Error loading image');
+        });
     }
   }
 
@@ -796,10 +801,14 @@ export class RendererService {
         if (entry.isIntersecting) {
           Logger.debug('Image container is now visible, loading image:', imagePath);
 
-          // Load the image
-          this.loadImage(imageContainer, placeholder, imagePath);
+          // Load the image - handle the Promise but don't await it
+          this.loadImage(imageContainer, placeholder, imagePath)
+            .catch(error => {
+              Logger.debug('Error in lazy loading image:', error);
+              placeholder.setText('Error loading image');
+            });
 
-          // Stop observing once loaded
+          // Stop observing once the loading process has started
           observer.disconnect();
         }
       });
@@ -819,7 +828,7 @@ export class RendererService {
    * @param placeholder The placeholder element
    * @param imagePath The path to the image
    */
-  private loadImage(imageContainer: HTMLElement, placeholder: HTMLElement, imagePath: string): void {
+  private async loadImage(imageContainer: HTMLElement, placeholder: HTMLElement, imagePath: string): Promise<void> {
     // Check for markdown image syntax: ![alt text](url) or ![|size](url)
     const markdownImageMatch = imagePath.match(/!\[(.*?)\]\((.*?)\)/);
     if (markdownImageMatch) {
@@ -828,7 +837,7 @@ export class RendererService {
       Logger.debug('Extracted URL from markdown image syntax:', imageUrl);
 
       // Use the extracted URL for loading
-      this.loadImage(imageContainer, placeholder, imageUrl);
+      await this.loadImage(imageContainer, placeholder, imageUrl);
       return;
     }
 
@@ -841,7 +850,7 @@ export class RendererService {
       Logger.debug('Cleaned URL:', cleanUrl);
 
       // Try to load the image with multiple approaches
-      this.loadExternalImage(imageContainer, placeholder, cleanUrl);
+      await this.loadExternalImage(imageContainer, placeholder, cleanUrl);
     } else if (imagePath.startsWith('[[') && imagePath.endsWith(']]')) {
       Logger.debug('Handling as wiki link');
       // Wiki link
@@ -941,7 +950,7 @@ export class RendererService {
    * @param placeholder The placeholder element
    * @param url The URL of the image
    */
-  private loadExternalImage(imageContainer: HTMLElement, placeholder: HTMLElement, url: string): void {
+  private async loadExternalImage(imageContainer: HTMLElement, placeholder: HTMLElement, url: string): Promise<void> {
     Logger.debug('Loading external image with URL:', url);
 
     // First attempt: with crossorigin attribute
@@ -962,7 +971,7 @@ export class RendererService {
     };
 
      // Show placeholder if image fails to load
-     img.onerror = (error) => {
+     img.onerror = async (error) => {
        // Use debug instead of warn for CORS issues since they're expected and handled with fallbacks
        Logger.debug('Failed to load external image with crossorigin attribute:', url);
 
@@ -976,50 +985,69 @@ export class RendererService {
         img.addClass('loaded');
       };
 
-       img.onerror = (secondError) => {
+       img.onerror = async (secondError) => {
          // Use debug instead of warn for CORS issues since they're expected and handled with fallbacks
          Logger.debug('Failed to load external image without crossorigin:', url);
 
-         // Third attempt: using a proxy service if available
-         // This is a common approach to bypass CORS issues
-        const proxyUrl = `https://images.weserv.nl/?url=${encodeURIComponent(url)}`;
-        Logger.debug('Trying with image proxy service:', proxyUrl);
+         // Third attempt: using requestUrl and base64 encoding
+         Logger.debug('Trying with requestUrl and base64 encoding:', url);
 
-        img.src = proxyUrl;
+         try {
+           // Use Obsidian's requestUrl function to fetch the image without CORS issues
+           const response = await requestUrl({ url: url });
 
-        img.onload = () => {
-          Logger.debug('External image loaded successfully via proxy:', proxyUrl);
-          placeholder.remove();
-          img.addClass('loaded');
-        };
+           // Check if the response is an image
+           if (response.arrayBuffer && response.status === 200) {
+             // Convert the array buffer to base64
+             const base64 = this.arrayBufferToBase64(response.arrayBuffer);
 
-         img.onerror = (thirdError) => {
-           // Log as debug since this is an expected issue with external images and fallbacks exist
-           Logger.debug('All attempts to load image failed:', url);
+             // Determine the content type from the response headers or use a default
+             const contentType = response.headers?.['content-type'] || 'image/png';
+
+             // Create a data URL
+             const dataUrl = `data:${contentType};base64,${base64}`;
+
+             // Set the image source to the data URL
+             img.src = dataUrl;
+
+             img.onload = () => {
+               Logger.debug('External image loaded successfully via requestUrl and base64:', url);
+               placeholder.remove();
+               img.addClass('loaded');
+             };
+
+             img.onerror = (thirdError) => {
+               Logger.debug('Failed to load image with base64 encoding:', url);
+               placeholder.setText('Image not found - URL: ' + url);
+             };
+           } else {
+             throw new Error(`Failed to fetch image: ${response.status}`);
+           }
+         } catch (e) {
+           // Log as debug since this is an expected issue with external images
+           Logger.debug('All attempts to load image failed:', url, e);
            placeholder.setText('Image not found - URL: ' + url);
+         }
+       };
+     };
+  }
 
-           // Create a hidden iframe to try to load the image
-          // This can help diagnose if the image exists but has CORS issues
-          try {
-            const testImg = document.createElement('img');
-            testImg.className = 'datacards-hidden';
-            testImg.setAttribute('data-test-url', url);
-            testImg.src = url;
-            document.body.appendChild(testImg);
+  /**
+   * Convert an ArrayBuffer to a base64 string
+   *
+   * @param buffer The ArrayBuffer to convert
+   * @returns The base64 string
+   */
+  private arrayBufferToBase64(buffer: ArrayBuffer): string {
+    let binary = '';
+    const bytes = new Uint8Array(buffer);
+    const len = bytes.byteLength;
 
-            // Remove the test image after a short delay
-            setTimeout(() => {
-              if (document.body.contains(testImg)) {
-                document.body.removeChild(testImg);
-              }
-            }, 3000);
-          } catch (e) {
-            // Use debug level for this diagnostic error since it's not critical
-            Logger.debug('Error during final test:', e);
-          }
-        };
-      };
-    };
+    for (let i = 0; i < len; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+
+    return window.btoa(binary);
   }
 
   /**
@@ -1169,9 +1197,9 @@ export class RendererService {
         // Process wiki link
         this.createWikiLink(container, token.content);
       } else if (token.type === 'html' || token.type === 'text') {
-        // NEW: Use MarkdownRenderer for HTML and Text tokens
+        // Use MarkdownRenderer.render for HTML and Text tokens
         // This safely renders basic HTML (like <br>) and Markdown, while sanitizing scripts.
-        MarkdownRenderer.renderMarkdown(token.content, container, '', component); // Pass component instead of null
+        MarkdownRenderer.render(this.app, token.content, container, '', component);
       }
       // The original 'else' block for textNode is removed as it's covered above.
     });
