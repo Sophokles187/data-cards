@@ -150,11 +150,10 @@ export class RendererService {
       Logger.debug('Applied small font size for dense preset');
     }
 
-    // Set card spacing via CSS variable in a data attribute
+    // Set card spacing via data attribute
     // This allows the preset class to control preset-specific variables
     cardsContainer.setAttribute('data-card-gap', `${settings.cardSpacing}`);
-    cardsContainer.style.setProperty('--card-spacing', `${settings.cardSpacing}`);
-    cardsContainer.style.setProperty('--card-gap', `${settings.cardSpacing}px`); // Keep for backward compatibility
+    // CSS will handle setting the variables based on the data attribute
 
     // Determine columns based on preset and device type
     let columnsToUse: number;
@@ -1636,9 +1635,9 @@ export class RendererService {
       if (options.color.toLowerCase() in colorMap) {
         badge.addClass(colorMap[options.color.toLowerCase()]);
       } else {
-        // For custom colors, set data attribute and CSS variable
+        // For custom colors, set data attribute only
+        // CSS will use this attribute to set the color
         badge.setAttribute('data-color', options.color);
-        badge.style.setProperty('--badge-color', options.color);
       }
     } else {
       // Default color class
@@ -1669,9 +1668,9 @@ export class RendererService {
     });
 
     // Set data attribute for exact percentage
-    progressBar.setAttribute('data-percentage', `${percentage}`);
-    // Set CSS variable for the width
-    progressBar.style.setProperty('--progress-percentage', `${percentage}%`);
+    // Round to nearest 5% for CSS classes
+    const roundedPercentage = Math.round(percentage / 5) * 5;
+    progressBar.setAttribute('data-percentage', `${roundedPercentage}`);
 
     // Add text if specified
     if (options?.showText) {

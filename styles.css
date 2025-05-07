@@ -17,6 +17,16 @@
   margin: 1em 0;
 }
 
+/* Set card spacing based on data attribute */
+.datacards-container[data-card-gap="4"] { --card-gap: 4px; --card-spacing: 4; }
+.datacards-container[data-card-gap="8"] { --card-gap: 8px; --card-spacing: 8; }
+.datacards-container[data-card-gap="12"] { --card-gap: 12px; --card-spacing: 12; }
+.datacards-container[data-card-gap="16"] { --card-gap: 16px; --card-spacing: 16; }
+.datacards-container[data-card-gap="20"] { --card-gap: 20px; --card-spacing: 20; }
+.datacards-container[data-card-gap="24"] { --card-gap: 24px; --card-spacing: 24; }
+.datacards-container[data-card-gap="28"] { --card-gap: 28px; --card-spacing: 28; }
+.datacards-container[data-card-gap="32"] { --card-gap: 32px; --card-spacing: 32; }
+
 /* Column count classes */
 .datacards-columns-1 { grid-template-columns: repeat(1, 1fr); }
 .datacards-columns-2 { grid-template-columns: repeat(2, 1fr); }
@@ -449,8 +459,21 @@ input[data-boolean-value="false"].datacards-checkbox {
 
 /* Badge with custom color via data attribute */
 .datacards-badge[data-color] {
-  background-color: var(--badge-color);
+  background-color: var(--badge-color, currentColor);
 }
+
+/* Generate CSS for badge colors */
+.datacards-badge[data-color="red"] { --badge-color: #ff5555; }
+.datacards-badge[data-color="green"] { --badge-color: #50fa7b; }
+.datacards-badge[data-color="blue"] { --badge-color: #8be9fd; }
+.datacards-badge[data-color="yellow"] { --badge-color: #f1fa8c; }
+.datacards-badge[data-color="purple"] { --badge-color: #bd93f9; }
+.datacards-badge[data-color="orange"] { --badge-color: #ffb86c; }
+.datacards-badge[data-color="pink"] { --badge-color: #ff79c6; }
+.datacards-badge[data-color="gray"] { --badge-color: #bfbfbf; }
+/* For any other color, we'll use the color value directly */
+.datacards-badge[data-color="#000000"] { --badge-color: #000000; }
+/* This is just an example - in practice, we can't enumerate all possible colors */
 
 /* Progress bar */
 .datacards-progress-container {
@@ -467,6 +490,29 @@ input[data-boolean-value="false"].datacards-checkbox {
   background-color: var(--interactive-accent);
   width: var(--progress-percentage, 0%);
 }
+
+/* Set progress percentage based on data attribute */
+.datacards-progress-bar[data-percentage="0"] { --progress-percentage: 0%; }
+.datacards-progress-bar[data-percentage="5"] { --progress-percentage: 5%; }
+.datacards-progress-bar[data-percentage="10"] { --progress-percentage: 10%; }
+.datacards-progress-bar[data-percentage="15"] { --progress-percentage: 15%; }
+.datacards-progress-bar[data-percentage="20"] { --progress-percentage: 20%; }
+.datacards-progress-bar[data-percentage="25"] { --progress-percentage: 25%; }
+.datacards-progress-bar[data-percentage="30"] { --progress-percentage: 30%; }
+.datacards-progress-bar[data-percentage="35"] { --progress-percentage: 35%; }
+.datacards-progress-bar[data-percentage="40"] { --progress-percentage: 40%; }
+.datacards-progress-bar[data-percentage="45"] { --progress-percentage: 45%; }
+.datacards-progress-bar[data-percentage="50"] { --progress-percentage: 50%; }
+.datacards-progress-bar[data-percentage="55"] { --progress-percentage: 55%; }
+.datacards-progress-bar[data-percentage="60"] { --progress-percentage: 60%; }
+.datacards-progress-bar[data-percentage="65"] { --progress-percentage: 65%; }
+.datacards-progress-bar[data-percentage="70"] { --progress-percentage: 70%; }
+.datacards-progress-bar[data-percentage="75"] { --progress-percentage: 75%; }
+.datacards-progress-bar[data-percentage="80"] { --progress-percentage: 80%; }
+.datacards-progress-bar[data-percentage="85"] { --progress-percentage: 85%; }
+.datacards-progress-bar[data-percentage="90"] { --progress-percentage: 90%; }
+.datacards-progress-bar[data-percentage="95"] { --progress-percentage: 95%; }
+.datacards-progress-bar[data-percentage="100"] { --progress-percentage: 100%; }
 
 .datacards-progress-text {
   position: absolute;
