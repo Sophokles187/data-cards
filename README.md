@@ -40,12 +40,6 @@ That's it! Your Dataview results will now display as beautiful cards.
 
 Visit the [documentation site](https://sophokles187.github.io/data-cards/) for complete guides, examples, and reference materials:
 
-- [Getting Started](https://sophokles187.github.io/data-cards/getting-started.html)
-- [Installation Guide](https://sophokles187.github.io/data-cards/installation.html)
-- [Features Overview](https://sophokles187.github.io/data-cards/features/)
-- [Example Usage](https://sophokles187.github.io/data-cards/examples/)
-- [FAQ & Troubleshooting](https://sophokles187.github.io/data-cards/faq.html)
-
 ## Requirements
 
 - [Obsidian](https://obsidian.md/) v0.15.0+
