@@ -10,11 +10,8 @@ Transform Dataview query results into visually appealing, customizable card layo
 
 ## Quick Start
 
-1. **Install**: Download `main.js` , `manifest.json` and `style.css` from [releases page](https://github.com/Sophokles187/data-cards/releases)
-2. Go to `.obsidian/plugins/` create the folder `data-cards` and copy over the downloaded files
-3. (Or install using the [BRAT plugin](https://github.com/TfTHacker/obsidian42-brat))
-4. **Enable**: Activate the plugin in Obsidian's Community Plugins settings
-5. **Use**: Create a code block with the `datacards` language and write a Dataview query:
+1. **Enable**: Activate the plugin in Obsidian's Community Plugins settings
+2. **Use**: Create a code block with the `datacards` language and write a Dataview query:
 
 ````markdown
 ```datacards
@@ -56,34 +53,13 @@ Visit the [documentation site](https://sophokles187.github.io/data-cards/) for c
 
 ## Installation
 
-### Option 1: Community Plugins 
+### Community Plugins 
 > **Note**: DataCards is not yet available in the Community Plugins store. Please use BRAT or manual installation until then.
 
 1. Open Obsidian Settings
 2. Go to Community Plugins
 3. Click "Browse" and search for "Data Cards"
 4. Click "Install", then "Enable"
-
-### Option 2: BRAT Plugin 
-1. Install the [BRAT plugin](https://github.com/TfTHacker/obsidian42-brat) through Community Plugins
-2. Open BRAT settings in Obsidian
-3. Click "Add Beta Plugin"
-4. Enter the DataCards repository URL: `https://github.com/Sophokles187/data-cards`
-5. Click "Add Plugin"
-6. Enable DataCards in Community Plugins settings
-
-### Option 3: Manual Installation 
-1. Download the latest release from the [releases page](https://github.com/Sophokles187/data-cards/releases)
-2. Download these files:
-   - `main.js`
-   - `manifest.json`
-   - `style.css`
-3. Navigate to your Obsidian vault's `.obsidian/plugins/` directory
-4. Create a new folder named `data-cards`
-5. Copy the downloaded files into the `data-cards` folder
-6. Enable the plugin in Obsidian's Community Plugins settings
-
-> **Note**: After installation, you may need to restart Obsidian for the changes to take effect.
 
 ## Example Usage
 
