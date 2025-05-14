@@ -260,7 +260,7 @@ export class RendererService {
    * @param message The error message
    */
   private renderError(container: HTMLElement, message: string): void {
-    const errorEl = container.createEl('div', {
+    container.createEl('div', {
       cls: 'datacards-error',
       text: message,
     });
@@ -286,7 +286,7 @@ export class RendererService {
     Logger.debug('Created cards container for empty state');
 
     // Add the empty state message with appropriate styling
-    const emptyStateEl = cardsContainer.createEl('div', {
+    cardsContainer.createEl('div', {
       cls: 'datacards-empty-state',
       text: message,
     });
@@ -970,7 +970,7 @@ export class RendererService {
     };
 
      // Show placeholder if image fails to load
-     img.onerror = async (error) => {
+     img.onerror = async () => {
        // Use debug instead of warn for CORS issues since they're expected and handled with fallbacks
        Logger.debug('Failed to load external image with crossorigin attribute:', url);
 
@@ -984,7 +984,7 @@ export class RendererService {
         img.addClass('loaded');
       };
 
-       img.onerror = async (secondError) => {
+       img.onerror = async () => {
          // Use debug instead of warn for CORS issues since they're expected and handled with fallbacks
          Logger.debug('Failed to load external image without crossorigin:', url);
 
@@ -1015,7 +1015,7 @@ export class RendererService {
                img.addClass('loaded');
              };
 
-             img.onerror = (thirdError) => {
+             img.onerror = () => {
                Logger.debug('Failed to load image with base64 encoding:', url);
                placeholder.setText('Image not found - URL: ' + url);
              };
@@ -1149,7 +1149,7 @@ export class RendererService {
         this.formatAsDate(valueEl, value, formatter.options);
         break;
       case 'tags':
-        this.formatAsTags(valueEl, value, formatter.options);
+        this.formatAsTags(valueEl, value);
         break;
       default:
         // Default to text
@@ -1195,6 +1195,17 @@ export class RendererService {
       if (token.type === 'wikilink') {
         // Process wiki link
         this.createWikiLink(container, token.content);
+      } else if (token.type === 'url') {
+        // Process URL as clickable link
+        container.createEl('a', {
+          cls: 'external-link',
+          text: token.content,
+          attr: {
+            href: token.content,
+            target: '_blank',
+            rel: 'noopener'
+          }
+        });
       } else if (token.type === 'html' || token.type === 'text') {
         // Use MarkdownRenderer.render for HTML and Text tokens
         // This safely renders basic HTML (like <br>) and Markdown, while sanitizing scripts.
@@ -1207,19 +1218,20 @@ export class RendererService {
   }
 
   /**
-   * Tokenize rich text into wiki links, HTML tags/entities, and plain text segments
+   * Tokenize rich text into wiki links, HTML tags/entities, URLs, and plain text segments
    *
    * @param text The text to tokenize
    * @returns Array of tokens with type and content
    */
-  private tokenizeRichText(text: string): Array<{type: 'wikilink' | 'html' | 'text', content: string}> {
-    const tokens: Array<{type: 'wikilink' | 'html' | 'text', content: string}> = [];
+  private tokenizeRichText(text: string): Array<{type: 'wikilink' | 'html' | 'text' | 'url', content: string}> {
+    const tokens: Array<{type: 'wikilink' | 'html' | 'text' | 'url', content: string}> = [];
 
-    // Regex to find wiki links OR HTML tags/entities
+    // Regex to find wiki links OR HTML tags/entities OR URLs
     // [[...]] captures wiki links
     // <...> captures HTML tags
     // &...; captures HTML entities
-    const combinedRegex = /(\[\[.*?\]\])|(<[^>]+>|&[a-zA-Z#0-9]+;)/g;
+    // https?://... captures URLs
+    const combinedRegex = /(\[\[.*?\]\])|(<[^>]+>|&[a-zA-Z#0-9]+;)|(https?:\/\/[^\s"'<>[\]{}]+)/g;
 
     let lastIndex = 0;
     let match;
@@ -1230,11 +1242,13 @@ export class RendererService {
         tokens.push({ type: 'text', content: text.substring(lastIndex, match.index) });
       }
 
-      // Add the matched token (wiki link or HTML)
+      // Add the matched token (wiki link, HTML, or URL)
       if (match[1]) { // Wiki link
         tokens.push({ type: 'wikilink', content: match[1] });
       } else if (match[2]) { // HTML tag or entity
         tokens.push({ type: 'html', content: match[2] });
+      } else if (match[3]) { // URL
+        tokens.push({ type: 'url', content: match[3] });
       }
 
       lastIndex = match.index + match[0].length;
@@ -1362,8 +1376,12 @@ export class RendererService {
             // It's a wiki link, render it using createWikiLink
             Logger.debug(`Creating wiki link from array item: ${cleanItem}`);
             this.createWikiLink(valueEl, cleanItem);
+          } else if (this.containsUrl(cleanItem)) {
+            // Check if the item contains URLs
+            Logger.debug(`Array item contains URLs: ${cleanItem}`);
+            this.renderTextWithUrls(valueEl, cleanItem);
           } else {
-            // Not a wiki link, try processing as rich text (handles HTML like <br>)
+            // Not a wiki link or URL, try processing as rich text (handles HTML like <br>)
             Logger.debug(`Treating array item as plain/rich text: ${cleanItem}`);
             // If processRichText returns false, it means it was plain text and wasn't handled
             if (!this.processRichText(valueEl, cleanItem, component)) { // Pass component
@@ -1422,7 +1440,7 @@ export class RendererService {
           hiddenCheckbox.checked = value;
         }
 
-        const textSpan = booleanContainer.createEl('span', {
+        booleanContainer.createEl('span', {
           cls: 'datacards-boolean-text',
           text: value ? trueText : falseText
         });
@@ -1517,7 +1535,7 @@ export class RendererService {
       // Check for tags
       if (value.startsWith('#')) {
         // Tag - make it a clickable link
-        const tag = valueEl.createEl('a', {
+        valueEl.createEl('a', {
           cls: 'datacards-tag tag-link',
           text: value,
           attr: {
@@ -1529,9 +1547,15 @@ export class RendererService {
         return;
       }
 
-      // If none of the above, treat as plain text
-      Logger.debug('Treating value as plain text:', value);
-      valueEl.setText(value);
+      // Check if the text contains URLs and convert them to clickable links
+      if (this.containsUrl(value)) {
+        Logger.debug('Text contains URLs, converting to clickable links:', value);
+        this.renderTextWithUrls(valueEl, value);
+      } else {
+        // If no URLs, treat as plain text
+        Logger.debug('Treating value as plain text:', value);
+        valueEl.setText(value);
+      }
 
     } else if (typeof value === 'object' && value !== null) {
       // Check if it's a Dataview Link object
@@ -1842,7 +1866,7 @@ export class RendererService {
         }
 
         // Create a proper Obsidian internal link
-        const link = valueEl.createEl('a', {
+        valueEl.createEl('a', {
           cls: 'internal-link datacards-file-link',
           text: displayText,
           attr: {
@@ -1872,7 +1896,7 @@ export class RendererService {
       }
 
       // Create a proper Obsidian internal link
-      const link = valueEl.createEl('a', {
+      valueEl.createEl('a', {
         cls: 'internal-link datacards-file-link',
         text: displayText,
         attr: {
@@ -1887,7 +1911,7 @@ export class RendererService {
       // Extract just the filename without extension
       const displayText = this.getCleanFilename(stringValue);
 
-      const link = valueEl.createEl('a', {
+      valueEl.createEl('a', {
         cls: 'internal-link datacards-file-link',
         text: displayText,
         attr: {
@@ -1927,9 +1951,8 @@ export class RendererService {
    *
    * @param container The container element
    * @param value The value to format
-   * @param options Formatting options
    */
-  private formatAsTags(container: HTMLElement, value: string | string[], options?: any): void {
+  private formatAsTags(container: HTMLElement, value: string | string[]): void {
     const tagsContainer = container.createEl('div', {
       cls: 'datacards-tags-container',
     });
@@ -1941,7 +1964,7 @@ export class RendererService {
       const tagText = tag.startsWith('#') ? tag : `#${tag}`;
 
       // Create a clickable tag link
-      const tagEl = tagsContainer.createEl('a', {
+      tagsContainer.createEl('a', {
         cls: 'datacards-tag tag-link',
         text: tagText,
         attr: {
@@ -2014,5 +2037,65 @@ export class RendererService {
     }
 
     return contentHeight;
+  }
+
+  /**
+   * Check if a string contains a URL
+   *
+   * @param text The text to check
+   * @returns True if the text contains a URL, false otherwise
+   */
+  private containsUrl(text: string): boolean {
+    if (typeof text !== 'string') {
+      return false;
+    }
+
+    // Regex to match URLs (http, https)
+    const urlRegex = /(https?:\/\/[^\s"'<>[\]{}]+)/i;
+    return urlRegex.test(text);
+  }
+
+  /**
+   * Render text with URLs as clickable links
+   *
+   * @param container The container element to add the text to
+   * @param text The text that may contain URLs
+   */
+  private renderTextWithUrls(container: HTMLElement, text: string): void {
+    if (typeof text !== 'string') {
+      container.setText(String(text));
+      return;
+    }
+
+    // Regex to match URLs (http, https)
+    const urlRegex = /(https?:\/\/[^\s"'<>[\]{}]+)/gi;
+
+    // Split the text by URLs
+    const parts = text.split(urlRegex);
+
+    // Find all URLs in the text
+    const urls = text.match(urlRegex) || [];
+
+    // Add each part and URL to the container
+    parts.forEach((part, index) => {
+      // Add the text part
+      if (part) {
+        container.appendChild(document.createTextNode(part));
+      }
+
+      // Add the URL as a link if there is one at this position
+      if (index < urls.length) {
+        const url = urls[index];
+        container.createEl('a', {
+          cls: 'external-link',
+          text: url,
+          attr: {
+            href: url,
+            target: '_blank',
+            rel: 'noopener'
+          }
+        });
+      }
+    });
   }
 }
