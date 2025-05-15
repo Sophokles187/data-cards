@@ -1173,10 +1173,12 @@ export class RendererService {
 
     Logger.debug('Processing rich text:', value);
 
-    // Use a more robust regex to detect HTML, including <br>
-    const hasHtml = /<[a-z][\s\S]*>/i.test(value);
-    const hasWikiLinks = value.includes('[['); // No need to check for ']]' if '[[' is present
+    // Check for complete HTML elements (tags with content between them)
+    const hasCompleteHtml = /<([a-z][a-z0-9]*)\b[^>]*>.*?<\/\1>/i.test(value);
 
+    // Use a more robust regex to detect HTML, including <br>
+    const hasHtml = hasCompleteHtml || /<[a-z][\s\S]*>/i.test(value);
+    const hasWikiLinks = value.includes('[['); // No need to check for ']]' if '[[' is present
 
     // If it doesn't have either, let other formatters handle it
     if (!hasWikiLinks && !hasHtml) {
@@ -1184,9 +1186,25 @@ export class RendererService {
       return false;
     }
 
-    Logger.debug(`Content has wiki links: ${hasWikiLinks}, has HTML: ${hasHtml}`);
+    Logger.debug(`Content has wiki links: ${hasWikiLinks}, has HTML: ${hasHtml}, has complete HTML: ${hasCompleteHtml}`);
 
-    // Tokenize the content to separate wiki links, HTML tags, and plain text
+    // Special handling for text with complete HTML elements
+    if (hasCompleteHtml) {
+      Logger.debug('Rendering complete HTML elements');
+      // Create a temporary div to hold the HTML content
+      const tempDiv = document.createElement('div');
+      // Set the HTML content
+      tempDiv.innerHTML = value;
+
+      // Append all child nodes to the container
+      while (tempDiv.firstChild) {
+        container.appendChild(tempDiv.firstChild);
+      }
+
+      return true;
+    }
+
+    // For other cases, tokenize the content to separate wiki links, HTML tags, and plain text
     const tokens = this.tokenizeRichText(value);
     Logger.debug('Tokens:', tokens);
 
@@ -1226,6 +1244,17 @@ export class RendererService {
   private tokenizeRichText(text: string): Array<{type: 'wikilink' | 'html' | 'text' | 'url', content: string}> {
     const tokens: Array<{type: 'wikilink' | 'html' | 'text' | 'url', content: string}> = [];
 
+    // First, check if the text contains complete HTML elements
+    const hasCompleteHtmlElements = /<([a-z][a-z0-9]*)\b[^>]*>.*?<\/\1>/i.test(text);
+
+    if (hasCompleteHtmlElements) {
+      // If we have complete HTML elements, treat the entire text as HTML
+      // This ensures proper rendering of elements like <u>underlined</u>
+      tokens.push({ type: 'html', content: text });
+      return tokens;
+    }
+
+    // If no complete HTML elements, use the original tokenization approach
     // Regex to find wiki links OR HTML tags/entities OR URLs
     // [[...]] captures wiki links
     // <...> captures HTML tags
