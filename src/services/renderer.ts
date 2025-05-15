@@ -2070,32 +2070,43 @@ export class RendererService {
     // Regex to match URLs (http, https)
     const urlRegex = /(https?:\/\/[^\s"'<>[\]{}]+)/gi;
 
-    // Split the text by URLs
-    const parts = text.split(urlRegex);
+    // Use a more reliable approach to avoid duplication
+    let lastIndex = 0;
+    let match;
 
-    // Find all URLs in the text
-    const urls = text.match(urlRegex) || [];
+    // Reset the regex before using it in a loop
+    urlRegex.lastIndex = 0;
 
-    // Add each part and URL to the container
-    parts.forEach((part, index) => {
-      // Add the text part
-      if (part) {
-        container.appendChild(document.createTextNode(part));
+    // Process each URL match
+    while ((match = urlRegex.exec(text)) !== null) {
+      // Add text before the URL
+      if (match.index > lastIndex) {
+        container.appendChild(document.createTextNode(
+          text.substring(lastIndex, match.index)
+        ));
       }
 
-      // Add the URL as a link if there is one at this position
-      if (index < urls.length) {
-        const url = urls[index];
-        container.createEl('a', {
-          cls: 'external-link',
-          text: url,
-          attr: {
-            href: url,
-            target: '_blank',
-            rel: 'noopener'
-          }
-        });
-      }
-    });
+      // Add the URL as a link
+      const url = match[0];
+      container.createEl('a', {
+        cls: 'external-link',
+        text: url,
+        attr: {
+          href: url,
+          target: '_blank',
+          rel: 'noopener'
+        }
+      });
+
+      // Update the last index to after this URL
+      lastIndex = match.index + url.length;
+    }
+
+    // Add any remaining text after the last URL
+    if (lastIndex < text.length) {
+      container.appendChild(document.createTextNode(
+        text.substring(lastIndex)
+      ));
+    }
   }
 }
