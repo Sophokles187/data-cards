@@ -75,7 +75,7 @@ properties: [author, rating, genre]
 
 > **Important**: You must explicitly include all properties you want to display in your Dataview query (including the image property).
 
-See the [documentation](https://sophokles187.github.io/data-cards/examples/) for more detailed examples.
+See the [documentation](https://sophokles187.github.io/data-cards/examples/books) for more detailed examples.
 
 ## Support Development
 
