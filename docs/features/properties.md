@@ -30,13 +30,10 @@ This will display all properties from your query except the cover image, file si
 
 ### Property Labels
 
-You can customize how property labels appear:
+You can customize how property labels appear by using Dataview's "as" syntax in your query:
 
 ```
-propertyLabels: {
-  "file.link": "Title",
-  "rating": "My Rating"
-}
+TABLE file.link as "Title", rating as "My Rating" FROM #books
 ```
 
 This will display "Title" instead of "File Link" and "My Rating" instead of "Rating".
@@ -115,16 +112,12 @@ properties: [file.link, author, rating, genre]
 ### Custom Property Labels
 
 ```datacards
-TABLE file.link as "Title", author, rating, genre, cover FROM #books
+TABLE file.link as "Title", author as "Written By", rating as "My Score", genre, cover FROM #books
 SORT rating DESC
 
 // Settings
 preset: portrait
 imageProperty: cover
-propertyLabels: {
-  "author": "Written By",
-  "rating": "My Score"
-}
 ```
 
 ### Formatted Properties
