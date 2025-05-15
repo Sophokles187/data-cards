@@ -95,25 +95,6 @@ Or specify a custom height:
 imageHeight: 300px
 ```
 
-## Note About Arrays in Frontmatter
-
-If you have an array of images in your frontmatter, DataCards will only display the first image in the array as the card's cover image:
-
-```yaml
----
-images:
-  - "attachments/image1.jpg"  # Only this first image will be displayed
-  - "attachments/image2.jpg"  # These additional images won't be displayed
-  - "attachments/image3.jpg"  # in the card's image area
----
-```
-
-Then use the `imageProperty` setting as usual:
-
-```
-imageProperty: images
-```
-
 ## Lazy Loading
 
 For better performance with many images, enable lazy loading:
