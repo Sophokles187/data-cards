@@ -95,35 +95,22 @@ Or specify a custom height:
 imageHeight: 300px
 ```
 
-## Multiple Images
+## Note About Arrays in Frontmatter
 
-Display multiple images by using an array in your frontmatter:
+If you have an array of images in your frontmatter, DataCards will only display the first image in the array as the card's cover image:
 
 ```yaml
 ---
-images: 
-  - "attachments/image1.jpg"
-  - "attachments/image2.jpg"
-  - "attachments/image3.jpg"
+images:
+  - "attachments/image1.jpg"  # Only this first image will be displayed
+  - "attachments/image2.jpg"  # These additional images won't be displayed
+  - "attachments/image3.jpg"  # in the card's image area
 ---
 ```
 
-Then use the `imageProperty` setting:
+Then use the `imageProperty` setting as usual:
 
 ```
-imageProperty: images
-```
-
-## Image Gallery
-
-Create an image gallery with the `gallery` preset:
-
-```datacards
-TABLE file.link, description, images FROM #photos
-SORT file.ctime DESC
-
-// Settings
-preset: gallery
 imageProperty: images
 ```
 
@@ -167,10 +154,10 @@ columns: 4
 ### Product Catalog
 
 ```datacards
-TABLE file.link as "Product", price, category, images FROM #products
+TABLE file.link as "Product", price, category, cover FROM #products
 SORT price ASC
 
 // Settings
 preset: grid
-imageProperty: images
+imageProperty: cover
 imageSize: large
