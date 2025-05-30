@@ -57,6 +57,25 @@ dateFormat: {
 }
 ```
 
+**Supported Date Format Tokens:**
+
+| Token | Description | Example |
+|-------|-------------|---------|
+| `YYYY` | 4-digit year | 2024 |
+| `YY` | 2-digit year | 24 |
+| `MMMM` | Full month name | January |
+| `MMM` | Abbreviated month name | Jan |
+| `MM` | 2-digit month (01-12) | 03 |
+| `M` | Month number (1-12) | 3 |
+| `DD` | 2-digit day (01-31) | 07 |
+| `D` | Day number (1-31) | 7 |
+
+**Common Format Examples:**
+- `"MMM D, YYYY"` → "Mar 7, 2024"
+- `"MMMM DD, YYYY"` → "March 07, 2024"
+- `"DD.MM.YYYY"` → "07.03.2024"
+- `"YYYY-MM-DD"` → "2024-03-07"
+
 #### Number Formatting
 
 Format number properties with:

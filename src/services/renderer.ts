@@ -1773,15 +1773,34 @@ export class RendererService {
     // Use the format from options, or from the current settings, or fall back to the default format
     const format = options?.format || (this.currentSettings ? this.currentSettings.defaultDateFormat : DEFAULT_SETTINGS.defaultDateFormat);
 
-    // Simple date formatting
+    // Enhanced date formatting with more tokens
     const year = date.getFullYear();
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const day = date.getDate().toString().padStart(2, '0');
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
 
-    let formattedDate = format
-      .replace('YYYY', year.toString())
-      .replace('MM', month)
-      .replace('DD', day);
+    // Month names
+    const monthNames = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+    const monthAbbreviations = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+
+    // Simple and reliable date formatting - just replace directly in the right order
+    let formattedDate = format;
+
+    // Replace tokens in order from longest to shortest to avoid conflicts
+    formattedDate = formattedDate
+      .replace(/YYYY/g, year.toString())
+      .replace(/MMMM/g, monthNames[month - 1])
+      .replace(/MMM/g, monthAbbreviations[month - 1])
+      .replace(/MM/g, month.toString().padStart(2, '0'))
+      .replace(/DD/g, day.toString().padStart(2, '0'))
+      .replace(/YY/g, year.toString().slice(-2))
+      .replace(/\bM\b/g, month.toString())  // Use word boundary to avoid partial matches
+      .replace(/\bD\b/g, day.toString());   // Use word boundary to avoid partial matches
 
     container.setText(formattedDate);
   }
