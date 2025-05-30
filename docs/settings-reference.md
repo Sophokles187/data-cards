@@ -53,6 +53,9 @@ imageProperty: cover
 | `propertiesAlign` | Text alignment for properties | `left` | `left`, `center`, `right` |
 | `titleAlign` | Text alignment for title | `left` | `left`, `center`, `right` |
 | `fontSize` | Text size for all elements | `default` | `larger`, `large`, `default`, `small`, `smaller` |
+| **Layout Settings** | | | |
+| `dynamicColumns` | Auto-adjust columns based on width | `false` | `true`, `false` |
+| `minCardWidth` | Minimum card width for dynamic layout | `250px` | CSS value (e.g., `300px`) |
 | **Boolean Settings** | | | |
 | `booleanDisplayMode` | How to display boolean values | `both` | `both`, `checkbox`, `text` |
 | `showBooleanLabels` | Show text labels for booleans | `true` | `true`, `false` |
@@ -118,4 +121,17 @@ preset: grid
 imageProperty: cover
 scrollableProperties: true
 contentHeight: 250px
-``` 
+```
+
+### Dynamic Columns Example
+
+```datacards
+TABLE file.link, author, rating, genre, cover FROM #books
+SORT rating DESC
+
+// Settings
+preset: grid
+imageProperty: cover
+dynamicColumns: true
+minCardWidth: 280px
+```

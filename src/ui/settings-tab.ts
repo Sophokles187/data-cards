@@ -109,6 +109,27 @@ export class DataCardsSettingTab extends PluginSettingTab {
         }));
 
     new Setting(containerEl)
+      .setName('Dynamic columns')
+      .setDesc('Automatically adjust the number of columns based on container width instead of using fixed columns')
+      .addToggle(toggle => toggle
+        .setValue(this.plugin.settings.dynamicColumns)
+        .onChange(async (value) => {
+          this.plugin.settings.dynamicColumns = value;
+          await this.plugin.saveSettings();
+        }));
+
+    new Setting(containerEl)
+      .setName('Minimum card width')
+      .setDesc('Minimum width for cards when using dynamic columns (e.g., 250px, 300px)')
+      .addText(text => text
+        .setPlaceholder('250px')
+        .setValue(this.plugin.settings.minCardWidth)
+        .onChange(async (value) => {
+          this.plugin.settings.minCardWidth = value || '250px';
+          await this.plugin.saveSettings();
+        }));
+
+    new Setting(containerEl)
       .setName('Properties alignment')
       .setDesc('Text alignment for properties and their labels')
       .addDropdown(dropdown => dropdown

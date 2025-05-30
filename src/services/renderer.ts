@@ -155,37 +155,71 @@ export class RendererService {
     cardsContainer.setAttribute('data-card-gap', `${settings.cardSpacing}`);
     // CSS will handle setting the variables based on the data attribute
 
-    // Determine columns based on preset and device type
-    let columnsToUse: number;
+    // Check if dynamic columns are enabled
+    const useDynamicColumns = settings.dynamicColumns && !isMobile; // Don't use dynamic columns on mobile
 
-    if (isMobile) {
-      // On mobile, use mobileColumns setting
-      columnsToUse = settings.mobileColumns;
-    } else {
-      // On desktop, follow hierarchy: preset → plugin settings → code block settings
-      let recommendedColumns = 3; // Default for grid
+    if (useDynamicColumns) {
+      Logger.debug('Using dynamic columns layout');
 
-      if (settings.preset === 'dense') {
-        recommendedColumns = 6;
-      } else if (settings.preset === 'compact') {
-        recommendedColumns = 4;
-      } else if (settings.preset === 'square') {
-        recommendedColumns = 4;
-      } else if (settings.preset === 'portrait') {
-        recommendedColumns = 3;
+      // Add dynamic columns class
+      cardsContainer.addClass('datacards-dynamic-columns');
+
+      // Set minimum card width
+      const minCardWidth = settings.minCardWidth || '250px';
+
+      // Ensure minCardWidth has a unit (px) if it's a number or numeric string
+      let normalizedMinWidth = minCardWidth;
+      if (typeof normalizedMinWidth === 'number' || /^\d+$/.test(normalizedMinWidth)) {
+        normalizedMinWidth = `${normalizedMinWidth}px`;
       }
 
-      // Use the final merged settings (which includes code block overrides)
-      // The settings object already contains the hierarchy: preset → plugin → code block
-      columnsToUse = (settings as any).columns !== undefined ? (settings as any).columns : recommendedColumns;
+      // Set minimum card width via data attribute and CSS custom property
+      cardsContainer.setAttribute('data-min-card-width', normalizedMinWidth);
+
+      // Set the CSS custom property directly for any width value
+      cardsContainer.style.setProperty('--min-card-width', normalizedMinWidth);
+
+      // Also add predefined class if it exists (for common values)
+      const widthValue = normalizedMinWidth.replace('px', '');
+      const commonWidths = ['200', '220', '250', '280', '300', '320', '350', '400'];
+      if (commonWidths.includes(widthValue)) {
+        cardsContainer.addClass(`datacards-min-width-${widthValue}`);
+      }
+
+      Logger.debug(`Using dynamic columns with min card width: ${normalizedMinWidth}`);
+    } else {
+      // Use fixed columns (existing logic)
+      let columnsToUse: number;
+
+      if (isMobile) {
+        // On mobile, use mobileColumns setting
+        columnsToUse = settings.mobileColumns;
+      } else {
+        // On desktop, follow hierarchy: preset → plugin settings → code block settings
+        let recommendedColumns = 3; // Default for grid
+
+        if (settings.preset === 'dense') {
+          recommendedColumns = 6;
+        } else if (settings.preset === 'compact') {
+          recommendedColumns = 4;
+        } else if (settings.preset === 'square') {
+          recommendedColumns = 4;
+        } else if (settings.preset === 'portrait') {
+          recommendedColumns = 3;
+        }
+
+        // Use the final merged settings (which includes code block overrides)
+        // The settings object already contains the hierarchy: preset → plugin → code block
+        columnsToUse = (settings as any).columns !== undefined ? (settings as any).columns : recommendedColumns;
+      }
+
+      Logger.debug(`Using ${columnsToUse} fixed columns`);
+
+      // Set columns via data attribute and add appropriate class
+      cardsContainer.setAttribute('data-columns', columnsToUse.toString());
+      // Add a class for the specific column count
+      cardsContainer.addClass(`datacards-columns-${columnsToUse}`);
     }
-
-    Logger.debug(`Using ${columnsToUse} columns`);
-
-    // Set columns via data attribute and add appropriate class
-    cardsContainer.setAttribute('data-columns', columnsToUse.toString());
-    // Add a class for the specific column count
-    cardsContainer.addClass(`datacards-columns-${columnsToUse}`);
 
     // Set image height and fit based on preset if not explicitly provided
 

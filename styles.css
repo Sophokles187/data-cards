@@ -35,6 +35,22 @@
 .datacards-columns-5 { grid-template-columns: repeat(5, 1fr); }
 .datacards-columns-6 { grid-template-columns: repeat(6, 1fr); }
 
+/* Dynamic columns layout */
+.datacards-dynamic-columns {
+  --min-card-width: 250px;
+  grid-template-columns: repeat(auto-fit, minmax(var(--min-card-width), 1fr));
+}
+
+/* Minimum card width classes for dynamic layout */
+.datacards-min-width-200 { --min-card-width: 200px; }
+.datacards-min-width-220 { --min-card-width: 220px; }
+.datacards-min-width-250 { --min-card-width: 250px; }
+.datacards-min-width-280 { --min-card-width: 280px; }
+.datacards-min-width-300 { --min-card-width: 300px; }
+.datacards-min-width-320 { --min-card-width: 320px; }
+.datacards-min-width-350 { --min-card-width: 350px; }
+.datacards-min-width-400 { --min-card-width: 400px; }
+
 /* Individual card */
 .datacards-card {
   display: flex;
