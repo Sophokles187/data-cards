@@ -2,6 +2,8 @@
 
 This example shows how to create a task management dashboard with DataCards.
 
+> ⚠️ **Note**: The conditional formatting feature shown in these examples is currently broken and not working. The examples are provided for future reference when this feature is fixed.
+
 ## Basic Task Board
 
 A simple kanban-style board for your tasks:
@@ -40,11 +42,12 @@ assignee: John Doe
 
 More detailed version with additional properties:
 
+> ⚠️ **Note**: The conditional formatting feature in this example is currently broken and not working.
 
 ```datacards
-TABLE 
-  file.link as "Task", 
-  status, 
+TABLE
+  file.link as "Task",
+  status,
   priority,
   dueDate,
   assignee,
