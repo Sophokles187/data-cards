@@ -162,7 +162,7 @@ export class RendererService {
       // On mobile, use mobileColumns setting
       columnsToUse = settings.mobileColumns;
     } else {
-      // On desktop, use preset's recommended columns or block-specific override
+      // On desktop, follow hierarchy: preset → plugin settings → code block settings
       let recommendedColumns = 3; // Default for grid
 
       if (settings.preset === 'dense') {
@@ -175,8 +175,9 @@ export class RendererService {
         recommendedColumns = 3;
       }
 
-      // Use block-specific columns setting if provided in the code block
-      columnsToUse = (blockSettings.columns !== undefined) ? blockSettings.columns : recommendedColumns;
+      // Use the final merged settings (which includes code block overrides)
+      // The settings object already contains the hierarchy: preset → plugin → code block
+      columnsToUse = (settings as any).columns !== undefined ? (settings as any).columns : recommendedColumns;
     }
 
     Logger.debug(`Using ${columnsToUse} columns`);
@@ -188,25 +189,27 @@ export class RendererService {
 
     // Set image height and fit based on preset if not explicitly provided
 
-    // For image height
-    let imageHeight;
-    if (blockSettings.imageHeight !== undefined) {
-      // Use explicitly provided height from block settings
-      imageHeight = settings.imageHeight;
+    // For image height - follow hierarchy: preset → plugin settings → code block settings
+    let imageHeight: string;
+
+    // First, get preset-specific default height
+    if (settings.preset === 'portrait') {
+      imageHeight = '350px';
+    } else if (settings.preset === 'square') {
+      imageHeight = '200px';
+    } else if (settings.preset === 'compact') {
+      imageHeight = '200px';
+    } else if (settings.preset === 'dense') {
+      imageHeight = '120px';
     } else {
-      // Use preset-specific default height
-      if (settings.preset === 'portrait') {
-        imageHeight = '350px';
-      } else if (settings.preset === 'square') {
-        imageHeight = '200px';
-      } else if (settings.preset === 'compact') {
-        imageHeight = '200px';
-      } else if (settings.preset === 'dense') {
-        imageHeight = '120px';
-      } else {
-        // Default for grid
-        imageHeight = '200px';
-      }
+      // Default for grid
+      imageHeight = '200px';
+    }
+
+    // Then override with the final merged settings (which includes plugin + code block settings)
+    // The settings object already contains the hierarchy: preset → plugin → code block
+    if (settings.imageHeight !== undefined) {
+      imageHeight = settings.imageHeight;
     }
 
     // Ensure imageHeight has a unit (px) if it's a number or numeric string
@@ -219,14 +222,16 @@ export class RendererService {
     // Add a class for the image height
     cardsContainer.addClass(`datacards-image-height-${imageHeight.replace('px', '')}`);
 
-    // For image fit
+    // For image fit - follow hierarchy: preset → plugin settings → code block settings
     let imageFit: string;
-    if (blockSettings.imageFit !== undefined) {
-      // Use explicitly provided fit from block settings
+
+    // First, get preset-specific default fit
+    imageFit = settings.preset === 'portrait' ? 'contain' : 'cover';
+
+    // Then override with the final merged settings (which includes plugin + code block settings)
+    // The settings object already contains the hierarchy: preset → plugin → code block
+    if (settings.imageFit !== undefined) {
       imageFit = settings.imageFit;
-    } else {
-      // Use preset-specific default fit
-      imageFit = settings.preset === 'portrait' ? 'contain' : 'cover';
     }
 
     // Set image fit via data attribute and class
@@ -680,12 +685,28 @@ export class RendererService {
    * Add an image to a card
    *
    * @param card The card element
-   * @param imageValue The image value (path, URL, or Link object)
+   * @param imageValue The image value (path, URL, Link object, or array of images)
    */
   private addImageToCard(card: HTMLElement, imageValue: any): void {
     const imageContainer = card.createEl('div', {
       cls: 'datacards-image-container',
     });
+
+    // Handle arrays by taking the first image
+    if (Array.isArray(imageValue)) {
+      Logger.debug('Image value is an array, taking first image:', imageValue);
+      if (imageValue.length > 0) {
+        imageValue = imageValue[0];
+        Logger.debug('Using first image from array:', imageValue);
+      } else {
+        Logger.debug('Image array is empty');
+        const placeholder = imageContainer.createEl('div', {
+          cls: 'datacards-image-placeholder',
+          text: 'No images available',
+        });
+        return;
+      }
+    }
 
     // Handle Dataview Link objects
     let imagePath: string;

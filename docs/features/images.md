@@ -55,6 +55,21 @@ cover: "![Book Cover](attachments/book-cover.jpg)"
 ---
 ```
 
+### Multiple Images
+
+If a property contains multiple images, DataCards will display the first image:
+
+```yaml
+---
+images:
+  - "attachments/image1.jpg"
+  - "attachments/image2.jpg"
+  - "attachments/image3.jpg"
+---
+```
+
+**Note:** Only the first image (`image1.jpg`) will be displayed on the card. This applies to all image formats (URLs, file paths, wiki links, or markdown image syntax).
+
 ## Image Display Options
 
 ### Image Fit
