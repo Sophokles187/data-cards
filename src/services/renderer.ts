@@ -799,7 +799,16 @@ export class RendererService {
       return String(value || '');
     }
 
-    // First check for markdown image syntax: ![alt text](url) or ![|size](url)
+    // First check for Obsidian embedded wiki links: ![[path|size]]
+    const embeddedWikiLinkMatch = value.match(/!\[\[(.*?)(?:\|.*?)?\]\]/);
+    if (embeddedWikiLinkMatch) {
+      // Return just the path part from the embedded wiki link
+      const path = embeddedWikiLinkMatch[1];
+      Logger.debug('Extracted path from embedded wiki link:', path);
+      return `[[${path}]]`; // Return as regular wiki link for processing
+    }
+
+    // Then check for markdown image syntax: ![alt text](url) or ![|size](url)
     // Use a more robust regex that can handle parentheses within the URL
     // This regex handles nested parentheses in URLs by using a non-greedy match
     const markdownImageMatch = value.match(/!\[(.*?)\]\((.*?)\)/);

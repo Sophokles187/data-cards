@@ -55,6 +55,18 @@ cover: "![Book Cover](attachments/book-cover.jpg)"
 ---
 ```
 
+### Embedded Wiki Links
+
+DataCards supports Obsidian's embedded wiki link syntax with size parameters:
+
+```yaml
+---
+cover: "![[attachments/book-cover.jpg|200]]"
+---
+```
+
+The size parameter (e.g., `|200`) is automatically ignored for image display purposes, and the image path is extracted correctly. This format is commonly used in Dataview queries and CSV data.
+
 ### Multiple Images
 
 If a property contains multiple images, DataCards will display the first image:
@@ -68,7 +80,7 @@ images:
 ---
 ```
 
-**Note:** Only the first image (`image1.jpg`) will be displayed on the card. This applies to all image formats (URLs, file paths, wiki links, or markdown image syntax).
+**Note:** Only the first image (`image1.jpg`) will be displayed on the card. This applies to all image formats (URLs, file paths, wiki links, embedded wiki links, or markdown image syntax).
 
 ## Image Display Options
 
