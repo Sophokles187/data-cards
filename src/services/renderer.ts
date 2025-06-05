@@ -155,8 +155,35 @@ export class RendererService {
     cardsContainer.setAttribute('data-card-gap', `${settings.cardSpacing}`);
     // CSS will handle setting the variables based on the data attribute
 
-    // Check if dynamic columns are enabled
-    const useDynamicColumns = settings.dynamicColumns && !isMobile; // Don't use dynamic columns on mobile
+    // Determine column layout strategy based on settings hierarchy
+    // Priority: per-block columns setting > per-block dynamicColumns > global dynamicColumns
+    let useDynamicColumns = false;
+
+    if (isMobile) {
+      // On mobile, always use fixed columns for performance
+      useDynamicColumns = false;
+      Logger.debug('Mobile device detected, forcing fixed columns');
+    } else {
+      // Check if per-block columns setting is explicitly set
+      const hasExplicitColumns = blockSettings.columns !== undefined;
+
+      // Check if per-block dynamicColumns setting is explicitly set
+      const hasExplicitDynamicColumns = blockSettings.dynamicColumns !== undefined;
+
+      if (hasExplicitColumns) {
+        // Per-block columns setting takes highest priority - always use fixed columns
+        useDynamicColumns = false;
+        Logger.debug('Per-block columns setting detected, using fixed columns');
+      } else if (hasExplicitDynamicColumns) {
+        // Per-block dynamicColumns setting overrides global setting
+        useDynamicColumns = blockSettings.dynamicColumns!;
+        Logger.debug(`Per-block dynamicColumns setting detected: ${useDynamicColumns}`);
+      } else {
+        // No explicit per-block column settings, use global dynamicColumns setting
+        useDynamicColumns = this.pluginSettings.dynamicColumns;
+        Logger.debug(`Using global dynamicColumns setting: ${useDynamicColumns}`);
+      }
+    }
 
     if (useDynamicColumns) {
       Logger.debug('Using dynamic columns layout');
@@ -188,7 +215,7 @@ export class RendererService {
 
       Logger.debug(`Using dynamic columns with min card width: ${normalizedMinWidth}`);
     } else {
-      // Use fixed columns (existing logic)
+      // Use fixed columns
       let columnsToUse: number;
 
       if (isMobile) {
@@ -215,10 +242,16 @@ export class RendererService {
 
       Logger.debug(`Using ${columnsToUse} fixed columns`);
 
-      // Set columns via data attribute and add appropriate class
+      // Set columns via data attribute and CSS custom property
       cardsContainer.setAttribute('data-columns', columnsToUse.toString());
-      // Add a class for the specific column count
-      cardsContainer.addClass(`datacards-columns-${columnsToUse}`);
+
+      // Set the CSS custom property for any number of columns
+      cardsContainer.style.setProperty('--card-columns', columnsToUse.toString());
+
+      // Also add predefined class if it exists (for columns 1-6)
+      if (columnsToUse >= 1 && columnsToUse <= 6) {
+        cardsContainer.addClass(`datacards-columns-${columnsToUse}`);
+      }
     }
 
     // Set image height and fit based on preset if not explicitly provided
@@ -734,7 +767,7 @@ export class RendererService {
         Logger.debug('Using first image from array:', imageValue);
       } else {
         Logger.debug('Image array is empty');
-        const placeholder = imageContainer.createEl('div', {
+        imageContainer.createEl('div', {
           cls: 'datacards-image-placeholder',
           text: 'No images available',
         });
