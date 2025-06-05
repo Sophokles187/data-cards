@@ -7,6 +7,7 @@ DataCards offers a wide range of features to display your Dataview query results
 - **Presets**: Choose from multiple card layouts optimized for different content types
 - **Image Support**: Display images from frontmatter properties
 - **Property Customization**: Control which properties appear and how they're displayed
+- **Visual Enhancements**: Automatic theme integration and text truncation options
 - **Mobile Optimization**: Responsive design with mobile-specific settings
 - **Flexible Styling**: Customize appearance with various settings
 - **Dynamic Updates**: Automatically update cards when properties change

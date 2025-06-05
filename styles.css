@@ -550,7 +550,7 @@ input[data-boolean-value="false"].datacards-checkbox {
   padding: 2px 8px;
   border-radius: 12px;
   background-color: var(--background-modifier-border);
-  color: var(--text-muted);
+  color: var(--interactive-accent);
   font-size: 0.8em;
   text-decoration: none;
 }
@@ -564,7 +564,7 @@ a.datacards-tag:hover {
 
 /* Internal links */
 .datacards-property-value .internal-link {
-  color: var(--text-accent);
+  color: var(--interactive-accent);
   text-decoration: none;
 }
 
@@ -580,7 +580,7 @@ a.datacards-tag:hover {
 .datacards-file-property .internal-link {
   font-size: 1.2em;
   font-weight: 600;
-  color: var(--text-accent);
+  color: var(--interactive-accent);
   text-decoration: none;
 }
 
@@ -639,6 +639,13 @@ a.datacards-tag:hover {
 
 .datacards-file-property .internal-link:hover {
   text-decoration: underline;
+}
+
+/* Text truncation */
+.datacards-truncate-text .datacards-property-value {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Preset variations */

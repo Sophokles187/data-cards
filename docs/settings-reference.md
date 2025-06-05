@@ -53,6 +53,7 @@ imageProperty: cover
 | `propertiesAlign` | Text alignment for properties | `left` | `left`, `center`, `right` |
 | `titleAlign` | Text alignment for title | `left` | `left`, `center`, `right` |
 | `fontSize` | Text size for all elements | `default` | `larger`, `large`, `default`, `small`, `smaller` |
+| `truncateText` | Truncate long text with ellipsis | `false` | `true`, `false` |
 | **Layout Settings** | | | |
 | `dynamicColumns` | Auto-adjust columns based on width | `false` | `true`, `false` |
 | `minCardWidth` | Minimum card width for dynamic layout | `250px` | CSS value (e.g., `300px`) |
@@ -134,4 +135,16 @@ preset: grid
 imageProperty: cover
 dynamicColumns: true
 minCardWidth: 280px
+```
+
+### Text Truncation Example
+
+```datacards
+TABLE file.link, author, description, tags FROM #articles
+SORT file.mtime DESC
+
+// Settings
+preset: compact
+truncateText: true
+fontSize: small
 ```

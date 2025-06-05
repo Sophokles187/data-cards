@@ -77,6 +77,16 @@ Enable or disable subtle shadows:
 enableShadows: false
 ```
 
+### Text Truncation
+
+Truncate long property values with ellipsis for cleaner layouts:
+
+```
+truncateText: true
+```
+
+This prevents long text from wrapping to multiple lines and instead shows "..." when text exceeds the available width. Useful for maintaining consistent card heights and clean layouts.
+
 ## Mobile Optimization
 
 Customize how cards appear on mobile devices:
@@ -140,6 +150,7 @@ Here's a complete list of all supported settings:
 | `propertiesAlign` | Text alignment for properties and their labels (`left`, `center`, `right`) | `left` |
 | `titleAlign` | Text alignment for the title/filename (`left`, `center`, `right`) | `left` |
 | `fontSize` | Text size for all card elements (`larger`, `large`, `default`, `small`, `smaller`) | `default` |
+| `truncateText` | Truncate long property values with ellipsis | `false` |
 | `booleanDisplayMode` | How to display boolean values (`both`, `checkbox`, `text`) | `both` |
 | `showBooleanLabels` | Whether to show text labels for boolean values | `true` |
 | `booleanTrueText` | Custom text for true values | `true` |
@@ -206,4 +217,16 @@ scrollableProperties: true
 contentHeight: 250px
 titleAlign: center
 propertiesAlign: left
+```
+
+### Text Truncation Example
+
+```datacards
+TABLE file.link, description, tags FROM #articles
+SORT file.mtime DESC
+
+// Settings
+preset: compact
+truncateText: true
+fontSize: small
 ```

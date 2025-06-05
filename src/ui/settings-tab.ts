@@ -180,6 +180,16 @@ export class DataCardsSettingTab extends PluginSettingTab {
           await this.plugin.saveSettings();
         }));
 
+    new Setting(containerEl)
+      .setName('Truncate long text')
+      .setDesc('Add ellipsis (...) to property values that are too long to fit on one line')
+      .addToggle(toggle => toggle
+        .setValue(this.plugin.settings.truncateText)
+        .onChange(async (value) => {
+          this.plugin.settings.truncateText = value;
+          await this.plugin.saveSettings();
+        }));
+
     // Card Content Settings
     new Setting(containerEl).setName('Card content').setHeading();
 

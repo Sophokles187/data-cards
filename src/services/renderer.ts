@@ -140,6 +140,11 @@ export class RendererService {
       cardsContainer.addClass('datacards-no-shadows');
     }
 
+    // Add truncate text class if enabled
+    if (settings.truncateText) {
+      cardsContainer.addClass('datacards-truncate-text');
+    }
+
     // Apply font size class if specified
     if (settings.fontSize && settings.fontSize !== 'default') {
       cardsContainer.addClass(`datacards-font-${settings.fontSize}`);

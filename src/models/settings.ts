@@ -60,6 +60,7 @@ export interface DataCardsSettings {
   propertiesAlign: 'left' | 'center' | 'right'; // Alignment for properties and labels
   titleAlign: 'left' | 'center' | 'right'; // Alignment for the title (filename)
   fontSize: FontSize; // Font size for all text elements
+  truncateText: boolean; // Enable text truncation with ellipsis for long property values
 
   // Boolean display settings
   booleanDisplayMode: BooleanDisplayMode; // How to display boolean values
@@ -130,6 +131,7 @@ export const DEFAULT_SETTINGS: DataCardsSettings = {
   propertiesAlign: 'left', // Default to left alignment
   titleAlign: 'left', // Default to left alignment
   fontSize: 'default', // Default font size
+  truncateText: false, // Default to showing full text
 
   // Boolean display settings
   booleanDisplayMode: 'both', // Default to showing both checkbox and text
