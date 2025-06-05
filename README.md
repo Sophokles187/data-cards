@@ -30,8 +30,10 @@ That's it! Your Dataview results will now display as beautiful cards.
 
 - **Custom Code Block**: Use `datacards` code blocks with Dataview query syntax
 - **Flexible Presets**: Multiple card preset options (grid, portrait, square, compact, dense) optimized for different use cases
-- **Highly Customizable**: Adjust nearly all settings per code block, mixing and matching preset characteristics, including property display and font size options.
-- **Image Support**: Display images from frontmatter properties with customizable dimensions
+- **Highly Customizable**: Adjust nearly all settings per code block, mixing and matching preset characteristics, including property display and font size options
+- **Advanced Image Support**: Display images from frontmatter properties with support for wiki links, embedded wiki links (`![[image.jpg]]`), and markdown syntax
+- **Dynamic & Fixed Columns**: Choose between responsive dynamic columns or fixed column layouts with unlimited column support
+- **Smart Settings Hierarchy**: Per-block settings properly override global settings with clear priority rules
 - **Global Settings**: Default configuration with per-block overrides
 - **Mobile Optimization**: Dedicated mobile settings for better display on small screens
 - **Performance Enhancements**: Lazy loading for images to improve loading times
@@ -47,7 +49,7 @@ Visit the [documentation site](https://sophokles187.github.io/data-cards/) for c
 
 ## Installation
 
-### Community Plugins 
+### Community Plugins
 > **Note**: DataCards is not yet available in the Community Plugins store. Please use BRAT or manual installation until then.
 
 1. Open Obsidian Settings
@@ -67,7 +69,7 @@ WHERE rating >= 4
 
 // Settings
 preset: portrait
-columns: 3
+columns: 8
 imageProperty: cover
 properties: [author, rating, genre]
 ```
@@ -75,7 +77,7 @@ properties: [author, rating, genre]
 
 > **Important**: You must explicitly include all properties you want to display in your Dataview query (including the image property).
 
-See the [documentation](https://sophokles187.github.io/data-cards/#/examples/books) for more detailed examples.
+See the [documentation](https://sophokles187.github.io/data-cards/#/examples/books)ok for more detailed examples.
 
 ## Support Development
 

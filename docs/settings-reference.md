@@ -55,6 +55,7 @@ imageProperty: cover
 | `fontSize` | Text size for all elements | `default` | `larger`, `large`, `default`, `small`, `smaller` |
 | `truncateText` | Truncate long text with ellipsis | `false` | `true`, `false` |
 | **Layout Settings** | | | |
+| `columns` | Number of columns (fixed layout) | Preset-specific | Any positive integer |
 | `dynamicColumns` | Auto-adjust columns based on width | `false` | `true`, `false` |
 | `minCardWidth` | Minimum card width for dynamic layout | `250px` | CSS value (e.g., `300px`) |
 | **Boolean Settings** | | | |
@@ -101,7 +102,7 @@ SORT rating DESC
 // Settings
 preset: grid
 imageProperty: cover
-columns: 3
+columns: 8
 fontSize: small
 showLabels: true
 propertiesAlign: center
@@ -137,6 +138,19 @@ dynamicColumns: true
 minCardWidth: 280px
 ```
 
+### Settings Hierarchy Example
+
+```datacards
+TABLE file.link, author, rating, genre, cover FROM #books
+SORT rating DESC
+
+// Settings
+preset: grid
+imageProperty: cover
+columns: 10
+// This will use exactly 10 columns, even if Dynamic Columns is enabled globally
+```
+
 ### Text Truncation Example
 
 ```datacards
@@ -148,3 +162,21 @@ preset: compact
 truncateText: true
 fontSize: small
 ```
+
+## Settings Hierarchy
+
+When the same setting is defined in multiple places, the plugin follows this priority order (highest to lowest):
+
+1. **Per-block settings** (in code block `// Settings` section)
+2. **Global plugin settings** (in Obsidian Settings → DataCards)
+3. **Preset defaults** (built-in defaults for each preset)
+4. **Mobile overrides** (always take priority on mobile devices)
+
+### Column Layout Priority
+
+For column layout specifically:
+
+1. **Per-block `columns: X`** - Forces fixed columns, ignores dynamic columns
+2. **Per-block `dynamicColumns: true/false`** - Overrides global dynamic columns setting
+3. **Global `dynamicColumns: true/false`** - Default when no per-block override
+4. **Mobile `mobileColumns`** - Always used on mobile devices

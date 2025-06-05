@@ -91,6 +91,40 @@ dynamicColumns: true
 minCardWidth: 300px
 ```
 
+## Settings Hierarchy
+
+The plugin follows a clear hierarchy when determining column layout:
+
+1. **Per-block `columns: X`** (highest priority) - Forces fixed columns, ignores any dynamic columns settings
+2. **Per-block `dynamicColumns: true/false`** - Overrides global dynamic columns setting
+3. **Global `dynamicColumns: true/false`** - Default behavior when no per-block override
+4. **Mobile settings** (always override) - Always use `mobileColumns` setting on mobile devices
+
+### Examples of Settings Hierarchy
+
+```datacards
+// This will use exactly 4 columns, even if global Dynamic Columns is enabled
+TABLE file.link, author, rating FROM #books
+// Settings
+columns: 4
+```
+
+```datacards
+// This will disable dynamic columns for this block only
+TABLE file.link, author, rating FROM #books
+// Settings
+dynamicColumns: false
+columns: 3
+```
+
+```datacards
+// This will enable dynamic columns for this block, even if globally disabled
+TABLE file.link, author, rating FROM #books
+// Settings
+dynamicColumns: true
+minCardWidth: 300px
+```
+
 ## Behavior Notes
 
 ### Mobile Devices
