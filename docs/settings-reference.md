@@ -76,7 +76,9 @@ imageProperty: cover
 | **Performance Settings** | | | |
 | `enableLazyLoading` | Load images only when visible | `false` | `true`, `false` |
 | **Update Settings** | | | |
-| `enableDynamicUpdates` | Auto-update when properties change | `false` | `true`, `false` |
+| `refreshButton` | Manual refresh button (always available) | Always enabled | Hover over cards to see |
+| **Advanced (Experimental)** | | | |
+| `enableDynamicUpdates` | Auto-update when properties change (legacy) | `false` | `true`, `false` |
 | `dynamicUpdate` | Enable updates for specific card | Inherits global | `true`, `false` |
 | `refreshDelay` | Delay before refreshing (ms) | `2500` | Number (milliseconds) |
 

@@ -23,8 +23,8 @@ No, DataCards requires the Dataview plugin to be installed and enabled, as it us
 #### Does DataCards impact performance?
 DataCards is designed to be as efficient as possible, but complex queries with many results or large images may impact performance. You can use the lazy loading feature to improve performance with large image collections.
 
-#### Are my cards automatically updated when I change my notes?
-By default, cards are not automatically updated unless you enable the dynamic updates feature. You can enable this globally in the plugin settings or for specific cards with the `dynamicUpdate: true` setting.
+#### How do I update my cards when I change my notes?
+DataCards includes a refresh button on each container that appears when you hover over the top-left corner. This is the recommended way to update your cards. You can also enable automatic dynamic updates in the Advanced settings, but the refresh button is more reliable.
 
 #### Can I use DataCards on mobile?
 Yes, DataCards is fully compatible with Obsidian mobile and includes specific settings for mobile devices to optimize the display.
@@ -76,9 +76,9 @@ Yes, DataCards properly displays wiki links and allows them to be clickable.
 - Verify that the properties exist in your notes' frontmatter
 
 #### Cards aren't updating when I change properties
-- Enable dynamic updates with `dynamicUpdate: true`
-- Try manually refreshing using the command: "DataCards: Refresh DataCards in active view"
-- Make sure you're in preview mode, not edit mode
+- Use the refresh button: hover over the top-left corner of the DataCards container and click the refresh button (↻)
+- Alternatively, use the command: "DataCards: Refresh DataCards in active view"
+- If using dynamic updates: enable with `dynamicUpdate: true` (note: this feature is less reliable than the refresh button)
 
 #### My custom settings aren't applying
 - Check the syntax of your settings (should be `setting: value`)

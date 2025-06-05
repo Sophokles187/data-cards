@@ -10,7 +10,7 @@
   * [<i class="ph ph-sliders"></i> Property Customization](features/properties.md)
   * [<i class="ph ph-image"></i> Image Support](features/images.md)
   * [<i class="ph ph-device-mobile"></i> Mobile Support](features/mobile.md)
-  * [<i class="ph ph-arrows-clockwise"></i> Dynamic Updates](features/dynamic-updates.md)
+  * [<i class="ph ph-arrows-clockwise"></i> Updates & Refresh](features/dynamic-updates.md)
   * [<i class="ph ph-lightning"></i> Advanced Options](features/advanced-options.md)
   * [<i class="ph ph-gear"></i> Settings Reference](settings-reference.md)
 

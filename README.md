@@ -32,6 +32,7 @@ That's it! Your Dataview results will now display as beautiful cards.
 - **Flexible Presets**: Multiple card preset options (grid, portrait, square, compact, dense) optimized for different use cases
 - **Highly Customizable**: Adjust nearly all settings per code block, mixing and matching preset characteristics, including property display and font size options
 - **Advanced Image Support**: Display images from frontmatter properties with support for wiki links, embedded wiki links (`![[image.jpg]]`), and markdown syntax
+- **Refresh Button**: Manual refresh button for reliable updates in both reading and editing modes
 - **Dynamic & Fixed Columns**: Choose between responsive dynamic columns or fixed column layouts with unlimited column support
 - **Smart Settings Hierarchy**: Per-block settings properly override global settings with clear priority rules
 - **Global Settings**: Default configuration with per-block overrides

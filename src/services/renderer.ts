@@ -355,8 +355,7 @@ export class RendererService {
     const refreshButton = container.createEl('button', {
       cls: 'datacards-refresh-button',
       attr: {
-        'aria-label': 'Refresh DataCards',
-        'title': 'Refresh DataCards'
+        'aria-label': 'Refresh DataCards'
       }
     });
 

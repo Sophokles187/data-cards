@@ -35,6 +35,7 @@ DataCards offers a range of features to help you visualize your data:
 | Flexible Presets | Multiple card layouts optimized for different content types |
 | Image Support | Display images from frontmatter properties |
 | Property Customization | Control which properties appear and how they're displayed |
+| Refresh Button | Manual refresh button for reliable updates in all modes |
 | Mobile Optimization | Responsive design with mobile-specific settings |
 
 > **Note:** DataCards requires the Dataview plugin to be installed and enabled.

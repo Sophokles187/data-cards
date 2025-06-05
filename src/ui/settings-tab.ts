@@ -373,8 +373,16 @@ export class DataCardsSettingTab extends PluginSettingTab {
     new Setting(containerEl).setName('Updates').setHeading();
 
     new Setting(containerEl)
+      .setName('Refresh method')
+      .setDesc('DataCards includes a refresh button on each card container. Click it to update cards when your data changes.')
+      .setDisabled(true);
+
+    // Advanced/Experimental settings
+    new Setting(containerEl).setName('Advanced (Experimental)').setHeading();
+
+    new Setting(containerEl)
       .setName('Enable dynamic updates')
-      .setDesc('Automatically update DataCards when properties change (may impact performance)') // Assuming DataCards is a proper noun
+      .setDesc('⚠️ Legacy feature - may be unreliable. Automatically update DataCards when properties change. The refresh button is recommended instead.')
       .addToggle(toggle => toggle
         .setValue(this.plugin.settings.enableDynamicUpdates)
         .onChange(async (value) => {
@@ -384,7 +392,7 @@ export class DataCardsSettingTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName('Refresh delay')
-      .setDesc('Delay in milliseconds before refreshing after a property change (higher values give more time to complete typing)')
+      .setDesc('Delay in milliseconds before refreshing after a property change (only applies to dynamic updates)')
       .addSlider(slider => slider
         .setLimits(500, 5000, 500)
         .setValue(this.plugin.settings.refreshDelay)
