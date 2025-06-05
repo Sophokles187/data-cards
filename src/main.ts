@@ -42,6 +42,7 @@ export default class DataCardsPlugin extends Plugin {
   private isRefreshing: boolean = false;
   private lastActiveElement: Element | null = null;
   private debouncedRefresh: any; // Will hold the debounced refresh function
+  private refreshEventHandler: () => void; // Store the bound event handler
 
   async onload() {
     await this.loadSettings();
@@ -77,6 +78,9 @@ export default class DataCardsPlugin extends Plugin {
 
     // Detect and register Meta Bind events
     this.registerMetaBindEvents();
+
+    // Register event listener for refresh button clicks
+    this.registerRefreshButtonEvents();
 
     Logger.debug('DataCards plugin loaded');
   }
@@ -352,6 +356,10 @@ export default class DataCardsPlugin extends Plugin {
   }
 
   onunload() {
+    // Clean up event listeners
+    if (this.refreshEventHandler) {
+      window.removeEventListener('datacards-refresh-requested', this.refreshEventHandler);
+    }
     Logger.debug('DataCards plugin unloaded');
   }
 
@@ -456,11 +464,24 @@ export default class DataCardsPlugin extends Plugin {
   }
 
   /**
+   * Register event listeners for refresh button clicks
+   */
+  private registerRefreshButtonEvents(): void {
+    // Create and store the bound event handler
+    this.refreshEventHandler = () => {
+      this.refreshActiveView(false); // false = don't show notification for button clicks
+    };
+
+    // Listen for custom refresh events from refresh buttons
+    window.addEventListener('datacards-refresh-requested', this.refreshEventHandler);
+  }
+
+  /**
    * Refresh all datacards blocks in the current view
    *
    * @param showNotification Whether to show a notification after refreshing
    */
-  private refreshActiveView(showNotification: boolean = true) {
+  public refreshActiveView(showNotification: boolean = true) {
     // Prevent multiple refreshes from happening concurrently
     if (this.isRefreshing) {
       Logger.debug('Refresh already in progress, skipping.');
@@ -471,26 +492,93 @@ export default class DataCardsPlugin extends Plugin {
     Logger.debug('Starting refreshActiveView...');
 
     const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
-    if (activeView && activeView.previewMode) {
-      // Trigger a rerender of the preview mode
-      activeView.previewMode.rerender(true);
-
-      // Show notification if requested
-      if (showNotification) {
-        new Notice('DataCards refreshed', 2000);
-      }
-
-      // Reset the refreshing flag after a short delay
-      setTimeout(() => {
-        this.isRefreshing = false;
-        Logger.debug('Refresh finished.');
-      }, 250);
-    } else {
+    if (!activeView) {
       if (showNotification) {
         new Notice('No active markdown view to refresh', 2000);
       }
-      this.isRefreshing = false; // Reset flag if no view found
+      this.isRefreshing = false;
       Logger.debug('No active markdown view found.');
+      return;
+    }
+
+    // Check if we're in reading mode or editing mode
+    // We need to check the actual mode more reliably
+    const isInReadingMode = activeView.getMode() === 'preview';
+
+    if (isInReadingMode && activeView.previewMode) {
+      // Reading mode - use the preview mode rerender
+      Logger.debug('Refreshing in reading mode');
+      activeView.previewMode.rerender(true);
+    } else {
+      // Editing mode (live preview or source mode) - force editor to re-process
+      Logger.debug('Refreshing in editing mode');
+      this.refreshEditingMode(activeView);
+    }
+
+    // Show notification if requested
+    if (showNotification) {
+      new Notice('DataCards refreshed', 2000);
+    }
+
+    // Reset the refreshing flag after a short delay
+    setTimeout(() => {
+      this.isRefreshing = false;
+      Logger.debug('Refresh finished.');
+    }, 250);
+  }
+
+  /**
+   * Refresh DataCards in editing mode (live preview or source mode)
+   *
+   * @param activeView The active MarkdownView
+   */
+  private refreshEditingMode(activeView: MarkdownView): void {
+    try {
+      const editor = activeView.editor;
+      if (!editor) {
+        Logger.warn('No editor found in active view');
+        return;
+      }
+
+      // Method 1: Try to trigger a re-render by forcing the view to refresh
+      // This is more reliable than content manipulation
+      if (typeof (activeView as any).requestUpdateLayout === 'function') {
+        Logger.debug('Using requestUpdateLayout method');
+        (activeView as any).requestUpdateLayout();
+        return;
+      }
+
+      // Method 2: Force re-processing by triggering editor change events
+      // Store current cursor position and selection
+      const cursor = editor.getCursor();
+      const selection = editor.getSelection();
+
+      // Get current content
+      const content = editor.getValue();
+
+      // Clear and restore content to trigger re-processing
+      editor.setValue('');
+
+      // Use a very short timeout to restore content
+      setTimeout(() => {
+        editor.setValue(content);
+
+        // Restore cursor position and selection
+        if (selection) {
+          // If there was a selection, restore it
+          const from = editor.getCursor('from');
+          const to = editor.getCursor('to');
+          editor.setSelection(from, to);
+        } else {
+          // Otherwise restore cursor position
+          editor.setCursor(cursor);
+        }
+
+        Logger.debug('Editing mode refresh completed');
+      }, 1);
+
+    } catch (error) {
+      Logger.error('Error refreshing editing mode:', error);
     }
   }
 }

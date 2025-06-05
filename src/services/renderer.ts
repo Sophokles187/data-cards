@@ -132,6 +132,9 @@ export class RendererService {
       }
     });
 
+    // Add refresh button
+    this.addRefreshButton(cardsContainer);
+
     // Add preset class first
     cardsContainer.addClass(`datacards-preset-${settings.preset}`);
 
@@ -344,6 +347,59 @@ export class RendererService {
   }
 
   /**
+   * Add a refresh button to the DataCards container
+   *
+   * @param container The DataCards container element
+   */
+  private addRefreshButton(container: HTMLElement): void {
+    const refreshButton = container.createEl('button', {
+      cls: 'datacards-refresh-button',
+      attr: {
+        'aria-label': 'Refresh DataCards',
+        'title': 'Refresh DataCards'
+      }
+    });
+
+    // Add the refresh icon (using Unicode symbol)
+    refreshButton.createEl('span', {
+      cls: 'datacards-refresh-icon',
+      text: '↻'
+    });
+
+    // Add click handler
+    refreshButton.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+
+      // Add visual feedback
+      refreshButton.addClass('datacards-refresh-active');
+
+      // Trigger refresh
+      this.triggerRefresh();
+
+      // Remove visual feedback after a short delay
+      setTimeout(() => {
+        refreshButton.removeClass('datacards-refresh-active');
+      }, 300);
+    });
+  }
+
+  /**
+   * Trigger a refresh of DataCards in the current view
+   */
+  private triggerRefresh(): void {
+    // Get the DataCards plugin instance and trigger refresh
+    // We need to access the plugin through the app
+    const plugin = (this.app as any).plugins?.plugins?.['data-cards'];
+    if (plugin && typeof plugin.refreshActiveView === 'function') {
+      plugin.refreshActiveView(false); // false = don't show notification for button clicks
+    } else {
+      // Fallback: dispatch a custom event that the plugin can listen to
+      window.dispatchEvent(new CustomEvent('datacards-refresh-requested'));
+    }
+  }
+
+  /**
    * Render an empty state message when no results are found
    *
    * @param container The container element
@@ -359,6 +415,9 @@ export class RendererService {
         'data-datacards-container': 'true' // Add a data attribute for easier selection
       }
     });
+
+    // Add refresh button to empty state as well
+    this.addRefreshButton(cardsContainer);
 
     Logger.debug('Created cards container for empty state');
 

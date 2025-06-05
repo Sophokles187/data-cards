@@ -973,3 +973,93 @@ a.datacards-tag:hover {
 .datacards-hidden-checkbox {
   display: none;
 }
+
+/* Refresh button styles */
+.datacards-refresh-button {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 50%;
+  background-color: var(--background-secondary);
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: all 0.2s ease;
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  border: 1px solid var(--background-modifier-border);
+}
+
+/* Show button on container hover with larger trigger area */
+.datacards-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 60px;
+  height: 60px;
+  z-index: 5;
+}
+
+.datacards-container:hover .datacards-refresh-button {
+  opacity: 1;
+}
+
+.datacards-refresh-button:hover {
+  background-color: var(--background-secondary-alt);
+  color: var(--text-normal);
+  transform: scale(1.1);
+}
+
+.datacards-refresh-button:active,
+.datacards-refresh-button.datacards-refresh-active {
+  transform: scale(0.95) rotate(180deg);
+  background-color: var(--interactive-accent);
+  color: var(--text-on-accent);
+}
+
+.datacards-refresh-icon {
+  font-size: 16px;
+  line-height: 1;
+  transition: transform 0.3s ease;
+}
+
+/* Ensure container has relative positioning for absolute button */
+.datacards-container {
+  position: relative;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+  .datacards-container {
+    grid-template-columns: repeat(var(--mobile-columns, 2), 1fr);
+    gap: calc(var(--card-gap) * 0.75);
+  }
+
+  .datacards-content {
+    padding: 12px;
+  }
+
+  .datacards-property-label {
+    font-size: 0.75em;
+  }
+
+  .datacards-property-value {
+    font-size: 0.9em;
+  }
+
+  /* Make refresh button always visible on mobile */
+  .datacards-refresh-button {
+    opacity: 0.7;
+  }
+
+  .datacards-container:hover .datacards-refresh-button {
+    opacity: 1;
+  }
+}
