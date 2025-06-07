@@ -1,7 +1,7 @@
 {
 	"id": "data-cards",
 	"name": "DataCards",
-	"version": "1.0.3",
+	"version": "1.0.4",
 	"minAppVersion": "0.15.0",
 	"description": "Transform Dataview query results into visually appealing, customizable card layouts.",
 	"author": "Sophokles187",
