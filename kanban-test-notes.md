@@ -1,168 +1,77 @@
-# Kanban Test Notes
+# Kanban Test
 
-Copy these notes into your Obsidian vault to test the kanban functionality:
+Create these test notes in your vault:
 
-## Task - Setup Database.md
-```markdown
+## Task 1
 ---
 title: Setup Database
 status: todo
 priority: high
 assignee: John
-due: 2024-01-15
-project: Website Redesign
-tags:
-  - test-kanban
-  - backend
+tags: [test-kanban]
 ---
 
-Set up the initial database schema and connections.
-```
+Setup the database for the project.
 
-## Task - Design Homepage.md
-```markdown
+## Task 2
 ---
-title: Design Homepage
+title: Design UI
 status: in-progress
-priority: high
+priority: medium
 assignee: Sarah
-due: 2024-01-20
-project: Website Redesign
-tags:
-  - test-kanban
-  - design
+tags: [test-kanban]
 ---
 
-Create mockups and wireframes for the new homepage.
-```
+Design the user interface mockups.
 
-## Task - Write API Documentation.md
-```markdown
+## Task 3
 ---
-title: Write API Documentation
+title: Write Tests
 status: review
-priority: medium
+priority: low
 assignee: Mike
-due: 2024-01-25
-project: Website Redesign
-tags:
-  - test-kanban
-  - documentation
+tags: [test-kanban]
 ---
 
-Document all API endpoints and usage examples.
-```
+Write unit tests for the application.
 
-## Task - Deploy to Production.md
-```markdown
+## Task 4
 ---
-title: Deploy to Production
+title: Deploy App
 status: done
-priority: low
+priority: high
 assignee: DevOps
-due: 2024-01-10
-project: Website Redesign
-tags:
-  - test-kanban
-  - deployment
+tags: [test-kanban]
 ---
 
-Deploy the completed features to production environment.
-```
+Deploy the application to production.
 
-## Task - Fix Login Bug.md
-```markdown
----
-title: Fix Login Bug
-status: todo
-priority: medium
-assignee: John
-due: 2024-01-18
-project: Website Redesign
-tags:
-  - test-kanban
-  - bugfix
 ---
 
-Resolve the authentication issue preventing user login.
-```
+# Test Kanban
 
-## Task - Update User Interface.md
-```markdown
----
-title: Update User Interface
-status: in-progress
-priority: low
-assignee: Sarah
-due: 2024-01-30
-project: Website Redesign
-tags:
-  - test-kanban
-  - ui
----
-
-Modernize the user interface with new design system.
-```
-
-# Test DataCards Blocks
-
-Add these DataCards blocks to a note to test the kanban functionality:
-
-## Basic Kanban Test
 ```datacards
-TABLE file.link as "Task", priority, assignee, due
+TABLE file.link as "Task", priority, assignee, status
 FROM #test-kanban
-GROUP BY status
 SORT status ASC
 
 // Settings
 preset: kanban
+kanbanStatusOptions: ["backlog", "active", "testing", "deployed"]
+kanbanColors: {
+  "todo": "blue",
+  "in-progress": "orange",
+  "review": "purple",
+  "done": "green"
+}
+newTaskPath: "Tasks"
+newTaskTemplate: {
+  "priority": "medium",
+  "assignee": "John"
+}
 ```
 
-## Filtered Kanban Test (High Priority Only)
-```datacards
-TABLE file.link as "Task", priority, assignee, due
-FROM #test-kanban
-WHERE priority = "high"
-GROUP BY status
-SORT priority DESC
-
-// Settings
-preset: kanban
-kanbanColumnWidth: 250px
-kanbanShowColumnCounts: true
-kanbanCompactCards: true
-```
-
-## Group by Priority (Alternative Kanban)
-```datacards
-TABLE file.link as "Task", status, assignee, due
-FROM #test-kanban
-GROUP BY priority
-SORT priority ASC
-
-// Settings
-preset: kanban
-```
-
-## Group by Assignee (Team View)
-```datacards
-TABLE file.link as "Task", status, priority, due
-FROM #test-kanban
-GROUP BY assignee
-SORT assignee ASC
-
-// Settings
-preset: kanban
-```
-
-## Non-Kanban Grouped Results (For Comparison)
-```datacards
-TABLE file.link as "Task", priority, assignee, due
-FROM #test-kanban
-GROUP BY status
-SORT status ASC
-
-// Settings
-preset: grid
-```
+**Test:**
+1. See colored columns
+2. Click + button to create new task
+3. Change status using dropdowns

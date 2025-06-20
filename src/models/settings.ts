@@ -81,6 +81,8 @@ export interface DataCardsSettings {
   kanbanMobileStackColumns: boolean; // Stack columns vertically on mobile
   kanbanStatusOptions: string[]; // Custom status values for kanban dropdowns
   kanbanColors: Record<string, string>; // Custom colors for status values
+  newTaskPath: string; // Folder path for new task notes
+  newTaskTemplate: Record<string, any>; // Template for new task frontmatter
 
   // Formatting settings
   defaultDateFormat: string;
@@ -168,6 +170,12 @@ export const DEFAULT_SETTINGS: DataCardsSettings = {
     'in-progress': 'blue',
     'review': 'orange',
     'done': 'green'
+  },
+  newTaskPath: '', // Default: create in vault root
+  newTaskTemplate: { // Default template for new tasks
+    priority: 'medium',
+    assignee: '',
+    due: ''
   },
 
   // Formatting settings

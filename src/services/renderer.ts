@@ -2880,6 +2880,23 @@ export class RendererService {
       text: `(${rows.length})`
     });
 
+    // Add new task button
+    const newTaskBtn = header.createEl('button', {
+      cls: 'datacards-new-task-btn',
+      attr: {
+        'aria-label': `Add new task to ${groupKey}`,
+        'title': `Add new task to ${groupKey}`
+      }
+    });
+    newTaskBtn.innerHTML = '+';
+
+    // Add click handler for new task button
+    newTaskBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      this.showNewTaskModal(groupKey, settings, component);
+    });
+
     // Create cards container within the column
     const cardsContainer = column.createEl('div', {
       cls: 'datacards-kanban-cards'
@@ -3010,6 +3027,229 @@ export class RendererService {
       }
     });
   }
+
+  /**
+   * Show modal for creating a new task
+   *
+   * @param statusValue The status value for the new task (based on column)
+   * @param settings The current settings
+   * @param component The parent component for lifecycle management
+   */
+  private showNewTaskModal(statusValue: string, settings: DataCardsSettings, component: Component): void {
+    // Create modal container
+    const modal = document.createElement('div');
+    modal.className = 'datacards-new-task-modal-overlay';
+
+    // Create modal content
+    const modalContent = modal.createEl('div', {
+      cls: 'datacards-new-task-modal'
+    });
+
+    // Modal header
+    const header = modalContent.createEl('div', {
+      cls: 'datacards-modal-header'
+    });
+    header.createEl('h3', {
+      text: `New Task - ${statusValue}`,
+      cls: 'datacards-modal-title'
+    });
+
+    // Close button
+    const closeBtn = header.createEl('button', {
+      cls: 'datacards-modal-close',
+      text: '×'
+    });
+
+    // Modal body
+    const body = modalContent.createEl('div', {
+      cls: 'datacards-modal-body'
+    });
+
+    // Title input
+    const titleGroup = body.createEl('div', {
+      cls: 'datacards-form-group'
+    });
+    titleGroup.createEl('label', {
+      text: 'Title *',
+      cls: 'datacards-form-label'
+    });
+    const titleInput = titleGroup.createEl('input', {
+      type: 'text',
+      cls: 'datacards-form-input',
+      attr: {
+        placeholder: 'Enter task title...',
+        required: 'true'
+      }
+    });
+
+    // Template fields
+    const template = settings.newTaskTemplate || {};
+    const templateInputs: Record<string, HTMLInputElement> = {};
+
+    Object.entries(template).forEach(([key, defaultValue]) => {
+      if (key === 'status') return; // Skip status as it's set by column
+
+      const fieldGroup = body.createEl('div', {
+        cls: 'datacards-form-group'
+      });
+      fieldGroup.createEl('label', {
+        text: key.charAt(0).toUpperCase() + key.slice(1),
+        cls: 'datacards-form-label'
+      });
+      const input = fieldGroup.createEl('input', {
+        type: 'text',
+        cls: 'datacards-form-input',
+        attr: {
+          placeholder: `Enter ${key}...`
+        }
+      });
+      input.value = String(defaultValue || '');
+      templateInputs[key] = input;
+    });
+
+    // Modal footer
+    const footer = modalContent.createEl('div', {
+      cls: 'datacards-modal-footer'
+    });
+
+    const cancelBtn = footer.createEl('button', {
+      text: 'Cancel',
+      cls: 'datacards-btn datacards-btn-secondary'
+    });
+
+    const createBtn = footer.createEl('button', {
+      text: 'Create Task',
+      cls: 'datacards-btn datacards-btn-primary'
+    });
+
+    // Event handlers
+    const closeModal = () => {
+      modal.remove();
+    };
+
+    closeBtn.addEventListener('click', closeModal);
+    cancelBtn.addEventListener('click', closeModal);
+
+    // Close on overlay click
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        closeModal();
+      }
+    });
+
+    // Create task handler
+    createBtn.addEventListener('click', async () => {
+      const title = titleInput.value.trim();
+      if (!title) {
+        titleInput.focus();
+        titleInput.style.borderColor = 'var(--color-red)';
+        return;
+      }
+
+      try {
+        await this.createNewTask(title, statusValue, templateInputs, settings);
+        closeModal();
+      } catch (error) {
+        console.error('Error creating new task:', error);
+        // Could show error message in modal
+      }
+    });
+
+    // Focus title input and handle Enter key
+    titleInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        createBtn.click();
+      }
+    });
+
+    // Add modal to DOM
+    document.body.appendChild(modal);
+    titleInput.focus();
+  }
+
+  /**
+   * Create a new task note
+   *
+   * @param title The task title
+   * @param statusValue The status value
+   * @param templateInputs The template field inputs
+   * @param settings The current settings
+   */
+  private async createNewTask(
+    title: string,
+    statusValue: string,
+    templateInputs: Record<string, HTMLInputElement>,
+    settings: DataCardsSettings
+  ): Promise<void> {
+    try {
+      // Build frontmatter
+      const frontmatter: Record<string, any> = {
+        title: title,
+        status: statusValue
+      };
+
+      // Add template fields
+      Object.entries(templateInputs).forEach(([key, input]) => {
+        const value = input.value.trim();
+        if (value) {
+          frontmatter[key] = value;
+        }
+      });
+
+      // Generate filename
+      const filename = this.generateFilename(title);
+
+      // Determine file path
+      const folderPath = settings.newTaskPath || '';
+      const fullPath = folderPath ? `${folderPath}/${filename}` : filename;
+
+      // Create frontmatter string
+      const frontmatterString = Object.entries(frontmatter)
+        .map(([key, value]) => `${key}: ${value}`)
+        .join('\n');
+
+      // Create file content
+      const content = `---\n${frontmatterString}\n---\n\n# ${title}\n\n`;
+
+      // Create the file
+      const file = await this.app.vault.create(fullPath, content);
+
+      console.log('Created new task:', file.path);
+
+      // Open the file
+      const leaf = this.app.workspace.getLeaf(false);
+      await leaf.openFile(file);
+
+      // Trigger refresh of DataCards
+      setTimeout(() => {
+        this.triggerRefresh();
+      }, 100);
+
+    } catch (error) {
+      console.error('Error creating task file:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Generate a filename from a title
+   *
+   * @param title The task title
+   * @returns Safe filename
+   */
+  private generateFilename(title: string): string {
+    // Remove invalid characters and replace spaces with hyphens
+    const safeName = title
+      .replace(/[<>:"/\\|?*]/g, '') // Remove invalid filename characters
+      .replace(/\s+/g, '-') // Replace spaces with hyphens
+      .toLowerCase();
+
+    return `${safeName}.md`;
+  }
+
+
+
+
 
   /**
    * Apply custom color styling to a kanban column
