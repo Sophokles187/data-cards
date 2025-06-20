@@ -3083,11 +3083,43 @@ export class RendererService {
     });
 
     // Template fields
-    const template = settings.newTaskTemplate || {};
+    let template = settings.newTaskTemplate || {};
+
+    // Debug the template parsing
+    console.log('=== TEMPLATE DEBUG ===');
+    console.log('Raw newTaskTemplate:', settings.newTaskTemplate);
+    console.log('Template type:', typeof settings.newTaskTemplate);
+    console.log('Template value:', template);
+
+    // If template is a string, try to parse it as JSON
+    if (typeof template === 'string') {
+      try {
+        template = JSON.parse(template);
+        console.log('Parsed template from string:', template);
+      } catch (error) {
+        console.error('Failed to parse template string:', error);
+        template = {};
+      }
+    }
+
+    // Ensure template is an object
+    if (!template || typeof template !== 'object') {
+      console.log('Template is not an object, using default');
+      template = {
+        priority: '',
+        assignee: ''
+      };
+    }
+
+    console.log('Final template to use:', template);
+    console.log('=== END TEMPLATE DEBUG ===');
+
     const templateInputs: Record<string, HTMLInputElement> = {};
 
     Object.entries(template).forEach(([key, defaultValue]) => {
       if (key === 'status') return; // Skip status as it's set by column
+
+      console.log(`Creating field for: ${key} = ${defaultValue}`);
 
       const fieldGroup = body.createEl('div', {
         cls: 'datacards-form-group'
@@ -3191,9 +3223,9 @@ export class RendererService {
       // Add template fields
       Object.entries(templateInputs).forEach(([key, input]) => {
         const value = input.value.trim();
-        if (value) {
-          frontmatter[key] = value;
-        }
+        console.log(`Adding template field: ${key} = "${value}"`);
+        // Always add the field, even if empty (user might want empty values)
+        frontmatter[key] = value;
       });
 
       // Generate filename
@@ -3205,8 +3237,14 @@ export class RendererService {
 
       // Create frontmatter string
       const frontmatterString = Object.entries(frontmatter)
-        .map(([key, value]) => `${key}: ${value}`)
+        .map(([key, value]) => {
+          // Properly quote string values
+          const quotedValue = typeof value === 'string' ? `"${value}"` : value;
+          return `${key}: ${quotedValue}`;
+        })
         .join('\n');
+
+      console.log('Generated frontmatter:', frontmatterString);
 
       // Create file content
       const content = `---\n${frontmatterString}\n---\n\n# ${title}\n\n`;

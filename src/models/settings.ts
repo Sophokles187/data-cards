@@ -172,8 +172,8 @@ export const DEFAULT_SETTINGS: DataCardsSettings = {
     'done': 'green'
   },
   newTaskPath: '', // Default: create in vault root
-  newTaskTemplate: { // Default template for new tasks
-    priority: 'medium',
+  newTaskTemplate: { // Default template for new tasks - just field names, no values
+    priority: '',
     assignee: '',
     due: ''
   },
