@@ -834,6 +834,137 @@ a.datacards-tag:hover {
   margin-bottom: 6px;
 }
 
+/* Kanban preset - Horizontal columns for grouped data */
+.datacards-preset-kanban {
+  --kanban-column-width: 300px;
+  --kanban-column-spacing: 16px;
+}
+
+.datacards-preset-kanban.datacards-kanban-container {
+  display: flex;
+  gap: var(--kanban-column-spacing);
+  overflow-x: auto;
+  padding-bottom: 8px;
+  align-items: flex-start;
+}
+
+/* Kanban column */
+.datacards-kanban-column {
+  flex: 0 0 var(--kanban-column-width);
+  background: var(--background-secondary);
+  border-radius: 8px;
+  padding: 12px;
+  border: 1px solid var(--background-modifier-border);
+  min-height: 200px;
+}
+
+/* Kanban column header */
+.datacards-kanban-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding: 8px 12px;
+  background: var(--background-modifier-border);
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 0.9em;
+}
+
+.datacards-kanban-title {
+  color: var(--text-normal);
+}
+
+.datacards-kanban-count {
+  color: var(--text-muted);
+  font-size: 0.8em;
+  font-weight: normal;
+}
+
+/* Kanban cards container */
+.datacards-kanban-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Kanban cards styling */
+.datacards-kanban-cards .datacards-card {
+  margin-bottom: 0; /* Remove default margin since we use gap */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.datacards-kanban-cards .datacards-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+/* Compact kanban cards */
+.datacards-kanban-compact .datacards-card {
+  font-size: 0.9em;
+}
+
+.datacards-kanban-compact .datacards-content {
+  padding: 8px;
+}
+
+.datacards-kanban-compact .datacards-property {
+  margin-bottom: 4px;
+}
+
+.datacards-kanban-compact .datacards-image-container {
+  height: 120px;
+}
+
+/* Editable status dropdown styles for kanban */
+.datacards-editable-status {
+  position: relative;
+}
+
+.datacards-status-select {
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 12px;
+  color: var(--text-normal);
+  cursor: pointer;
+  width: 100%;
+  transition: border-color 0.2s ease;
+}
+
+.datacards-status-select:hover {
+  border-color: var(--interactive-accent);
+}
+
+.datacards-status-select:focus {
+  outline: none;
+  border-color: var(--interactive-accent);
+  box-shadow: 0 0 0 2px var(--interactive-accent-hover);
+}
+
+/* Style the status options */
+.datacards-status-select option {
+  background: var(--background-primary);
+  color: var(--text-normal);
+  padding: 4px;
+}
+
+/* Grouped results (non-kanban) */
+.datacards-group-header {
+  font-weight: 600;
+  font-size: 1.1em;
+  margin: 16px 0 8px 0;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--background-modifier-border);
+  color: var(--text-normal);
+}
+
+.datacards-group-container {
+  margin-bottom: 24px;
+}
+
 /* Responsive adjustments - these are now handled by the mobile settings in the plugin */
 /* These media queries serve as fallbacks for blocks without explicit settings */
 @media (max-width: 1200px) {
@@ -897,6 +1028,22 @@ a.datacards-tag:hover {
   .datacards-preset-compact,
   .datacards-preset-dense {
     --card-columns: 1;
+  }
+
+  /* Kanban mobile adjustments */
+  .datacards-preset-kanban.datacards-kanban-container {
+    --kanban-column-width: 280px; /* Narrower columns on mobile */
+  }
+
+  /* Stack kanban columns vertically if setting is enabled */
+  .datacards-preset-kanban.datacards-mobile-stack {
+    flex-direction: column;
+    overflow-x: visible;
+  }
+
+  .datacards-preset-kanban.datacards-mobile-stack .datacards-kanban-column {
+    flex: 1 1 auto;
+    margin-bottom: 16px;
   }
 
   /* Reduce card spacing on mobile */

@@ -47,6 +47,14 @@ export class RendererService {
     // SPECIAL CHECK: Log the exact structure of the results
     Logger.debug('SPECIAL CHECK - renderCards called with results:', results);
 
+    // IMMEDIATE DEBUG - Check if this is GROUP BY
+    console.log('=== IMMEDIATE DEBUG START ===');
+    console.log('Results type:', typeof results);
+    console.log('Results is array:', Array.isArray(results));
+    console.log('Results keys:', Object.keys(results || {}));
+    console.log('Results:', results);
+    console.log('=== IMMEDIATE DEBUG END ===');
+
     // Check if the results are empty
     let isEmpty = false;
 
@@ -316,10 +324,53 @@ export class RendererService {
     cardsContainer.addClass(`datacards-image-fit-${imageFit}`);
 
     // Handle different types of Dataview results
-    if (results && results.values && Array.isArray(results.values)) {
+    // First check for GROUP BY results (which have a specific structure)
+    console.log('STRUCTURE DEBUG - Results type:', typeof results);
+    console.log('STRUCTURE DEBUG - Results keys:', Object.keys(results || {}));
+    console.log('STRUCTURE DEBUG - Results.values type:', typeof results?.values);
+    console.log('STRUCTURE DEBUG - Results.values is array:', Array.isArray(results?.values));
+    console.log('STRUCTURE DEBUG - First few results.values items:', results?.values?.slice(0, 2));
+    console.log('STRUCTURE DEBUG - Full results object:', JSON.stringify(results, null, 2));
+
+    if (this.isGroupByResults(results)) {
+      Logger.debug('Detected GROUP BY results');
+
+      // Check if kanban preset is enabled
+      if (settings.preset === 'kanban') {
+        Logger.debug('Rendering GROUP BY results as kanban');
+
+        // Handle different GROUP BY result types
+        if (results.idMeaning) {
+          // TABLE + GROUP BY - aggregated data, limited support
+          this.renderDataviewTableGroupByKanban(cardsContainer, results, settings, component);
+        } else if (results.primaryMeaning) {
+          // LIST + GROUP BY - need to re-query for individual notes
+          this.renderDataviewListGroupByKanban(cardsContainer, results, settings, component);
+        } else {
+          // Legacy GROUP BY structure - fallback to table rendering
+          const groupByData = Array.isArray(results) ? results : results.values;
+          this.renderGroupedResults(cardsContainer, groupByData, settings, component);
+        }
+      } else {
+        Logger.debug('Rendering GROUP BY results as grouped cards');
+        // Extract the actual GROUP BY data (might be nested in values)
+        const groupByData = Array.isArray(results) ? results : results.values;
+        this.renderGroupedResults(cardsContainer, groupByData, settings, component);
+      }
+    } else if (results && results.values && Array.isArray(results.values)) {
       Logger.debug('Detected table-like results with values array');
-      // Handle table-like results (most common)
-      this.renderTableResults(cardsContainer, results, settings, component); // Pass component
+
+      // Check if kanban preset is enabled for regular queries (not GROUP BY)
+      if (settings.preset === 'kanban' && results.headers && Array.isArray(results.headers)) {
+        Logger.debug('Rendering regular query results as kanban (programmatic grouping)');
+        this.renderProgrammaticKanban(cardsContainer, results, settings, component);
+      } else if (results.headers && Array.isArray(results.headers)) {
+        // Handle table-like results (most common)
+        this.renderTableResults(cardsContainer, results, settings, component); // Pass component
+      } else {
+        Logger.debug('Table results missing headers, treating as array results');
+        this.renderArrayResults(cardsContainer, results.values, settings, component);
+      }
     } else if (results && Array.isArray(results)) {
       Logger.debug('Detected array results');
       // Handle array results
@@ -1227,7 +1278,8 @@ export class RendererService {
     propertyName: string,
     propertyValue: any,
     settings: DataCardsSettings,
-    component: Component // Added component parameter
+    component: Component, // Added component parameter
+    cardData?: any // Optional card data for inline editing
   ): void {
     Logger.debug(`Adding property to card: ${propertyName} = ${propertyValue}`);
     Logger.debug(`Property type: ${typeof propertyValue}`);
@@ -1269,6 +1321,9 @@ export class RendererService {
     // Check if this is the file property (special handling for file links)
     if (propertyName.toLowerCase() === 'file') {
       this.formatFileProperty(propertyEl, propertyValue);
+    } else if (settings.preset === 'kanban' && propertyName === 'status' && cardData) {
+      // Special handling for status property in kanban mode - make it editable
+      this.formatEditableStatusProperty(propertyEl, propertyValue, cardData, component);
     } else {
       // Check if there's a custom formatter for this property
       const formatter = settings.propertyFormatters[propertyName];
@@ -1280,6 +1335,176 @@ export class RendererService {
         // Use default formatting based on value type, passing the component
         this.formatPropertyByType(propertyEl, propertyValue, component); // Pass component
       }
+    }
+  }
+
+  /**
+   * Format an editable status property for kanban mode
+   * Creates a dropdown that allows changing the status directly
+   *
+   * @param propertyEl The property element
+   * @param currentValue The current status value
+   * @param cardData The card data containing file information
+   * @param component The parent component for lifecycle management
+   */
+  private formatEditableStatusProperty(
+    propertyEl: HTMLElement,
+    currentValue: any,
+    cardData: any,
+    component: Component
+  ): void {
+    const valueEl = propertyEl.createEl('div', {
+      cls: 'datacards-property-value datacards-editable-status',
+    });
+
+    // Common status options for kanban
+    const statusOptions = ['todo', 'in-progress', 'review', 'done'];
+
+    // Create a select dropdown
+    const selectEl = valueEl.createEl('select', {
+      cls: 'datacards-status-select'
+    });
+
+    // Add options to the select
+    statusOptions.forEach(status => {
+      const optionEl = selectEl.createEl('option', {
+        value: status,
+        text: status
+      });
+
+      if (status === String(currentValue)) {
+        optionEl.selected = true;
+      }
+    });
+
+    // Add change event listener
+    selectEl.addEventListener('change', async (event) => {
+      const newStatus = (event.target as HTMLSelectElement).value;
+      await this.updateNoteStatus(cardData, newStatus);
+    });
+  }
+
+  /**
+   * Update the status property of a note
+   *
+   * @param cardData The card data containing file information
+   * @param newStatus The new status value
+   */
+  private async updateNoteStatus(cardData: any, newStatus: string): Promise<void> {
+    try {
+      console.log('=== UPDATE NOTE STATUS DEBUG ===');
+      console.log('Card data:', cardData);
+      console.log('New status:', newStatus);
+      console.log('Card data type:', typeof cardData);
+      console.log('Card data keys:', Object.keys(cardData || {}));
+
+      // Extract file information from cardData
+      let file: TFile | null = null;
+
+      // Try different ways to get the file
+      if (cardData && cardData.file) {
+        console.log('Found cardData.file:', cardData.file);
+        if (cardData.file instanceof TFile) {
+          file = cardData.file;
+        } else if (cardData.file.path) {
+          console.log('Getting file by path:', cardData.file.path);
+          const abstractFile = this.app.vault.getAbstractFileByPath(cardData.file.path);
+          if (abstractFile instanceof TFile) {
+            file = abstractFile;
+          }
+        }
+      }
+
+      // Try other properties
+      if (!file && cardData && cardData.path) {
+        console.log('Trying cardData.path:', cardData.path);
+        const abstractFile = this.app.vault.getAbstractFileByPath(cardData.path);
+        if (abstractFile instanceof TFile) {
+          file = abstractFile;
+        }
+      }
+
+      // Try filePath property
+      if (!file && cardData && cardData.filePath) {
+        console.log('Trying cardData.filePath:', cardData.filePath);
+        const abstractFile = this.app.vault.getAbstractFileByPath(cardData.filePath);
+        if (abstractFile instanceof TFile) {
+          file = abstractFile;
+        }
+      }
+
+      // If cardData itself is a file path string
+      if (!file && typeof cardData === 'string') {
+        console.log('Trying cardData as string path:', cardData);
+        const abstractFile = this.app.vault.getAbstractFileByPath(cardData);
+        if (abstractFile instanceof TFile) {
+          file = abstractFile;
+        }
+      }
+
+      if (!file) {
+        console.error('Could not determine file from card data. Available properties:', Object.keys(cardData || {}));
+        console.error('Full card data:', JSON.stringify(cardData, null, 2));
+        return;
+      }
+
+      console.log('Found file:', file.path);
+
+      // Read the file content
+      const content = await this.app.vault.read(file);
+      console.log('Current file content length:', content.length);
+      console.log('First 200 chars:', content.substring(0, 200));
+
+      // Update the frontmatter
+      const updatedContent = this.updateFrontmatterStatus(content, newStatus);
+      console.log('Updated content length:', updatedContent.length);
+      console.log('Updated first 200 chars:', updatedContent.substring(0, 200));
+
+      // Write back to file
+      await this.app.vault.modify(file, updatedContent);
+
+      console.log('Successfully updated status to:', newStatus);
+      console.log('=== UPDATE COMPLETE ===');
+
+      // Trigger a refresh of the DataCards
+      setTimeout(() => {
+        this.triggerRefresh();
+      }, 100);
+
+    } catch (error) {
+      console.error('Error updating note status:', error);
+      console.error('Error stack:', error.stack);
+    }
+  }
+
+  /**
+   * Update the status property in frontmatter
+   *
+   * @param content The file content
+   * @param newStatus The new status value
+   * @returns Updated content
+   */
+  private updateFrontmatterStatus(content: string, newStatus: string): string {
+    // Simple frontmatter parsing and updating
+    const frontmatterRegex = /^---\n([\s\S]*?)\n---/;
+    const match = content.match(frontmatterRegex);
+
+    if (!match) {
+      // No frontmatter, add it
+      return `---\nstatus: ${newStatus}\n---\n\n${content}`;
+    }
+
+    const frontmatter = match[1];
+    const statusRegex = /^status:\s*(.*)$/m;
+
+    if (frontmatter.match(statusRegex)) {
+      // Update existing status
+      const updatedFrontmatter = frontmatter.replace(statusRegex, `status: ${newStatus}`);
+      return content.replace(frontmatterRegex, `---\n${updatedFrontmatter}\n---`);
+    } else {
+      // Add status to existing frontmatter
+      const updatedFrontmatter = `${frontmatter}\nstatus: ${newStatus}`;
+      return content.replace(frontmatterRegex, `---\n${updatedFrontmatter}\n---`);
     }
   }
 
@@ -2320,5 +2545,565 @@ export class RendererService {
         text.substring(lastIndex)
       ));
     }
+  }
+
+  /**
+   * Check if the results are from a GROUP BY query
+   * GROUP BY results have a specific structure with grouped data
+   *
+   * @param results The Dataview query results
+   * @returns True if the results are from a GROUP BY query
+   */
+  private isGroupByResults(results: any): boolean {
+    console.log('GROUP BY CHECK - Input results:', results);
+    console.log('GROUP BY CHECK - Is array:', Array.isArray(results));
+
+    // Check for Dataview's GROUP BY structure using idMeaning (TABLE + GROUP BY)
+    if (results && typeof results === 'object' && results.idMeaning) {
+      const isGroupBy = results.idMeaning.type === 'group';
+      console.log('GROUP BY CHECK - Found idMeaning.type:', results.idMeaning.type);
+      console.log('GROUP BY CHECK - Is GROUP BY (TABLE):', isGroupBy);
+      return isGroupBy;
+    }
+
+    // Check for Dataview's GROUP BY structure using primaryMeaning (LIST + GROUP BY)
+    if (results && typeof results === 'object' && results.primaryMeaning) {
+      const isGroupBy = results.primaryMeaning.type === 'group';
+      console.log('GROUP BY CHECK - Found primaryMeaning.type:', results.primaryMeaning.type);
+      console.log('GROUP BY CHECK - Is GROUP BY (LIST):', isGroupBy);
+      return isGroupBy;
+    }
+
+    // Legacy check: GROUP BY results are arrays where each item has a 'key' and 'rows' property
+    if (!Array.isArray(results)) {
+      // Maybe GROUP BY results are nested in a values property?
+      if (results && results.values && Array.isArray(results.values)) {
+        console.log('GROUP BY CHECK - Checking results.values:', results.values);
+        console.log('GROUP BY CHECK - First item in values:', results.values[0]);
+
+        const hasGroupByStructure = results.values.length > 0 && results.values.every((item: any) =>
+          item &&
+          typeof item === 'object' &&
+          'key' in item &&
+          'rows' in item &&
+          Array.isArray(item.rows)
+        );
+
+        console.log('GROUP BY CHECK - Values has GROUP BY structure:', hasGroupByStructure);
+        return hasGroupByStructure;
+      }
+
+      console.log('GROUP BY CHECK - Not an array and no values property');
+      return false;
+    }
+
+    // Check if all items have the GROUP BY structure
+    const hasGroupByStructure = results.length > 0 && results.every((item: any) =>
+      item &&
+      typeof item === 'object' &&
+      'key' in item &&
+      'rows' in item &&
+      Array.isArray(item.rows)
+    );
+
+    console.log('GROUP BY CHECK - Direct array has GROUP BY structure:', hasGroupByStructure);
+    return hasGroupByStructure;
+  }
+
+  /**
+   * Render Dataview's TABLE + GROUP BY results as kanban columns
+   * This handles the special case where Dataview returns aggregated table data
+   *
+   * @param container The container element
+   * @param results The Dataview GROUP BY table results
+   * @param settings The merged settings
+   * @param component The parent component for lifecycle management
+   */
+  private renderDataviewTableGroupByKanban(container: HTMLElement, results: any, settings: DataCardsSettings, component: Component): void {
+    console.log('=== DATAVIEW GROUP BY KANBAN ===');
+    console.log('Results:', results);
+    console.log('Group column:', results.idMeaning?.name);
+
+    // Apply kanban-specific styling to container
+    container.addClass('datacards-kanban-container');
+
+    // Set kanban column width and spacing
+    container.style.setProperty('--kanban-column-width', settings.kanbanColumnWidth);
+    container.style.setProperty('--kanban-column-spacing', `${settings.kanbanColumnSpacing}px`);
+
+    // Extract unique group values from the results
+    const groupColumn = results.idMeaning?.name || 'status';
+    const groupColumnIndex = results.headers.indexOf(groupColumn);
+
+    if (groupColumnIndex === -1) {
+      console.error('Group column not found in headers:', groupColumn);
+      return;
+    }
+
+    // Get unique group values
+    const groupValues = [...new Set(results.values.map((row: any[]) => row[groupColumnIndex]))];
+    console.log('Group values:', groupValues);
+
+    // For each group value, we need to query the individual notes
+    // Since we can't re-query here, we'll show a message for now
+    groupValues.forEach((groupValue: string) => {
+      if (!groupValue) return;
+
+      // Create column container
+      const column = container.createEl('div', {
+        cls: 'datacards-kanban-column'
+      });
+
+      // Create column header
+      const header = column.createEl('div', {
+        cls: 'datacards-kanban-header'
+      });
+
+      // Add group title
+      header.createEl('span', {
+        cls: 'datacards-kanban-title',
+        text: groupValue
+      });
+
+      // Create cards container within the column
+      const cardsContainer = column.createEl('div', {
+        cls: 'datacards-kanban-cards'
+      });
+
+      // Add a message explaining the limitation
+      cardsContainer.createEl('div', {
+        cls: 'datacards-kanban-message',
+        text: 'Kanban with TABLE + GROUP BY is not fully supported. Use LIST + GROUP BY instead.'
+      });
+    });
+  }
+
+  /**
+   * Render GROUP BY results as grouped cards (non-kanban)
+   *
+   * @param container The container element
+   * @param results The GROUP BY results
+   * @param settings The merged settings
+   * @param component The parent component for lifecycle management
+   */
+  private renderGroupedResults(container: HTMLElement, results: any[], settings: DataCardsSettings, component: Component): void {
+    Logger.debug('Rendering grouped results with', results.length, 'groups');
+
+    // For non-kanban grouped results, render each group as a section
+    results.forEach((group: any) => {
+      // Create group header
+      container.createEl('div', {
+        cls: 'datacards-group-header',
+        text: `${group.key} (${group.rows.length})`
+      });
+
+      // Create group container
+      const groupContainer = container.createEl('div', {
+        cls: 'datacards-group-container'
+      });
+
+      // Render the rows in this group using array rendering logic
+      if (group.rows && group.rows.length > 0) {
+        // GROUP BY results have object-based rows, use array renderer
+        this.renderArrayResults(groupContainer, group.rows, settings, component);
+      }
+    });
+  }
+
+  /**
+   * Render Dataview's LIST + GROUP BY results as kanban columns
+   * This handles LIST queries with GROUP BY which return group names only
+   *
+   * @param container The container element
+   * @param results The Dataview LIST + GROUP BY results
+   * @param settings The merged settings
+   * @param component The parent component for lifecycle management
+   */
+  private renderDataviewListGroupByKanban(container: HTMLElement, results: any, settings: DataCardsSettings, component: Component): void {
+    console.log('=== DATAVIEW LIST GROUP BY KANBAN ===');
+    console.log('Results:', results);
+    console.log('Group column:', results.primaryMeaning?.name);
+
+    // Apply kanban-specific styling to container
+    container.addClass('datacards-kanban-container');
+
+    // Set kanban column width and spacing
+    container.style.setProperty('--kanban-column-width', settings.kanbanColumnWidth);
+    container.style.setProperty('--kanban-column-spacing', `${settings.kanbanColumnSpacing}px`);
+
+    // Get group values from the LIST results
+    const groupValues = results.values || [];
+    console.log('Group values:', groupValues);
+
+    // For each group value, create a column
+    groupValues.forEach((groupValue: string) => {
+      if (!groupValue) return;
+
+      // Create column container
+      const column = container.createEl('div', {
+        cls: 'datacards-kanban-column'
+      });
+
+      // Create column header
+      const header = column.createEl('div', {
+        cls: 'datacards-kanban-header'
+      });
+
+      // Add group title
+      header.createEl('span', {
+        cls: 'datacards-kanban-title',
+        text: groupValue
+      });
+
+      // Create cards container within the column
+      const cardsContainer = column.createEl('div', {
+        cls: 'datacards-kanban-cards'
+      });
+
+      // For now, show a message. In the future, we could re-query individual notes for this group
+      cardsContainer.createEl('div', {
+        cls: 'datacards-kanban-message',
+        text: `Group: ${groupValue} - Use regular queries without GROUP BY for full kanban functionality.`
+      });
+    });
+  }
+
+  /**
+   * Render regular query results as kanban by grouping them programmatically
+   * This is the main kanban implementation that works with regular TABLE queries
+   *
+   * @param container The container element
+   * @param results The regular Dataview query results
+   * @param settings The merged settings
+   * @param component The parent component for lifecycle management
+   */
+  private renderProgrammaticKanban(container: HTMLElement, results: any, settings: DataCardsSettings, component: Component): void {
+    console.log('=== PROGRAMMATIC KANBAN ===');
+    console.log('Results:', results);
+    console.log('Headers:', results.headers);
+
+    // Apply kanban-specific styling to container
+    container.addClass('datacards-kanban-container');
+
+    // Set kanban column width and spacing
+    container.style.setProperty('--kanban-column-width', settings.kanbanColumnWidth);
+    container.style.setProperty('--kanban-column-spacing', `${settings.kanbanColumnSpacing}px`);
+
+    // Determine the grouping column (hardcoded to 'status' for now)
+    const groupColumn = 'status';
+    const groupColumnIndex = results.headers.indexOf(groupColumn);
+
+    if (groupColumnIndex === -1) {
+      console.error(`Kanban group column '${groupColumn}' not found in headers:`, results.headers);
+      container.createEl('div', {
+        cls: 'datacards-error',
+        text: `Kanban group column '${groupColumn}' not found. Available columns: ${results.headers.join(', ')}`
+      });
+      return;
+    }
+
+    // Group the rows by the grouping column
+    const groupedRows = new Map<string, any[]>();
+
+    results.values.forEach((row: any[], index: number) => {
+      const groupValue = row[groupColumnIndex];
+      const groupKey = groupValue ? String(groupValue) : 'undefined';
+
+      if (!groupedRows.has(groupKey)) {
+        groupedRows.set(groupKey, []);
+      }
+      groupedRows.get(groupKey)!.push(row);
+    });
+
+    console.log('Grouped rows:', groupedRows);
+
+    // Create columns for each group
+    const sortedGroups = Array.from(groupedRows.entries()).sort(([a], [b]) => a.localeCompare(b));
+
+    sortedGroups.forEach(([groupKey, rows]) => {
+      this.createProgrammaticKanbanColumn(container, groupKey, rows, results.headers, settings, component);
+    });
+  }
+
+  /**
+   * Create a kanban column for programmatically grouped data
+   *
+   * @param container The parent container
+   * @param groupKey The group key (status value)
+   * @param rows The rows for this group
+   * @param headers The table headers
+   * @param settings The merged settings
+   * @param component The parent component for lifecycle management
+   */
+  private createProgrammaticKanbanColumn(
+    container: HTMLElement,
+    groupKey: string,
+    rows: any[][],
+    headers: string[],
+    settings: DataCardsSettings,
+    component: Component
+  ): void {
+    // Create column container
+    const column = container.createEl('div', {
+      cls: 'datacards-kanban-column'
+    });
+
+    // Create column header
+    const header = column.createEl('div', {
+      cls: 'datacards-kanban-header'
+    });
+
+    // Add group title
+    header.createEl('span', {
+      cls: 'datacards-kanban-title',
+      text: groupKey
+    });
+
+    // Add card count
+    header.createEl('span', {
+      cls: 'datacards-kanban-count',
+      text: `(${rows.length})`
+    });
+
+    // Create cards container within the column
+    const cardsContainer = column.createEl('div', {
+      cls: 'datacards-kanban-cards'
+    });
+
+    // Render each row as a card using the existing table rendering logic
+    // But we need to modify it to pass card data for inline editing
+    this.renderKanbanCards(cardsContainer, rows, headers, settings, component);
+  }
+
+  /**
+   * Render kanban cards with inline editing support
+   *
+   * @param container The container element
+   * @param rows The table rows
+   * @param headers The table headers
+   * @param settings The merged settings
+   * @param component The parent component for lifecycle management
+   */
+  private renderKanbanCards(
+    container: HTMLElement,
+    rows: any[][],
+    headers: string[],
+    settings: DataCardsSettings,
+    component: Component
+  ): void {
+    // Create a card for each row
+    rows.forEach((row: any[] & { file?: any; path?: any; source?: any; originalFile?: any }, rowIndex: number) => {
+      Logger.debug(`Processing kanban row ${rowIndex}`);
+
+      const card = this.createCardElement(container);
+
+      // Add image if available
+      if (settings.imageProperty && row[headers.indexOf(settings.imageProperty)] !== undefined) {
+        this.addImageToCard(card, row[headers.indexOf(settings.imageProperty)]);
+      }
+
+      // Add content container
+      const contentEl = card.createEl('div', { cls: 'datacards-content' });
+
+      // First, add the file property separately if it exists
+      const fileIndex = headers.findIndex((h: string) => h.toLowerCase() === 'file');
+      if (fileIndex !== -1 && row[fileIndex] !== undefined) {
+        const filePropertyEl = contentEl.createEl('div', {
+          cls: 'datacards-property datacards-file-property-container',
+        });
+
+        this.formatFileProperty(filePropertyEl, row[fileIndex]);
+
+        // If clickable cards are enabled, make the card clickable
+        if (settings.enableClickableCards) {
+          this.makeCardClickable(card, row[fileIndex]);
+        }
+      }
+
+      // Create a properties container
+      const propertiesContainer = contentEl.createEl('div', {
+        cls: 'datacards-properties-container',
+      });
+
+      // Determine if properties should be scrollable
+      const shouldScroll = this.shouldUseScrollableProperties(settings);
+
+      // Apply scrollable class and height if needed
+      if (shouldScroll) {
+        propertiesContainer.addClass('datacards-scrollable-properties');
+
+        // Set content height via data attribute
+        const contentHeight = this.getContentHeight(settings);
+        propertiesContainer.setAttribute('data-content-height', contentHeight);
+        propertiesContainer.addClass(`datacards-content-height-${contentHeight.replace('px', '')}`);
+      }
+
+      // Determine which properties to show
+      const propertiesToShow = settings.properties === 'all'
+        ? headers
+        : Array.isArray(settings.properties) ? settings.properties : [];
+
+      // Filter out excluded properties and the file property
+      const filteredProperties = propertiesToShow.filter((prop: string) =>
+        !settings.exclude.includes(prop) &&
+        prop !== settings.imageProperty &&
+        prop.toLowerCase() !== 'file'
+      );
+
+      Logger.debug(`Using all headers as properties:`, headers);
+      Logger.debug(`Filtered properties (after excluding file):`, filteredProperties);
+
+      // Add each property to the properties container
+      filteredProperties.forEach((property: string) => {
+        const propIndex = headers.indexOf(property);
+        if (propIndex !== -1) {
+          const propValue = row[propIndex];
+          Logger.debug(`Checking property '${property}' in headers: true`);
+          Logger.debug(`Property '${property}' value:`, propValue);
+          Logger.debug(`Property '${property}' type:`, typeof propValue);
+          Logger.debug(`Adding property to card: ${property} = ${propValue}`);
+
+          // Create card data object for inline editing
+          const fileData = row[fileIndex];
+          console.log('File data for card:', fileData);
+          console.log('File data type:', typeof fileData);
+          console.log('File data keys:', Object.keys(fileData || {}));
+
+          const cardData = {
+            file: fileData,
+            path: fileData?.path,
+            source: fileData,
+            originalFile: fileData,
+            // Also try to extract the path directly if it's a string
+            filePath: typeof fileData === 'string' ? fileData : fileData?.path
+          };
+
+          // Use the standard property formatting, passing the component and card data
+          this.addPropertyToCard(propertiesContainer, property, propValue, settings, component, cardData);
+        } else {
+          Logger.debug(`Property '${property}' not found in headers`);
+        }
+      });
+
+      // If no properties were added, add a debug message
+      if (filteredProperties.length === 0 && !headers.some((h: string) => h.toLowerCase() === 'file')) {
+        Logger.debug('No properties were added to the card');
+        contentEl.createEl('div', {
+          cls: 'datacards-property',
+          text: 'No properties to display'
+        });
+      }
+    });
+  }
+
+  /**
+   * Sort groups by the specified status order
+   *
+   * @param groups The groups to sort
+   * @param settings The settings containing status order
+   * @returns Sorted groups
+   */
+  private sortGroupsByStatusOrder(groups: any[], settings: DataCardsSettings): any[] {
+    if (!settings.kanbanStatusOrder || settings.kanbanStatusOrder.length === 0) {
+      return groups;
+    }
+
+    return [...groups].sort((a, b) => {
+      const aIndex = settings.kanbanStatusOrder.indexOf(a.key);
+      const bIndex = settings.kanbanStatusOrder.indexOf(b.key);
+
+      // If both are in the order array, sort by their position
+      if (aIndex !== -1 && bIndex !== -1) {
+        return aIndex - bIndex;
+      }
+
+      // If only one is in the order array, prioritize it
+      if (aIndex !== -1) return -1;
+      if (bIndex !== -1) return 1;
+
+      // If neither is in the order array, maintain original order
+      return 0;
+    });
+  }
+
+  /**
+   * Create a kanban column for a group
+   *
+   * @param container The container element
+   * @param group The group data
+   * @param settings The merged settings
+   * @param component The parent component for lifecycle management
+   */
+  private createKanbanColumn(container: HTMLElement, group: any, settings: DataCardsSettings, component: Component): void {
+    // Create column container
+    const column = container.createEl('div', {
+      cls: 'datacards-kanban-column'
+    });
+
+    // Create column header
+    const header = column.createEl('div', {
+      cls: 'datacards-kanban-header'
+    });
+
+    // Add group title
+    const title = header.createEl('span', {
+      cls: 'datacards-kanban-title',
+      text: group.key
+    });
+
+    // Add card count if enabled
+    if (settings.kanbanShowColumnCounts) {
+      header.createEl('span', {
+        cls: 'datacards-kanban-count',
+        text: `(${group.rows.length})`
+      });
+    }
+
+    // Create cards container within the column
+    const cardsContainer = column.createEl('div', {
+      cls: 'datacards-kanban-cards'
+    });
+
+    // Apply compact cards class if enabled
+    if (settings.kanbanCompactCards) {
+      cardsContainer.addClass('datacards-kanban-compact');
+    }
+
+    // Render the cards in this column
+    if (group.rows && group.rows.length > 0) {
+      console.log(`=== KANBAN COLUMN DEBUG: ${group.key} ===`);
+      console.log(`Number of rows: ${group.rows.length}`);
+      console.log(`First row:`, group.rows[0]);
+      console.log(`First row keys:`, Object.keys(group.rows[0] || {}));
+      console.log(`All rows:`, group.rows);
+      console.log(`=== END COLUMN DEBUG ===`);
+
+      // GROUP BY results have object-based rows, not array-based
+      // We need to render them as array results instead of table results
+      this.renderArrayResults(cardsContainer, group.rows, settings, component);
+    }
+  }
+
+  /**
+   * Extract headers from rows for GROUP BY results
+   *
+   * @param rows The rows to extract headers from
+   * @returns Array of header names
+   */
+  private extractHeadersFromRows(rows: any[]): string[] {
+    if (!rows || rows.length === 0) {
+      return [];
+    }
+
+    // Get all unique keys from all rows
+    const headerSet = new Set<string>();
+
+    rows.forEach(row => {
+      if (row && typeof row === 'object') {
+        Object.keys(row).forEach(key => headerSet.add(key));
+      }
+    });
+
+    return Array.from(headerSet);
   }
 }

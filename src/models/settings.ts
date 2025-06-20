@@ -5,7 +5,7 @@
 /**
  * Preset options for card display
  */
-export type CardPreset = 'grid' | 'portrait' | 'square' | 'compact' | 'dense';
+export type CardPreset = 'grid' | 'portrait' | 'square' | 'compact' | 'dense' | 'kanban';
 
 /**
  * Font size options
@@ -70,6 +70,15 @@ export interface DataCardsSettings {
 
   // Card interaction settings
   enableClickableCards: boolean; // Make the entire card clickable to open the note
+
+  // Kanban settings
+  kanbanColumnWidth: string; // Width of kanban columns (e.g., "300px")
+  kanbanColumnSpacing: number; // Gap between kanban columns
+  kanbanStatusOrder: string[]; // Order of status values for kanban columns
+  kanbanHideEmptyColumns: boolean; // Hide columns with no cards
+  kanbanShowColumnCounts: boolean; // Show card count in column headers
+  kanbanCompactCards: boolean; // Use smaller cards for more density
+  kanbanMobileStackColumns: boolean; // Stack columns vertically on mobile
 
   // Formatting settings
   defaultDateFormat: string;
@@ -142,6 +151,15 @@ export const DEFAULT_SETTINGS: DataCardsSettings = {
 
   // Card interaction settings
   enableClickableCards: false, // Disabled by default
+
+  // Kanban settings
+  kanbanColumnWidth: '300px', // Default column width
+  kanbanColumnSpacing: 16, // Default spacing between columns
+  kanbanStatusOrder: ['todo', 'in-progress', 'review', 'done'], // Default status order
+  kanbanHideEmptyColumns: false, // Show empty columns by default
+  kanbanShowColumnCounts: true, // Show card counts by default
+  kanbanCompactCards: false, // Use normal card size by default
+  kanbanMobileStackColumns: false, // Use horizontal scroll on mobile by default
 
   // Formatting settings
   defaultDateFormat: 'YYYY-MM-DD',
