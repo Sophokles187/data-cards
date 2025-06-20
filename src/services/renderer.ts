@@ -1357,8 +1357,13 @@ export class RendererService {
       cls: 'datacards-property-value datacards-editable-status',
     });
 
-    // Common status options for kanban
-    const statusOptions = ['todo', 'in-progress', 'review', 'done'];
+    // Get status options from settings (with fallback to defaults)
+    const statusOptions = this.currentSettings?.kanbanStatusOptions || ['todo', 'in-progress', 'review', 'done'];
+    console.log('=== STATUS DROPDOWN DEBUG ===');
+    console.log('Current settings:', this.currentSettings);
+    console.log('kanbanStatusOptions from settings:', this.currentSettings?.kanbanStatusOptions);
+    console.log('Final status options:', statusOptions);
+    console.log('=== END STATUS DEBUG ===');
 
     // Create a select dropdown
     const selectEl = valueEl.createEl('select', {
@@ -2844,12 +2849,19 @@ export class RendererService {
     component: Component
   ): void {
     // Create column container
+    const normalizedStatus = groupKey.toLowerCase().replace(/[^a-z0-9-]/g, '-');
     const column = container.createEl('div', {
       cls: 'datacards-kanban-column',
       attr: {
-        'data-status': groupKey.toLowerCase().replace(/[^a-z0-9-]/g, '-')
+        'data-status': normalizedStatus
       }
     });
+
+    // Apply custom colors if defined
+    if (settings.kanbanColors && settings.kanbanColors[groupKey]) {
+      const colorName = settings.kanbanColors[groupKey];
+      this.applyKanbanColumnColor(column, colorName, groupKey);
+    }
 
     // Create column header
     const header = column.createEl('div', {
@@ -2997,6 +3009,67 @@ export class RendererService {
         });
       }
     });
+  }
+
+  /**
+   * Apply custom color styling to a kanban column
+   *
+   * @param column The column element
+   * @param colorName The color name (e.g., 'blue', 'green', '#ff0000')
+   * @param statusValue The status value for this column
+   */
+  private applyKanbanColumnColor(column: HTMLElement, colorName: string, statusValue: string): void {
+    // Color mapping for common color names to CSS variables and RGB values
+    const colorMap: Record<string, { cssVar: string; rgb: string; fallback: string }> = {
+      'blue': { cssVar: 'var(--color-blue)', rgb: 'var(--color-blue-rgb, 0, 122, 255)', fallback: '#007aff' },
+      'green': { cssVar: 'var(--color-green)', rgb: 'var(--color-green-rgb, 52, 199, 89)', fallback: '#34c759' },
+      'orange': { cssVar: 'var(--color-orange)', rgb: 'var(--color-orange-rgb, 255, 149, 0)', fallback: '#ff9500' },
+      'red': { cssVar: 'var(--color-red)', rgb: 'var(--color-red-rgb, 255, 59, 48)', fallback: '#ff3b30' },
+      'purple': { cssVar: 'var(--color-purple)', rgb: 'var(--color-purple-rgb, 175, 82, 222)', fallback: '#af52de' },
+      'pink': { cssVar: 'var(--color-pink)', rgb: 'var(--color-pink-rgb, 255, 45, 85)', fallback: '#ff2d55' },
+      'yellow': { cssVar: 'var(--color-yellow)', rgb: 'var(--color-yellow-rgb, 255, 204, 0)', fallback: '#ffcc00' },
+      'gray': { cssVar: 'var(--text-muted)', rgb: '142, 142, 147', fallback: '#8e8e93' },
+      'grey': { cssVar: 'var(--text-muted)', rgb: '142, 142, 147', fallback: '#8e8e93' }
+    };
+
+    let statusColor: string;
+    let statusRgb: string;
+
+    if (colorMap[colorName.toLowerCase()]) {
+      // Use predefined color
+      const color = colorMap[colorName.toLowerCase()];
+      statusColor = color.cssVar;
+      statusRgb = color.rgb;
+    } else if (colorName.startsWith('#')) {
+      // Handle hex colors
+      statusColor = colorName;
+      statusRgb = this.hexToRgb(colorName);
+    } else {
+      // Fallback to gray
+      statusColor = colorMap.gray.cssVar;
+      statusRgb = colorMap.gray.rgb;
+    }
+
+    // Set CSS custom properties on the column
+    column.style.setProperty('--kanban-status-color', statusColor);
+    column.style.setProperty('--kanban-card-accent', statusRgb);
+  }
+
+  /**
+   * Convert hex color to RGB values
+   *
+   * @param hex The hex color (e.g., '#ff0000')
+   * @returns RGB string (e.g., '255, 0, 0')
+   */
+  private hexToRgb(hex: string): string {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    if (result) {
+      const r = parseInt(result[1], 16);
+      const g = parseInt(result[2], 16);
+      const b = parseInt(result[3], 16);
+      return `${r}, ${g}, ${b}`;
+    }
+    return '142, 142, 147'; // Fallback to gray
   }
 
   /**

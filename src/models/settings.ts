@@ -79,6 +79,8 @@ export interface DataCardsSettings {
   kanbanShowColumnCounts: boolean; // Show card count in column headers
   kanbanCompactCards: boolean; // Use smaller cards for more density
   kanbanMobileStackColumns: boolean; // Stack columns vertically on mobile
+  kanbanStatusOptions: string[]; // Custom status values for kanban dropdowns
+  kanbanColors: Record<string, string>; // Custom colors for status values
 
   // Formatting settings
   defaultDateFormat: string;
@@ -160,6 +162,13 @@ export const DEFAULT_SETTINGS: DataCardsSettings = {
   kanbanShowColumnCounts: true, // Show card counts by default
   kanbanCompactCards: false, // Use normal card size by default
   kanbanMobileStackColumns: false, // Use horizontal scroll on mobile by default
+  kanbanStatusOptions: ['todo', 'in-progress', 'review', 'done'], // Default status options for dropdowns
+  kanbanColors: { // Default colors for status values
+    'todo': 'gray',
+    'in-progress': 'blue',
+    'review': 'orange',
+    'done': 'green'
+  },
 
   // Formatting settings
   defaultDateFormat: 'YYYY-MM-DD',
