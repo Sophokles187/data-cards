@@ -373,9 +373,14 @@ export class DataCardsSettingTab extends PluginSettingTab {
     new Setting(containerEl).setName('Updates').setHeading();
 
     new Setting(containerEl)
-      .setName('Refresh method')
-      .setDesc('DataCards includes a refresh button on each card container. Click it to update cards when your data changes.')
-      .setDisabled(true);
+      .setName('Show refresh button')
+      .setDesc('Display a refresh button on each card container that appears on hover. Click it to update cards when your data changes.')
+      .addToggle(toggle => toggle
+        .setValue(this.plugin.settings.showRefreshButton)
+        .onChange(async (value) => {
+          this.plugin.settings.showRefreshButton = value;
+          await this.plugin.saveSettings();
+        }));
 
     // Advanced/Experimental settings
     new Setting(containerEl).setName('Advanced (Experimental)').setHeading();

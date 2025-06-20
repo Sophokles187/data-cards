@@ -132,8 +132,10 @@ export class RendererService {
       }
     });
 
-    // Add refresh button
-    this.addRefreshButton(cardsContainer);
+    // Add refresh button if enabled
+    if (settings.showRefreshButton) {
+      this.addRefreshButton(cardsContainer);
+    }
 
     // Add preset class first
     cardsContainer.addClass(`datacards-preset-${settings.preset}`);
@@ -415,8 +417,10 @@ export class RendererService {
       }
     });
 
-    // Add refresh button to empty state as well
-    this.addRefreshButton(cardsContainer);
+    // Add refresh button to empty state as well if enabled
+    if (this.pluginSettings.showRefreshButton) {
+      this.addRefreshButton(cardsContainer);
+    }
 
     Logger.debug('Created cards container for empty state');
 
