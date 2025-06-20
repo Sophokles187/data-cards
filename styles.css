@@ -869,6 +869,7 @@ a.datacards-tag:hover {
   border-radius: 4px;
   font-weight: 600;
   font-size: 0.9em;
+  border-left: 3px solid var(--kanban-status-color, var(--text-muted));
 }
 
 .datacards-kanban-title {
@@ -879,6 +880,48 @@ a.datacards-tag:hover {
   color: var(--text-muted);
   font-size: 0.8em;
   font-weight: normal;
+}
+
+/* Kanban status color coding - uses theme-adaptive colors */
+.datacards-kanban-column[data-status="todo"] {
+  --kanban-status-color: var(--text-muted);
+  --kanban-card-accent: var(--background-modifier-border);
+}
+
+.datacards-kanban-column[data-status="in-progress"] {
+  --kanban-status-color: var(--color-blue);
+  --kanban-card-accent: var(--color-blue-rgb);
+}
+
+.datacards-kanban-column[data-status="review"] {
+  --kanban-status-color: var(--color-orange);
+  --kanban-card-accent: var(--color-orange-rgb);
+}
+
+.datacards-kanban-column[data-status="done"] {
+  --kanban-status-color: var(--color-green);
+  --kanban-card-accent: var(--color-green-rgb);
+}
+
+/* Fallback colors for themes that don't have color variables */
+.datacards-kanban-column[data-status="todo"]:not([style*="--color-blue"]) {
+  --kanban-status-color: #8e8e93;
+  --kanban-card-accent: 142, 142, 147;
+}
+
+.datacards-kanban-column[data-status="in-progress"]:not([style*="--color-blue"]) {
+  --kanban-status-color: #007aff;
+  --kanban-card-accent: 0, 122, 255;
+}
+
+.datacards-kanban-column[data-status="review"]:not([style*="--color-orange"]) {
+  --kanban-status-color: #ff9500;
+  --kanban-card-accent: 255, 149, 0;
+}
+
+.datacards-kanban-column[data-status="done"]:not([style*="--color-green"]) {
+  --kanban-status-color: #34c759;
+  --kanban-card-accent: 52, 199, 89;
 }
 
 /* Kanban cards container */
@@ -892,12 +935,119 @@ a.datacards-tag:hover {
 .datacards-kanban-cards .datacards-card {
   margin-bottom: 0; /* Remove default margin since we use gap */
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+  border-left: 2px solid var(--kanban-card-accent, var(--background-modifier-border));
+  position: relative;
+  /* Subtle colored background tint */
+  background: linear-gradient(
+    135deg,
+    rgba(var(--kanban-card-accent, 142, 142, 147), 0.03) 0%,
+    rgba(var(--kanban-card-accent, 142, 142, 147), 0.01) 50%,
+    var(--background-primary) 100%
+  );
 }
 
 .datacards-kanban-cards .datacards-card:hover {
   transform: translateY(-1px);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  border-left-color: var(--kanban-status-color, var(--text-muted));
+  /* Enhanced background tint on hover */
+  background: linear-gradient(
+    135deg,
+    rgba(var(--kanban-card-accent, 142, 142, 147), 0.06) 0%,
+    rgba(var(--kanban-card-accent, 142, 142, 147), 0.02) 50%,
+    var(--background-primary) 100%
+  );
+}
+
+/* Subtle status indicator on cards */
+.datacards-kanban-cards .datacards-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(
+    to bottom,
+    rgba(var(--kanban-card-accent, 142, 142, 147), 0.15) 0%,
+    rgba(var(--kanban-card-accent, 142, 142, 147), 0.08) 100%
+  );
+  border-radius: 0 var(--radius-s) var(--radius-s) 0;
+}
+
+/* Enhanced background tint for different status types - always visible */
+.datacards-kanban-column[data-status="todo"] .datacards-card {
+  background: linear-gradient(
+    135deg,
+    rgba(var(--kanban-card-accent, 142, 142, 147), 0.06) 0%,
+    rgba(var(--kanban-card-accent, 142, 142, 147), 0.02) 50%,
+    var(--background-primary) 100%
+  ) !important;
+}
+
+.datacards-kanban-column[data-status="in-progress"] .datacards-card {
+  background: linear-gradient(
+    135deg,
+    rgba(var(--kanban-card-accent, 0, 122, 255), 0.08) 0%,
+    rgba(var(--kanban-card-accent, 0, 122, 255), 0.03) 50%,
+    var(--background-primary) 100%
+  ) !important;
+}
+
+.datacards-kanban-column[data-status="review"] .datacards-card {
+  background: linear-gradient(
+    135deg,
+    rgba(var(--kanban-card-accent, 255, 149, 0), 0.08) 0%,
+    rgba(var(--kanban-card-accent, 255, 149, 0), 0.03) 50%,
+    var(--background-primary) 100%
+  ) !important;
+}
+
+.datacards-kanban-column[data-status="done"] .datacards-card {
+  background: linear-gradient(
+    135deg,
+    rgba(var(--kanban-card-accent, 52, 199, 89), 0.08) 0%,
+    rgba(var(--kanban-card-accent, 52, 199, 89), 0.03) 50%,
+    var(--background-primary) 100%
+  ) !important;
+}
+
+/* Enhanced hover states for different status types - more prominent */
+.datacards-kanban-column[data-status="todo"] .datacards-card:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(var(--kanban-card-accent, 142, 142, 147), 0.12) 0%,
+    rgba(var(--kanban-card-accent, 142, 142, 147), 0.04) 50%,
+    var(--background-primary) 100%
+  ) !important;
+}
+
+.datacards-kanban-column[data-status="in-progress"] .datacards-card:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(var(--kanban-card-accent, 0, 122, 255), 0.15) 0%,
+    rgba(var(--kanban-card-accent, 0, 122, 255), 0.05) 50%,
+    var(--background-primary) 100%
+  ) !important;
+}
+
+.datacards-kanban-column[data-status="review"] .datacards-card:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(var(--kanban-card-accent, 255, 149, 0), 0.15) 0%,
+    rgba(var(--kanban-card-accent, 255, 149, 0), 0.05) 50%,
+    var(--background-primary) 100%
+  ) !important;
+}
+
+.datacards-kanban-column[data-status="done"] .datacards-card:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(var(--kanban-card-accent, 52, 199, 89), 0.15) 0%,
+    rgba(var(--kanban-card-accent, 52, 199, 89), 0.05) 50%,
+    var(--background-primary) 100%
+  ) !important;
 }
 
 /* Compact kanban cards */

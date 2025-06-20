@@ -2845,7 +2845,10 @@ export class RendererService {
   ): void {
     // Create column container
     const column = container.createEl('div', {
-      cls: 'datacards-kanban-column'
+      cls: 'datacards-kanban-column',
+      attr: {
+        'data-status': groupKey.toLowerCase().replace(/[^a-z0-9-]/g, '-')
+      }
     });
 
     // Create column header
