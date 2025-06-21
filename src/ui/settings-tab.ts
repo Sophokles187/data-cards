@@ -46,6 +46,7 @@ export class DataCardsSettingTab extends PluginSettingTab {
         .addOption('square', 'Square (1:1 cards with minimal text, 4 columns)')
         .addOption('compact', 'Compact (side-by-side layout, 4 columns)')
         .addOption('dense', 'Dense (maximum density, 6 columns)')
+        .addOption('kanban', 'Kanban (horizontal columns for grouped data)')
         .setValue(this.plugin.settings.preset)
         .onChange(async (value: string) => {
           this.plugin.settings.preset = value as any;
@@ -307,6 +308,7 @@ export class DataCardsSettingTab extends PluginSettingTab {
         .addOption('square', 'Square (1:1 cards with minimal text)')
         .addOption('compact', 'Compact (side-by-side layout)')
         .addOption('dense', 'Dense (maximum density)')
+        .addOption('kanban', 'Kanban (horizontal columns)')
         .setValue(this.plugin.settings.mobilePreset)
         .onChange(async (value: string) => {
           this.plugin.settings.mobilePreset = value as any;
@@ -353,6 +355,72 @@ export class DataCardsSettingTab extends PluginSettingTab {
         .setValue(this.plugin.settings.forceMobileMode)
         .onChange(async (value) => {
           this.plugin.settings.forceMobileMode = value;
+          await this.plugin.saveSettings();
+        }));
+
+    // Kanban settings
+    new Setting(containerEl).setName('Kanban').setHeading();
+
+    new Setting(containerEl)
+      .setName('Column width')
+      .setDesc('Width of kanban columns (e.g., 300px, 250px)')
+      .addText(text => text
+        .setPlaceholder('300px')
+        .setValue(this.plugin.settings.kanbanColumnWidth)
+        .onChange(async (value) => {
+          this.plugin.settings.kanbanColumnWidth = value || '300px';
+          await this.plugin.saveSettings();
+        }));
+
+    new Setting(containerEl)
+      .setName('Column spacing')
+      .setDesc('Space between kanban columns (in pixels)')
+      .addSlider(slider => slider
+        .setLimits(8, 32, 4)
+        .setValue(this.plugin.settings.kanbanColumnSpacing)
+        .setDynamicTooltip()
+        .onChange(async (value) => {
+          this.plugin.settings.kanbanColumnSpacing = value;
+          await this.plugin.saveSettings();
+        }));
+
+    new Setting(containerEl)
+      .setName('Show column counts')
+      .setDesc('Display the number of cards in each kanban column header')
+      .addToggle(toggle => toggle
+        .setValue(this.plugin.settings.kanbanShowColumnCounts)
+        .onChange(async (value) => {
+          this.plugin.settings.kanbanShowColumnCounts = value;
+          await this.plugin.saveSettings();
+        }));
+
+    new Setting(containerEl)
+      .setName('Hide empty columns')
+      .setDesc('Hide kanban columns that contain no cards')
+      .addToggle(toggle => toggle
+        .setValue(this.plugin.settings.kanbanHideEmptyColumns)
+        .onChange(async (value) => {
+          this.plugin.settings.kanbanHideEmptyColumns = value;
+          await this.plugin.saveSettings();
+        }));
+
+    new Setting(containerEl)
+      .setName('Compact cards')
+      .setDesc('Use smaller cards in kanban mode for higher density')
+      .addToggle(toggle => toggle
+        .setValue(this.plugin.settings.kanbanCompactCards)
+        .onChange(async (value) => {
+          this.plugin.settings.kanbanCompactCards = value;
+          await this.plugin.saveSettings();
+        }));
+
+    new Setting(containerEl)
+      .setName('Mobile: Stack columns')
+      .setDesc('Stack kanban columns vertically on mobile devices instead of horizontal scrolling')
+      .addToggle(toggle => toggle
+        .setValue(this.plugin.settings.kanbanMobileStackColumns)
+        .onChange(async (value) => {
+          this.plugin.settings.kanbanMobileStackColumns = value;
           await this.plugin.saveSettings();
         }));
 

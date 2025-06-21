@@ -834,6 +834,481 @@ a.datacards-tag:hover {
   margin-bottom: 6px;
 }
 
+/* Kanban preset - Horizontal columns for grouped data */
+.datacards-preset-kanban {
+  --kanban-column-width: 300px;
+  --kanban-column-spacing: 16px;
+}
+
+.datacards-preset-kanban.datacards-kanban-container {
+  display: flex;
+  gap: var(--kanban-column-spacing);
+  overflow-x: auto;
+  padding-bottom: 8px;
+  align-items: flex-start;
+}
+
+/* Kanban column */
+.datacards-kanban-column {
+  flex: 0 0 var(--kanban-column-width);
+  background: var(--background-secondary);
+  border-radius: 8px;
+  padding: 12px;
+  border: 1px solid var(--background-modifier-border);
+  min-height: 200px;
+}
+
+/* Kanban column header */
+.datacards-kanban-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding: 8px 12px;
+  background: var(--background-modifier-border);
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 0.9em;
+  border-left: 3px solid var(--kanban-status-color, var(--text-muted));
+}
+
+.datacards-kanban-title {
+  color: var(--text-normal);
+}
+
+.datacards-kanban-count {
+  color: var(--text-muted);
+  font-size: 0.8em;
+  font-weight: normal;
+}
+
+/* Kanban status color coding - uses theme-adaptive colors */
+.datacards-kanban-column[data-status="todo"] {
+  --kanban-status-color: var(--text-muted);
+  --kanban-card-accent: var(--background-modifier-border);
+}
+
+.datacards-kanban-column[data-status="in-progress"] {
+  --kanban-status-color: var(--color-blue);
+  --kanban-card-accent: var(--color-blue-rgb);
+}
+
+.datacards-kanban-column[data-status="review"] {
+  --kanban-status-color: var(--color-orange);
+  --kanban-card-accent: var(--color-orange-rgb);
+}
+
+.datacards-kanban-column[data-status="done"] {
+  --kanban-status-color: var(--color-green);
+  --kanban-card-accent: var(--color-green-rgb);
+}
+
+/* Fallback colors for themes that don't have color variables */
+.datacards-kanban-column[data-status="todo"]:not([style*="--color-blue"]) {
+  --kanban-status-color: #8e8e93;
+  --kanban-card-accent: 142, 142, 147;
+}
+
+.datacards-kanban-column[data-status="in-progress"]:not([style*="--color-blue"]) {
+  --kanban-status-color: #007aff;
+  --kanban-card-accent: 0, 122, 255;
+}
+
+.datacards-kanban-column[data-status="review"]:not([style*="--color-orange"]) {
+  --kanban-status-color: #ff9500;
+  --kanban-card-accent: 255, 149, 0;
+}
+
+.datacards-kanban-column[data-status="done"]:not([style*="--color-green"]) {
+  --kanban-status-color: #34c759;
+  --kanban-card-accent: 52, 199, 89;
+}
+
+/* Kanban cards container */
+.datacards-kanban-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Kanban cards styling */
+.datacards-kanban-cards .datacards-card {
+  margin-bottom: 0; /* Remove default margin since we use gap */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+  border-left: 2px solid var(--kanban-card-accent, var(--background-modifier-border));
+  position: relative;
+  /* Subtle colored background tint */
+  background: linear-gradient(
+    135deg,
+    rgba(var(--kanban-card-accent, 142, 142, 147), 0.03) 0%,
+    rgba(var(--kanban-card-accent, 142, 142, 147), 0.01) 50%,
+    var(--background-primary) 100%
+  );
+}
+
+.datacards-kanban-cards .datacards-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  border-left-color: var(--kanban-status-color, var(--text-muted));
+  /* Enhanced background tint on hover */
+  background: linear-gradient(
+    135deg,
+    rgba(var(--kanban-card-accent, 142, 142, 147), 0.06) 0%,
+    rgba(var(--kanban-card-accent, 142, 142, 147), 0.02) 50%,
+    var(--background-primary) 100%
+  );
+}
+
+/* Subtle status indicator on cards */
+.datacards-kanban-cards .datacards-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(
+    to bottom,
+    rgba(var(--kanban-card-accent, 142, 142, 147), 0.15) 0%,
+    rgba(var(--kanban-card-accent, 142, 142, 147), 0.08) 100%
+  );
+  border-radius: 0 var(--radius-s) var(--radius-s) 0;
+}
+
+/* Enhanced background tint for different status types - always visible */
+.datacards-kanban-column[data-status="todo"] .datacards-card {
+  background: linear-gradient(
+    135deg,
+    rgba(var(--kanban-card-accent, 142, 142, 147), 0.06) 0%,
+    rgba(var(--kanban-card-accent, 142, 142, 147), 0.02) 50%,
+    var(--background-primary) 100%
+  ) !important;
+}
+
+.datacards-kanban-column[data-status="in-progress"] .datacards-card {
+  background: linear-gradient(
+    135deg,
+    rgba(var(--kanban-card-accent, 0, 122, 255), 0.08) 0%,
+    rgba(var(--kanban-card-accent, 0, 122, 255), 0.03) 50%,
+    var(--background-primary) 100%
+  ) !important;
+}
+
+.datacards-kanban-column[data-status="review"] .datacards-card {
+  background: linear-gradient(
+    135deg,
+    rgba(var(--kanban-card-accent, 255, 149, 0), 0.08) 0%,
+    rgba(var(--kanban-card-accent, 255, 149, 0), 0.03) 50%,
+    var(--background-primary) 100%
+  ) !important;
+}
+
+.datacards-kanban-column[data-status="done"] .datacards-card {
+  background: linear-gradient(
+    135deg,
+    rgba(var(--kanban-card-accent, 52, 199, 89), 0.08) 0%,
+    rgba(var(--kanban-card-accent, 52, 199, 89), 0.03) 50%,
+    var(--background-primary) 100%
+  ) !important;
+}
+
+/* Enhanced hover states for different status types - more prominent */
+.datacards-kanban-column[data-status="todo"] .datacards-card:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(var(--kanban-card-accent, 142, 142, 147), 0.12) 0%,
+    rgba(var(--kanban-card-accent, 142, 142, 147), 0.04) 50%,
+    var(--background-primary) 100%
+  ) !important;
+}
+
+.datacards-kanban-column[data-status="in-progress"] .datacards-card:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(var(--kanban-card-accent, 0, 122, 255), 0.15) 0%,
+    rgba(var(--kanban-card-accent, 0, 122, 255), 0.05) 50%,
+    var(--background-primary) 100%
+  ) !important;
+}
+
+.datacards-kanban-column[data-status="review"] .datacards-card:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(var(--kanban-card-accent, 255, 149, 0), 0.15) 0%,
+    rgba(var(--kanban-card-accent, 255, 149, 0), 0.05) 50%,
+    var(--background-primary) 100%
+  ) !important;
+}
+
+.datacards-kanban-column[data-status="done"] .datacards-card:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(var(--kanban-card-accent, 52, 199, 89), 0.15) 0%,
+    rgba(var(--kanban-card-accent, 52, 199, 89), 0.05) 50%,
+    var(--background-primary) 100%
+  ) !important;
+}
+
+/* Compact kanban cards */
+.datacards-kanban-compact .datacards-card {
+  font-size: 0.9em;
+}
+
+.datacards-kanban-compact .datacards-content {
+  padding: 8px;
+}
+
+.datacards-kanban-compact .datacards-property {
+  margin-bottom: 4px;
+}
+
+.datacards-kanban-compact .datacards-image-container {
+  height: 120px;
+}
+
+/* Editable status dropdown styles for kanban */
+.datacards-editable-status {
+  position: relative;
+}
+
+.datacards-status-select {
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 12px;
+  color: var(--text-normal);
+  cursor: pointer;
+  width: 100%;
+  transition: border-color 0.2s ease;
+}
+
+.datacards-status-select:hover {
+  border-color: var(--interactive-accent);
+}
+
+.datacards-status-select:focus {
+  outline: none;
+  border-color: var(--interactive-accent);
+  box-shadow: 0 0 0 2px var(--interactive-accent-hover);
+}
+
+/* Style the status options */
+.datacards-status-select option {
+  background: var(--background-primary);
+  color: var(--text-normal);
+  padding: 4px;
+}
+
+/* New task button styles */
+.datacards-new-task-btn {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  margin-left: auto;
+}
+
+.datacards-new-task-btn:hover {
+  background: var(--interactive-accent-hover);
+  transform: scale(1.1);
+}
+
+/* New task modal styles */
+.datacards-new-task-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.datacards-new-task-modal {
+  background: var(--background-primary);
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  width: 90%;
+  max-width: 500px;
+  max-height: 80vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.datacards-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.datacards-modal-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-normal);
+}
+
+.datacards-modal-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.datacards-modal-close:hover {
+  background: var(--background-modifier-hover);
+  color: var(--text-normal);
+}
+
+.datacards-modal-body {
+  padding: 20px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.datacards-form-group {
+  margin-bottom: 16px;
+}
+
+.datacards-form-label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 500;
+  color: var(--text-normal);
+  font-size: 14px;
+}
+
+.datacards-form-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  background: var(--background-primary);
+  color: var(--text-normal);
+  font-size: 14px;
+  transition: border-color 0.2s ease;
+}
+
+.datacards-form-input:focus {
+  outline: none;
+  border-color: var(--interactive-accent);
+  box-shadow: 0 0 0 2px var(--interactive-accent-hover);
+}
+
+.datacards-modal-footer {
+  display: flex;
+  gap: 12px;
+  padding: 16px 20px;
+  border-top: 1px solid var(--background-modifier-border);
+  justify-content: flex-end;
+}
+
+.datacards-btn {
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.datacards-btn-primary {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+}
+
+.datacards-btn-primary:hover {
+  background: var(--interactive-accent-hover);
+}
+
+.datacards-btn-secondary {
+  background: var(--background-secondary);
+  color: var(--text-normal);
+  border: 1px solid var(--background-modifier-border);
+}
+
+.datacards-btn-secondary:hover {
+  background: var(--background-modifier-hover);
+}
+
+/* Kanban empty state styles */
+.datacards-kanban-empty {
+  min-height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.datacards-kanban-empty-state {
+  text-align: center;
+  max-width: 400px;
+  padding: 40px 20px;
+  background: var(--background-secondary);
+  border-radius: 8px;
+  border: 1px dashed var(--background-modifier-border);
+}
+
+.datacards-kanban-empty-title {
+  margin: 0 0 12px 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-normal);
+}
+
+.datacards-kanban-empty-description {
+  margin: 0 0 24px 0;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.datacards-kanban-create-first {
+  font-size: 16px;
+  padding: 12px 24px;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+/* Grouped results (non-kanban) */
+.datacards-group-header {
+  font-weight: 600;
+  font-size: 1.1em;
+  margin: 16px 0 8px 0;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--background-modifier-border);
+  color: var(--text-normal);
+}
+
+.datacards-group-container {
+  margin-bottom: 24px;
+}
+
 /* Responsive adjustments - these are now handled by the mobile settings in the plugin */
 /* These media queries serve as fallbacks for blocks without explicit settings */
 @media (max-width: 1200px) {
@@ -897,6 +1372,22 @@ a.datacards-tag:hover {
   .datacards-preset-compact,
   .datacards-preset-dense {
     --card-columns: 1;
+  }
+
+  /* Kanban mobile adjustments */
+  .datacards-preset-kanban.datacards-kanban-container {
+    --kanban-column-width: 280px; /* Narrower columns on mobile */
+  }
+
+  /* Stack kanban columns vertically if setting is enabled */
+  .datacards-preset-kanban.datacards-mobile-stack {
+    flex-direction: column;
+    overflow-x: visible;
+  }
+
+  .datacards-preset-kanban.datacards-mobile-stack .datacards-kanban-column {
+    flex: 1 1 auto;
+    margin-bottom: 16px;
   }
 
   /* Reduce card spacing on mobile */

@@ -11,6 +11,8 @@ export class RendererService {
   // Store the current settings for use in formatting methods
   private currentSettings: DataCardsSettings | null = null;
   private pluginSettings: DataCardsSettings;
+  // Store the current query for tag extraction
+  private currentQuery: string | null = null;
 
   constructor(app: App, pluginSettings: DataCardsSettings) {
     this.app = app;
@@ -24,6 +26,15 @@ export class RendererService {
    */
   public updateSettings(settings: DataCardsSettings): void {
      this.pluginSettings = settings;
+  }
+
+  /**
+   * Set the current query for tag extraction
+   *
+   * @param query The current Dataview query
+   */
+  public setCurrentQuery(query: string): void {
+    this.currentQuery = query;
   }
   /**
    * Check if the current device is mobile or if mobile mode is forced
@@ -47,6 +58,14 @@ export class RendererService {
     // SPECIAL CHECK: Log the exact structure of the results
     Logger.debug('SPECIAL CHECK - renderCards called with results:', results);
 
+    // IMMEDIATE DEBUG - Check if this is GROUP BY
+    console.log('=== IMMEDIATE DEBUG START ===');
+    console.log('Results type:', typeof results);
+    console.log('Results is array:', Array.isArray(results));
+    console.log('Results keys:', Object.keys(results || {}));
+    console.log('Results:', results);
+    console.log('=== IMMEDIATE DEBUG END ===');
+
     // Check if the results are empty
     let isEmpty = false;
 
@@ -66,12 +85,6 @@ export class RendererService {
       isEmpty = true;
     }
 
-      // If empty, render empty state and return
-      if (isEmpty) {
-        Logger.debug('Rendering empty state from renderCards');
-        this.renderEmptyState(container, 'No notes found');
-        return;
-      }
     // Check if we're on mobile
     const isMobile = this.isMobileDevice();
     Logger.debug('Is mobile device:', isMobile);
@@ -123,6 +136,13 @@ export class RendererService {
 
     // Store the current settings for use in formatting methods
     this.currentSettings = settings;
+
+    // Now check for empty state after settings are processed
+    if (isEmpty) {
+      Logger.debug('Rendering empty state from renderCards');
+      this.renderEmptyState(container, 'No notes found');
+      return;
+    }
 
     // Create the cards container
     const cardsContainer = container.createEl('div', {
@@ -316,10 +336,53 @@ export class RendererService {
     cardsContainer.addClass(`datacards-image-fit-${imageFit}`);
 
     // Handle different types of Dataview results
-    if (results && results.values && Array.isArray(results.values)) {
+    // First check for GROUP BY results (which have a specific structure)
+    console.log('STRUCTURE DEBUG - Results type:', typeof results);
+    console.log('STRUCTURE DEBUG - Results keys:', Object.keys(results || {}));
+    console.log('STRUCTURE DEBUG - Results.values type:', typeof results?.values);
+    console.log('STRUCTURE DEBUG - Results.values is array:', Array.isArray(results?.values));
+    console.log('STRUCTURE DEBUG - First few results.values items:', results?.values?.slice(0, 2));
+    console.log('STRUCTURE DEBUG - Full results object:', JSON.stringify(results, null, 2));
+
+    if (this.isGroupByResults(results)) {
+      Logger.debug('Detected GROUP BY results');
+
+      // Check if kanban preset is enabled
+      if (settings.preset === 'kanban') {
+        Logger.debug('Rendering GROUP BY results as kanban');
+
+        // Handle different GROUP BY result types
+        if (results.idMeaning) {
+          // TABLE + GROUP BY - aggregated data, limited support
+          this.renderDataviewTableGroupByKanban(cardsContainer, results, settings, component);
+        } else if (results.primaryMeaning) {
+          // LIST + GROUP BY - need to re-query for individual notes
+          this.renderDataviewListGroupByKanban(cardsContainer, results, settings, component);
+        } else {
+          // Legacy GROUP BY structure - fallback to table rendering
+          const groupByData = Array.isArray(results) ? results : results.values;
+          this.renderGroupedResults(cardsContainer, groupByData, settings, component);
+        }
+      } else {
+        Logger.debug('Rendering GROUP BY results as grouped cards');
+        // Extract the actual GROUP BY data (might be nested in values)
+        const groupByData = Array.isArray(results) ? results : results.values;
+        this.renderGroupedResults(cardsContainer, groupByData, settings, component);
+      }
+    } else if (results && results.values && Array.isArray(results.values)) {
       Logger.debug('Detected table-like results with values array');
-      // Handle table-like results (most common)
-      this.renderTableResults(cardsContainer, results, settings, component); // Pass component
+
+      // Check if kanban preset is enabled for regular queries (not GROUP BY)
+      if (settings.preset === 'kanban' && results.headers && Array.isArray(results.headers)) {
+        Logger.debug('Rendering regular query results as kanban (programmatic grouping)');
+        this.renderProgrammaticKanban(cardsContainer, results, settings, component);
+      } else if (results.headers && Array.isArray(results.headers)) {
+        // Handle table-like results (most common)
+        this.renderTableResults(cardsContainer, results, settings, component); // Pass component
+      } else {
+        Logger.debug('Table results missing headers, treating as array results');
+        this.renderArrayResults(cardsContainer, results.values, settings, component);
+      }
     } else if (results && Array.isArray(results)) {
       Logger.debug('Detected array results');
       // Handle array results
@@ -409,6 +472,12 @@ export class RendererService {
   public renderEmptyState(container: HTMLElement, message: string = "No notes found"): void {
     Logger.debug('renderEmptyState called with message:', message);
 
+    // Check if this is a kanban preset - if so, show special empty state
+    if (this.currentSettings?.preset === 'kanban') {
+      this.renderKanbanEmptyState(container);
+      return;
+    }
+
     // Create the cards container to maintain consistent styling
     const cardsContainer = container.createEl('div', {
       cls: 'datacards-container',
@@ -431,6 +500,63 @@ export class RendererService {
     });
 
     Logger.debug('Added empty state element with class:', 'datacards-empty-state');
+  }
+
+  /**
+   * Render empty state for kanban with option to create first task
+   *
+   * @param container The container element
+   */
+  private renderKanbanEmptyState(container: HTMLElement): void {
+    // Create the cards container to maintain consistent styling
+    const cardsContainer = container.createEl('div', {
+      cls: 'datacards-container datacards-kanban-container datacards-kanban-empty',
+      attr: {
+        'data-datacards-container': 'true'
+      }
+    });
+
+    // Add refresh button if enabled
+    if (this.currentSettings?.showRefreshButton) {
+      this.addRefreshButton(cardsContainer);
+    }
+
+    // Set kanban column width and spacing
+    if (this.currentSettings) {
+      cardsContainer.style.setProperty('--kanban-column-width', this.currentSettings.kanbanColumnWidth);
+      cardsContainer.style.setProperty('--kanban-column-spacing', `${this.currentSettings.kanbanColumnSpacing}px`);
+    }
+
+    const emptyState = cardsContainer.createEl('div', {
+      cls: 'datacards-kanban-empty-state'
+    });
+
+    // Title
+    emptyState.createEl('h3', {
+      cls: 'datacards-kanban-empty-title',
+      text: 'No tasks found'
+    });
+
+    // Description
+    emptyState.createEl('p', {
+      cls: 'datacards-kanban-empty-description',
+      text: 'Get started by creating your first task. It will appear in the appropriate status column.'
+    });
+
+    // Create task button
+    const createBtn = emptyState.createEl('button', {
+      cls: 'datacards-btn datacards-btn-primary datacards-kanban-create-first',
+      text: '+ Create First Task'
+    });
+
+    // Add click handler for create first task button
+    createBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      // Use default status from kanbanStatusOptions or fallback to 'todo'
+      const defaultStatus = this.currentSettings?.kanbanStatusOptions?.[0] || 'todo';
+      this.showNewTaskModal(defaultStatus, this.currentSettings!, new Component());
+    });
   }
 
   /**
@@ -1227,7 +1353,8 @@ export class RendererService {
     propertyName: string,
     propertyValue: any,
     settings: DataCardsSettings,
-    component: Component // Added component parameter
+    component: Component, // Added component parameter
+    cardData?: any // Optional card data for inline editing
   ): void {
     Logger.debug(`Adding property to card: ${propertyName} = ${propertyValue}`);
     Logger.debug(`Property type: ${typeof propertyValue}`);
@@ -1269,6 +1396,9 @@ export class RendererService {
     // Check if this is the file property (special handling for file links)
     if (propertyName.toLowerCase() === 'file') {
       this.formatFileProperty(propertyEl, propertyValue);
+    } else if (settings.preset === 'kanban' && propertyName === 'status' && cardData) {
+      // Special handling for status property in kanban mode - make it editable
+      this.formatEditableStatusProperty(propertyEl, propertyValue, cardData, component);
     } else {
       // Check if there's a custom formatter for this property
       const formatter = settings.propertyFormatters[propertyName];
@@ -1280,6 +1410,181 @@ export class RendererService {
         // Use default formatting based on value type, passing the component
         this.formatPropertyByType(propertyEl, propertyValue, component); // Pass component
       }
+    }
+  }
+
+  /**
+   * Format an editable status property for kanban mode
+   * Creates a dropdown that allows changing the status directly
+   *
+   * @param propertyEl The property element
+   * @param currentValue The current status value
+   * @param cardData The card data containing file information
+   * @param component The parent component for lifecycle management
+   */
+  private formatEditableStatusProperty(
+    propertyEl: HTMLElement,
+    currentValue: any,
+    cardData: any,
+    component: Component
+  ): void {
+    const valueEl = propertyEl.createEl('div', {
+      cls: 'datacards-property-value datacards-editable-status',
+    });
+
+    // Get status options from settings (with fallback to defaults)
+    const statusOptions = this.currentSettings?.kanbanStatusOptions || ['todo', 'in-progress', 'review', 'done'];
+    console.log('=== STATUS DROPDOWN DEBUG ===');
+    console.log('Current settings:', this.currentSettings);
+    console.log('kanbanStatusOptions from settings:', this.currentSettings?.kanbanStatusOptions);
+    console.log('Final status options:', statusOptions);
+    console.log('=== END STATUS DEBUG ===');
+
+    // Create a select dropdown
+    const selectEl = valueEl.createEl('select', {
+      cls: 'datacards-status-select'
+    });
+
+    // Add options to the select
+    statusOptions.forEach(status => {
+      const optionEl = selectEl.createEl('option', {
+        value: status,
+        text: status
+      });
+
+      if (status === String(currentValue)) {
+        optionEl.selected = true;
+      }
+    });
+
+    // Add change event listener
+    selectEl.addEventListener('change', async (event) => {
+      const newStatus = (event.target as HTMLSelectElement).value;
+      await this.updateNoteStatus(cardData, newStatus);
+    });
+  }
+
+  /**
+   * Update the status property of a note
+   *
+   * @param cardData The card data containing file information
+   * @param newStatus The new status value
+   */
+  private async updateNoteStatus(cardData: any, newStatus: string): Promise<void> {
+    try {
+      console.log('=== UPDATE NOTE STATUS DEBUG ===');
+      console.log('Card data:', cardData);
+      console.log('New status:', newStatus);
+      console.log('Card data type:', typeof cardData);
+      console.log('Card data keys:', Object.keys(cardData || {}));
+
+      // Extract file information from cardData
+      let file: TFile | null = null;
+
+      // Try different ways to get the file
+      if (cardData && cardData.file) {
+        console.log('Found cardData.file:', cardData.file);
+        if (cardData.file instanceof TFile) {
+          file = cardData.file;
+        } else if (cardData.file.path) {
+          console.log('Getting file by path:', cardData.file.path);
+          const abstractFile = this.app.vault.getAbstractFileByPath(cardData.file.path);
+          if (abstractFile instanceof TFile) {
+            file = abstractFile;
+          }
+        }
+      }
+
+      // Try other properties
+      if (!file && cardData && cardData.path) {
+        console.log('Trying cardData.path:', cardData.path);
+        const abstractFile = this.app.vault.getAbstractFileByPath(cardData.path);
+        if (abstractFile instanceof TFile) {
+          file = abstractFile;
+        }
+      }
+
+      // Try filePath property
+      if (!file && cardData && cardData.filePath) {
+        console.log('Trying cardData.filePath:', cardData.filePath);
+        const abstractFile = this.app.vault.getAbstractFileByPath(cardData.filePath);
+        if (abstractFile instanceof TFile) {
+          file = abstractFile;
+        }
+      }
+
+      // If cardData itself is a file path string
+      if (!file && typeof cardData === 'string') {
+        console.log('Trying cardData as string path:', cardData);
+        const abstractFile = this.app.vault.getAbstractFileByPath(cardData);
+        if (abstractFile instanceof TFile) {
+          file = abstractFile;
+        }
+      }
+
+      if (!file) {
+        console.error('Could not determine file from card data. Available properties:', Object.keys(cardData || {}));
+        console.error('Full card data:', JSON.stringify(cardData, null, 2));
+        return;
+      }
+
+      console.log('Found file:', file.path);
+
+      // Read the file content
+      const content = await this.app.vault.read(file);
+      console.log('Current file content length:', content.length);
+      console.log('First 200 chars:', content.substring(0, 200));
+
+      // Update the frontmatter
+      const updatedContent = this.updateFrontmatterStatus(content, newStatus);
+      console.log('Updated content length:', updatedContent.length);
+      console.log('Updated first 200 chars:', updatedContent.substring(0, 200));
+
+      // Write back to file
+      await this.app.vault.modify(file, updatedContent);
+
+      console.log('Successfully updated status to:', newStatus);
+      console.log('=== UPDATE COMPLETE ===');
+
+      // Trigger a refresh of the DataCards
+      setTimeout(() => {
+        this.triggerRefresh();
+      }, 100);
+
+    } catch (error) {
+      console.error('Error updating note status:', error);
+      console.error('Error stack:', error.stack);
+    }
+  }
+
+  /**
+   * Update the status property in frontmatter
+   *
+   * @param content The file content
+   * @param newStatus The new status value
+   * @returns Updated content
+   */
+  private updateFrontmatterStatus(content: string, newStatus: string): string {
+    // Simple frontmatter parsing and updating
+    const frontmatterRegex = /^---\n([\s\S]*?)\n---/;
+    const match = content.match(frontmatterRegex);
+
+    if (!match) {
+      // No frontmatter, add it
+      return `---\nstatus: ${newStatus}\n---\n\n${content}`;
+    }
+
+    const frontmatter = match[1];
+    const statusRegex = /^status:\s*(.*)$/m;
+
+    if (frontmatter.match(statusRegex)) {
+      // Update existing status
+      const updatedFrontmatter = frontmatter.replace(statusRegex, `status: ${newStatus}`);
+      return content.replace(frontmatterRegex, `---\n${updatedFrontmatter}\n---`);
+    } else {
+      // Add status to existing frontmatter
+      const updatedFrontmatter = `${frontmatter}\nstatus: ${newStatus}`;
+      return content.replace(frontmatterRegex, `---\n${updatedFrontmatter}\n---`);
     }
   }
 
@@ -2320,5 +2625,987 @@ export class RendererService {
         text.substring(lastIndex)
       ));
     }
+  }
+
+  /**
+   * Check if the results are from a GROUP BY query
+   * GROUP BY results have a specific structure with grouped data
+   *
+   * @param results The Dataview query results
+   * @returns True if the results are from a GROUP BY query
+   */
+  private isGroupByResults(results: any): boolean {
+    console.log('GROUP BY CHECK - Input results:', results);
+    console.log('GROUP BY CHECK - Is array:', Array.isArray(results));
+
+    // Check for Dataview's GROUP BY structure using idMeaning (TABLE + GROUP BY)
+    if (results && typeof results === 'object' && results.idMeaning) {
+      const isGroupBy = results.idMeaning.type === 'group';
+      console.log('GROUP BY CHECK - Found idMeaning.type:', results.idMeaning.type);
+      console.log('GROUP BY CHECK - Is GROUP BY (TABLE):', isGroupBy);
+      return isGroupBy;
+    }
+
+    // Check for Dataview's GROUP BY structure using primaryMeaning (LIST + GROUP BY)
+    if (results && typeof results === 'object' && results.primaryMeaning) {
+      const isGroupBy = results.primaryMeaning.type === 'group';
+      console.log('GROUP BY CHECK - Found primaryMeaning.type:', results.primaryMeaning.type);
+      console.log('GROUP BY CHECK - Is GROUP BY (LIST):', isGroupBy);
+      return isGroupBy;
+    }
+
+    // Legacy check: GROUP BY results are arrays where each item has a 'key' and 'rows' property
+    if (!Array.isArray(results)) {
+      // Maybe GROUP BY results are nested in a values property?
+      if (results && results.values && Array.isArray(results.values)) {
+        console.log('GROUP BY CHECK - Checking results.values:', results.values);
+        console.log('GROUP BY CHECK - First item in values:', results.values[0]);
+
+        const hasGroupByStructure = results.values.length > 0 && results.values.every((item: any) =>
+          item &&
+          typeof item === 'object' &&
+          'key' in item &&
+          'rows' in item &&
+          Array.isArray(item.rows)
+        );
+
+        console.log('GROUP BY CHECK - Values has GROUP BY structure:', hasGroupByStructure);
+        return hasGroupByStructure;
+      }
+
+      console.log('GROUP BY CHECK - Not an array and no values property');
+      return false;
+    }
+
+    // Check if all items have the GROUP BY structure
+    const hasGroupByStructure = results.length > 0 && results.every((item: any) =>
+      item &&
+      typeof item === 'object' &&
+      'key' in item &&
+      'rows' in item &&
+      Array.isArray(item.rows)
+    );
+
+    console.log('GROUP BY CHECK - Direct array has GROUP BY structure:', hasGroupByStructure);
+    return hasGroupByStructure;
+  }
+
+  /**
+   * Render Dataview's TABLE + GROUP BY results as kanban columns
+   * This handles the special case where Dataview returns aggregated table data
+   *
+   * @param container The container element
+   * @param results The Dataview GROUP BY table results
+   * @param settings The merged settings
+   * @param component The parent component for lifecycle management
+   */
+  private renderDataviewTableGroupByKanban(container: HTMLElement, results: any, settings: DataCardsSettings, component: Component): void {
+    console.log('=== DATAVIEW GROUP BY KANBAN ===');
+    console.log('Results:', results);
+    console.log('Group column:', results.idMeaning?.name);
+
+    // Apply kanban-specific styling to container
+    container.addClass('datacards-kanban-container');
+
+    // Set kanban column width and spacing
+    container.style.setProperty('--kanban-column-width', settings.kanbanColumnWidth);
+    container.style.setProperty('--kanban-column-spacing', `${settings.kanbanColumnSpacing}px`);
+
+    // Extract unique group values from the results
+    const groupColumn = results.idMeaning?.name || 'status';
+    const groupColumnIndex = results.headers.indexOf(groupColumn);
+
+    if (groupColumnIndex === -1) {
+      console.error('Group column not found in headers:', groupColumn);
+      return;
+    }
+
+    // Get unique group values
+    const groupValues = [...new Set(results.values.map((row: any[]) => row[groupColumnIndex]))];
+    console.log('Group values:', groupValues);
+
+    // For each group value, we need to query the individual notes
+    // Since we can't re-query here, we'll show a message for now
+    groupValues.forEach((groupValue: string) => {
+      if (!groupValue) return;
+
+      // Create column container
+      const column = container.createEl('div', {
+        cls: 'datacards-kanban-column'
+      });
+
+      // Create column header
+      const header = column.createEl('div', {
+        cls: 'datacards-kanban-header'
+      });
+
+      // Add group title
+      header.createEl('span', {
+        cls: 'datacards-kanban-title',
+        text: groupValue
+      });
+
+      // Create cards container within the column
+      const cardsContainer = column.createEl('div', {
+        cls: 'datacards-kanban-cards'
+      });
+
+      // Add a message explaining the limitation
+      cardsContainer.createEl('div', {
+        cls: 'datacards-kanban-message',
+        text: 'Kanban with TABLE + GROUP BY is not fully supported. Use LIST + GROUP BY instead.'
+      });
+    });
+  }
+
+  /**
+   * Render GROUP BY results as grouped cards (non-kanban)
+   *
+   * @param container The container element
+   * @param results The GROUP BY results
+   * @param settings The merged settings
+   * @param component The parent component for lifecycle management
+   */
+  private renderGroupedResults(container: HTMLElement, results: any[], settings: DataCardsSettings, component: Component): void {
+    Logger.debug('Rendering grouped results with', results.length, 'groups');
+
+    // For non-kanban grouped results, render each group as a section
+    results.forEach((group: any) => {
+      // Create group header
+      container.createEl('div', {
+        cls: 'datacards-group-header',
+        text: `${group.key} (${group.rows.length})`
+      });
+
+      // Create group container
+      const groupContainer = container.createEl('div', {
+        cls: 'datacards-group-container'
+      });
+
+      // Render the rows in this group using array rendering logic
+      if (group.rows && group.rows.length > 0) {
+        // GROUP BY results have object-based rows, use array renderer
+        this.renderArrayResults(groupContainer, group.rows, settings, component);
+      }
+    });
+  }
+
+  /**
+   * Render Dataview's LIST + GROUP BY results as kanban columns
+   * This handles LIST queries with GROUP BY which return group names only
+   *
+   * @param container The container element
+   * @param results The Dataview LIST + GROUP BY results
+   * @param settings The merged settings
+   * @param component The parent component for lifecycle management
+   */
+  private renderDataviewListGroupByKanban(container: HTMLElement, results: any, settings: DataCardsSettings, component: Component): void {
+    console.log('=== DATAVIEW LIST GROUP BY KANBAN ===');
+    console.log('Results:', results);
+    console.log('Group column:', results.primaryMeaning?.name);
+
+    // Apply kanban-specific styling to container
+    container.addClass('datacards-kanban-container');
+
+    // Set kanban column width and spacing
+    container.style.setProperty('--kanban-column-width', settings.kanbanColumnWidth);
+    container.style.setProperty('--kanban-column-spacing', `${settings.kanbanColumnSpacing}px`);
+
+    // Get group values from the LIST results
+    const groupValues = results.values || [];
+    console.log('Group values:', groupValues);
+
+    // For each group value, create a column
+    groupValues.forEach((groupValue: string) => {
+      if (!groupValue) return;
+
+      // Create column container
+      const column = container.createEl('div', {
+        cls: 'datacards-kanban-column'
+      });
+
+      // Create column header
+      const header = column.createEl('div', {
+        cls: 'datacards-kanban-header'
+      });
+
+      // Add group title
+      header.createEl('span', {
+        cls: 'datacards-kanban-title',
+        text: groupValue
+      });
+
+      // Create cards container within the column
+      const cardsContainer = column.createEl('div', {
+        cls: 'datacards-kanban-cards'
+      });
+
+      // For now, show a message. In the future, we could re-query individual notes for this group
+      cardsContainer.createEl('div', {
+        cls: 'datacards-kanban-message',
+        text: `Group: ${groupValue} - Use regular queries without GROUP BY for full kanban functionality.`
+      });
+    });
+  }
+
+  /**
+   * Render regular query results as kanban by grouping them programmatically
+   * This is the main kanban implementation that works with regular TABLE queries
+   *
+   * @param container The container element
+   * @param results The regular Dataview query results
+   * @param settings The merged settings
+   * @param component The parent component for lifecycle management
+   */
+  private renderProgrammaticKanban(container: HTMLElement, results: any, settings: DataCardsSettings, component: Component): void {
+    console.log('=== PROGRAMMATIC KANBAN ===');
+    console.log('Results:', results);
+    console.log('Headers:', results.headers);
+
+    // Apply kanban-specific styling to container
+    container.addClass('datacards-kanban-container');
+
+    // Set kanban column width and spacing
+    container.style.setProperty('--kanban-column-width', settings.kanbanColumnWidth);
+    container.style.setProperty('--kanban-column-spacing', `${settings.kanbanColumnSpacing}px`);
+
+    // Determine the grouping column (hardcoded to 'status' for now)
+    const groupColumn = 'status';
+    const groupColumnIndex = results.headers.indexOf(groupColumn);
+
+    if (groupColumnIndex === -1) {
+      console.error(`Kanban group column '${groupColumn}' not found in headers:`, results.headers);
+      container.createEl('div', {
+        cls: 'datacards-error',
+        text: `Kanban group column '${groupColumn}' not found. Available columns: ${results.headers.join(', ')}`
+      });
+      return;
+    }
+
+    // Group the rows by the grouping column
+    const groupedRows = new Map<string, any[]>();
+
+    results.values.forEach((row: any[], index: number) => {
+      const groupValue = row[groupColumnIndex];
+      const groupKey = groupValue ? String(groupValue) : 'undefined';
+
+      if (!groupedRows.has(groupKey)) {
+        groupedRows.set(groupKey, []);
+      }
+      groupedRows.get(groupKey)!.push(row);
+    });
+
+    console.log('Grouped rows:', groupedRows);
+
+    // Create columns for each group
+    const sortedGroups = Array.from(groupedRows.entries()).sort(([a], [b]) => a.localeCompare(b));
+
+    sortedGroups.forEach(([groupKey, rows]) => {
+      this.createProgrammaticKanbanColumn(container, groupKey, rows, results.headers, settings, component);
+    });
+  }
+
+  /**
+   * Create a kanban column for programmatically grouped data
+   *
+   * @param container The parent container
+   * @param groupKey The group key (status value)
+   * @param rows The rows for this group
+   * @param headers The table headers
+   * @param settings The merged settings
+   * @param component The parent component for lifecycle management
+   */
+  private createProgrammaticKanbanColumn(
+    container: HTMLElement,
+    groupKey: string,
+    rows: any[][],
+    headers: string[],
+    settings: DataCardsSettings,
+    component: Component
+  ): void {
+    // Create column container
+    const normalizedStatus = groupKey.toLowerCase().replace(/[^a-z0-9-]/g, '-');
+    const column = container.createEl('div', {
+      cls: 'datacards-kanban-column',
+      attr: {
+        'data-status': normalizedStatus
+      }
+    });
+
+    // Apply custom colors if defined
+    if (settings.kanbanColors && settings.kanbanColors[groupKey]) {
+      const colorName = settings.kanbanColors[groupKey];
+      this.applyKanbanColumnColor(column, colorName, groupKey);
+    }
+
+    // Create column header
+    const header = column.createEl('div', {
+      cls: 'datacards-kanban-header'
+    });
+
+    // Add group title
+    header.createEl('span', {
+      cls: 'datacards-kanban-title',
+      text: groupKey
+    });
+
+    // Add card count
+    header.createEl('span', {
+      cls: 'datacards-kanban-count',
+      text: `(${rows.length})`
+    });
+
+    // Add new task button
+    const newTaskBtn = header.createEl('button', {
+      cls: 'datacards-new-task-btn',
+      attr: {
+        'aria-label': `Add new task to ${groupKey}`,
+        'title': `Add new task to ${groupKey}`
+      }
+    });
+    newTaskBtn.innerHTML = '+';
+
+    // Add click handler for new task button
+    newTaskBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      this.showNewTaskModal(groupKey, settings, component);
+    });
+
+    // Create cards container within the column
+    const cardsContainer = column.createEl('div', {
+      cls: 'datacards-kanban-cards'
+    });
+
+    // Render each row as a card using the existing table rendering logic
+    // But we need to modify it to pass card data for inline editing
+    this.renderKanbanCards(cardsContainer, rows, headers, settings, component);
+  }
+
+  /**
+   * Render kanban cards with inline editing support
+   *
+   * @param container The container element
+   * @param rows The table rows
+   * @param headers The table headers
+   * @param settings The merged settings
+   * @param component The parent component for lifecycle management
+   */
+  private renderKanbanCards(
+    container: HTMLElement,
+    rows: any[][],
+    headers: string[],
+    settings: DataCardsSettings,
+    component: Component
+  ): void {
+    // Create a card for each row
+    rows.forEach((row: any[] & { file?: any; path?: any; source?: any; originalFile?: any }, rowIndex: number) => {
+      Logger.debug(`Processing kanban row ${rowIndex}`);
+
+      const card = this.createCardElement(container);
+
+      // Add image if available
+      if (settings.imageProperty && row[headers.indexOf(settings.imageProperty)] !== undefined) {
+        this.addImageToCard(card, row[headers.indexOf(settings.imageProperty)]);
+      }
+
+      // Add content container
+      const contentEl = card.createEl('div', { cls: 'datacards-content' });
+
+      // First, add the file property separately if it exists
+      const fileIndex = headers.findIndex((h: string) => h.toLowerCase() === 'file');
+      if (fileIndex !== -1 && row[fileIndex] !== undefined) {
+        const filePropertyEl = contentEl.createEl('div', {
+          cls: 'datacards-property datacards-file-property-container',
+        });
+
+        this.formatFileProperty(filePropertyEl, row[fileIndex]);
+
+        // If clickable cards are enabled, make the card clickable
+        if (settings.enableClickableCards) {
+          this.makeCardClickable(card, row[fileIndex]);
+        }
+      }
+
+      // Create a properties container
+      const propertiesContainer = contentEl.createEl('div', {
+        cls: 'datacards-properties-container',
+      });
+
+      // Determine if properties should be scrollable
+      const shouldScroll = this.shouldUseScrollableProperties(settings);
+
+      // Apply scrollable class and height if needed
+      if (shouldScroll) {
+        propertiesContainer.addClass('datacards-scrollable-properties');
+
+        // Set content height via data attribute
+        const contentHeight = this.getContentHeight(settings);
+        propertiesContainer.setAttribute('data-content-height', contentHeight);
+        propertiesContainer.addClass(`datacards-content-height-${contentHeight.replace('px', '')}`);
+      }
+
+      // Determine which properties to show
+      const propertiesToShow = settings.properties === 'all'
+        ? headers
+        : Array.isArray(settings.properties) ? settings.properties : [];
+
+      // Filter out excluded properties and the file property
+      const filteredProperties = propertiesToShow.filter((prop: string) =>
+        !settings.exclude.includes(prop) &&
+        prop !== settings.imageProperty &&
+        prop.toLowerCase() !== 'file'
+      );
+
+      Logger.debug(`Using all headers as properties:`, headers);
+      Logger.debug(`Filtered properties (after excluding file):`, filteredProperties);
+
+      // Add each property to the properties container
+      filteredProperties.forEach((property: string) => {
+        const propIndex = headers.indexOf(property);
+        if (propIndex !== -1) {
+          const propValue = row[propIndex];
+          Logger.debug(`Checking property '${property}' in headers: true`);
+          Logger.debug(`Property '${property}' value:`, propValue);
+          Logger.debug(`Property '${property}' type:`, typeof propValue);
+          Logger.debug(`Adding property to card: ${property} = ${propValue}`);
+
+          // Create card data object for inline editing
+          const fileData = row[fileIndex];
+          console.log('File data for card:', fileData);
+          console.log('File data type:', typeof fileData);
+          console.log('File data keys:', Object.keys(fileData || {}));
+
+          const cardData = {
+            file: fileData,
+            path: fileData?.path,
+            source: fileData,
+            originalFile: fileData,
+            // Also try to extract the path directly if it's a string
+            filePath: typeof fileData === 'string' ? fileData : fileData?.path
+          };
+
+          // Use the standard property formatting, passing the component and card data
+          this.addPropertyToCard(propertiesContainer, property, propValue, settings, component, cardData);
+        } else {
+          Logger.debug(`Property '${property}' not found in headers`);
+        }
+      });
+
+      // If no properties were added, add a debug message
+      if (filteredProperties.length === 0 && !headers.some((h: string) => h.toLowerCase() === 'file')) {
+        Logger.debug('No properties were added to the card');
+        contentEl.createEl('div', {
+          cls: 'datacards-property',
+          text: 'No properties to display'
+        });
+      }
+    });
+  }
+
+  /**
+   * Show modal for creating a new task
+   *
+   * @param statusValue The status value for the new task (based on column)
+   * @param settings The current settings
+   * @param component The parent component for lifecycle management
+   */
+  private showNewTaskModal(statusValue: string, settings: DataCardsSettings, component: Component): void {
+    // Extract tag from the current query if available
+    const extractedTag = this.extractTagFromQuery();
+    console.log('Extracted tag from query:', extractedTag);
+    // Create modal container
+    const modal = document.createElement('div');
+    modal.className = 'datacards-new-task-modal-overlay';
+
+    // Create modal content
+    const modalContent = modal.createEl('div', {
+      cls: 'datacards-new-task-modal'
+    });
+
+    // Modal header
+    const header = modalContent.createEl('div', {
+      cls: 'datacards-modal-header'
+    });
+    header.createEl('h3', {
+      text: `New Task - ${statusValue}`,
+      cls: 'datacards-modal-title'
+    });
+
+    // Close button
+    const closeBtn = header.createEl('button', {
+      cls: 'datacards-modal-close',
+      text: '×'
+    });
+
+    // Modal body
+    const body = modalContent.createEl('div', {
+      cls: 'datacards-modal-body'
+    });
+
+    // Title input
+    const titleGroup = body.createEl('div', {
+      cls: 'datacards-form-group'
+    });
+    titleGroup.createEl('label', {
+      text: 'Title *',
+      cls: 'datacards-form-label'
+    });
+    const titleInput = titleGroup.createEl('input', {
+      type: 'text',
+      cls: 'datacards-form-input',
+      attr: {
+        placeholder: 'Enter task title...',
+        required: 'true'
+      }
+    });
+
+    // Status selection
+    const statusGroup = body.createEl('div', {
+      cls: 'datacards-form-group'
+    });
+    statusGroup.createEl('label', {
+      text: 'Status *',
+      cls: 'datacards-form-label'
+    });
+    const statusSelect = statusGroup.createEl('select', {
+      cls: 'datacards-form-input datacards-status-select'
+    });
+
+    // Get status options from settings
+    const statusOptions = settings.kanbanStatusOptions || ['todo', 'in-progress', 'review', 'done'];
+    statusOptions.forEach(status => {
+      const option = statusSelect.createEl('option', {
+        value: status,
+        text: status.charAt(0).toUpperCase() + status.slice(1).replace('-', ' ')
+      });
+
+      // Pre-select the status that was passed in (from column or default)
+      if (status === statusValue) {
+        option.selected = true;
+      }
+    });
+
+    // Template fields
+    let template = settings.newTaskTemplate || {};
+
+    // Debug the template parsing
+    console.log('=== TEMPLATE DEBUG ===');
+    console.log('Raw newTaskTemplate:', settings.newTaskTemplate);
+    console.log('Template type:', typeof settings.newTaskTemplate);
+    console.log('Template value:', template);
+    console.log('Template JSON stringify:', JSON.stringify(settings.newTaskTemplate));
+    console.log('All settings keys:', Object.keys(settings));
+    console.log('kanbanColors setting:', settings.kanbanColors);
+    console.log('kanbanColors type:', typeof settings.kanbanColors);
+    console.log('newTaskPath setting:', settings.newTaskPath);
+    console.log('Full settings object:', settings);
+
+    // If template is a string, try to parse it as JSON
+    if (typeof template === 'string') {
+      try {
+        template = JSON.parse(template);
+        console.log('Parsed template from string:', template);
+      } catch (error) {
+        console.error('Failed to parse template string:', error);
+        template = {};
+      }
+    }
+
+    // Ensure template is an object
+    if (!template || typeof template !== 'object') {
+      console.log('Template is not an object, using default');
+      template = {
+        priority: '',
+        assignee: ''
+      };
+    }
+
+    console.log('Final template to use:', template);
+    console.log('=== END TEMPLATE DEBUG ===');
+
+    const templateInputs: Record<string, HTMLInputElement> = {};
+
+    Object.entries(template).forEach(([key, defaultValue]) => {
+      if (key === 'status') return; // Skip status as it's set by column
+
+      console.log(`Creating field for: ${key} = ${defaultValue}`);
+
+      const fieldGroup = body.createEl('div', {
+        cls: 'datacards-form-group'
+      });
+      fieldGroup.createEl('label', {
+        text: key.charAt(0).toUpperCase() + key.slice(1),
+        cls: 'datacards-form-label'
+      });
+      const input = fieldGroup.createEl('input', {
+        type: 'text',
+        cls: 'datacards-form-input',
+        attr: {
+          placeholder: `Enter ${key}...`
+        }
+      });
+      input.value = String(defaultValue || '');
+      templateInputs[key] = input;
+    });
+
+    // Modal footer
+    const footer = modalContent.createEl('div', {
+      cls: 'datacards-modal-footer'
+    });
+
+    const cancelBtn = footer.createEl('button', {
+      text: 'Cancel',
+      cls: 'datacards-btn datacards-btn-secondary'
+    });
+
+    const createBtn = footer.createEl('button', {
+      text: 'Create Task',
+      cls: 'datacards-btn datacards-btn-primary'
+    });
+
+    // Event handlers
+    const closeModal = () => {
+      modal.remove();
+    };
+
+    closeBtn.addEventListener('click', closeModal);
+    cancelBtn.addEventListener('click', closeModal);
+
+    // Close on overlay click
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        closeModal();
+      }
+    });
+
+    // Create task handler
+    createBtn.addEventListener('click', async () => {
+      const title = titleInput.value.trim();
+      if (!title) {
+        titleInput.focus();
+        titleInput.style.borderColor = 'var(--color-red)';
+        return;
+      }
+
+      // Get the selected status from the dropdown
+      const selectedStatus = statusSelect.value;
+
+      try {
+        await this.createNewTask(title, selectedStatus, templateInputs, settings, extractedTag);
+        closeModal();
+      } catch (error) {
+        console.error('Error creating new task:', error);
+        // Could show error message in modal
+      }
+    });
+
+    // Focus title input and handle Enter key
+    titleInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        createBtn.click();
+      }
+    });
+
+    // Add modal to DOM
+    document.body.appendChild(modal);
+    titleInput.focus();
+  }
+
+  /**
+   * Create a new task note
+   *
+   * @param title The task title
+   * @param statusValue The status value
+   * @param templateInputs The template field inputs
+   * @param settings The current settings
+   * @param extractedTag The tag extracted from the query (optional)
+   */
+  private async createNewTask(
+    title: string,
+    statusValue: string,
+    templateInputs: Record<string, HTMLInputElement>,
+    settings: DataCardsSettings,
+    extractedTag: string | null = null
+  ): Promise<void> {
+    try {
+      // Build frontmatter
+      const frontmatter: Record<string, any> = {
+        title: title,
+        status: statusValue
+      };
+
+      // Add template fields
+      Object.entries(templateInputs).forEach(([key, input]) => {
+        const value = input.value.trim();
+        console.log(`Adding template field: ${key} = "${value}"`);
+        // Always add the field, even if empty (user might want empty values)
+        frontmatter[key] = value;
+      });
+
+      // Add tag if extracted from query
+      if (extractedTag) {
+        console.log(`Adding extracted tag: ${extractedTag}`);
+        frontmatter.tags = [extractedTag];
+      }
+
+      // Generate filename
+      const filename = this.generateFilename(title);
+
+      // Determine file path
+      const folderPath = settings.newTaskPath || '';
+      const fullPath = folderPath ? `${folderPath}/${filename}` : filename;
+
+      // Create frontmatter string
+      const frontmatterString = Object.entries(frontmatter)
+        .map(([key, value]) => {
+          // Properly quote string values
+          const quotedValue = typeof value === 'string' ? `"${value}"` : value;
+          return `${key}: ${quotedValue}`;
+        })
+        .join('\n');
+
+      console.log('Generated frontmatter:', frontmatterString);
+
+      // Create file content
+      const content = `---\n${frontmatterString}\n---\n\n# ${title}\n\n`;
+
+      // Create the file
+      const file = await this.app.vault.create(fullPath, content);
+
+      console.log('Created new task:', file.path);
+
+      // Open the file
+      const leaf = this.app.workspace.getLeaf(false);
+      await leaf.openFile(file);
+
+      // Trigger refresh of DataCards
+      setTimeout(() => {
+        this.triggerRefresh();
+      }, 100);
+
+    } catch (error) {
+      console.error('Error creating task file:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Generate a filename from a title
+   *
+   * @param title The task title
+   * @returns Safe filename
+   */
+  private generateFilename(title: string): string {
+    // Remove invalid characters and replace spaces with hyphens
+    const safeName = title
+      .replace(/[<>:"/\\|?*]/g, '') // Remove invalid filename characters
+      .replace(/\s+/g, '-') // Replace spaces with hyphens
+      .toLowerCase();
+
+    return `${safeName}.md`;
+  }
+
+  /**
+   * Extract tag from the current Dataview query
+   * Looks for patterns like "FROM #tagname"
+   *
+   * @returns The tag name without the # symbol, or null if not found
+   */
+  private extractTagFromQuery(): string | null {
+    if (!this.currentQuery) {
+      console.log('No current query available for tag extraction');
+      return null;
+    }
+
+    console.log('Extracting tag from query:', this.currentQuery);
+
+    // Look for patterns like "FROM #tagname"
+    const fromTagPattern = /FROM\s+#([a-zA-Z0-9_-]+)/i;
+    const match = this.currentQuery.match(fromTagPattern);
+
+    if (match && match[1]) {
+      const tagName = match[1];
+      console.log('Extracted tag:', tagName);
+      return tagName;
+    }
+
+    console.log('No tag found in FROM clause');
+    return null;
+  }
+
+
+
+
+  /**
+   * Apply custom color styling to a kanban column
+   *
+   * @param column The column element
+   * @param colorName The color name (e.g., 'blue', 'green', '#ff0000')
+   * @param statusValue The status value for this column
+   */
+  private applyKanbanColumnColor(column: HTMLElement, colorName: string, statusValue: string): void {
+    // Color mapping for common color names to CSS variables and RGB values
+    const colorMap: Record<string, { cssVar: string; rgb: string; fallback: string }> = {
+      'blue': { cssVar: 'var(--color-blue)', rgb: 'var(--color-blue-rgb, 0, 122, 255)', fallback: '#007aff' },
+      'green': { cssVar: 'var(--color-green)', rgb: 'var(--color-green-rgb, 52, 199, 89)', fallback: '#34c759' },
+      'orange': { cssVar: 'var(--color-orange)', rgb: 'var(--color-orange-rgb, 255, 149, 0)', fallback: '#ff9500' },
+      'red': { cssVar: 'var(--color-red)', rgb: 'var(--color-red-rgb, 255, 59, 48)', fallback: '#ff3b30' },
+      'purple': { cssVar: 'var(--color-purple)', rgb: 'var(--color-purple-rgb, 175, 82, 222)', fallback: '#af52de' },
+      'pink': { cssVar: 'var(--color-pink)', rgb: 'var(--color-pink-rgb, 255, 45, 85)', fallback: '#ff2d55' },
+      'yellow': { cssVar: 'var(--color-yellow)', rgb: 'var(--color-yellow-rgb, 255, 204, 0)', fallback: '#ffcc00' },
+      'gray': { cssVar: 'var(--text-muted)', rgb: '142, 142, 147', fallback: '#8e8e93' },
+      'grey': { cssVar: 'var(--text-muted)', rgb: '142, 142, 147', fallback: '#8e8e93' }
+    };
+
+    let statusColor: string;
+    let statusRgb: string;
+
+    if (colorMap[colorName.toLowerCase()]) {
+      // Use predefined color
+      const color = colorMap[colorName.toLowerCase()];
+      statusColor = color.cssVar;
+      statusRgb = color.rgb;
+    } else if (colorName.startsWith('#')) {
+      // Handle hex colors
+      statusColor = colorName;
+      statusRgb = this.hexToRgb(colorName);
+    } else {
+      // Fallback to gray
+      statusColor = colorMap.gray.cssVar;
+      statusRgb = colorMap.gray.rgb;
+    }
+
+    // Set CSS custom properties on the column
+    column.style.setProperty('--kanban-status-color', statusColor);
+    column.style.setProperty('--kanban-card-accent', statusRgb);
+  }
+
+  /**
+   * Convert hex color to RGB values
+   *
+   * @param hex The hex color (e.g., '#ff0000')
+   * @returns RGB string (e.g., '255, 0, 0')
+   */
+  private hexToRgb(hex: string): string {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    if (result) {
+      const r = parseInt(result[1], 16);
+      const g = parseInt(result[2], 16);
+      const b = parseInt(result[3], 16);
+      return `${r}, ${g}, ${b}`;
+    }
+    return '142, 142, 147'; // Fallback to gray
+  }
+
+  /**
+   * Sort groups by the specified status order
+   *
+   * @param groups The groups to sort
+   * @param settings The settings containing status order
+   * @returns Sorted groups
+   */
+  private sortGroupsByStatusOrder(groups: any[], settings: DataCardsSettings): any[] {
+    if (!settings.kanbanStatusOrder || settings.kanbanStatusOrder.length === 0) {
+      return groups;
+    }
+
+    return [...groups].sort((a, b) => {
+      const aIndex = settings.kanbanStatusOrder.indexOf(a.key);
+      const bIndex = settings.kanbanStatusOrder.indexOf(b.key);
+
+      // If both are in the order array, sort by their position
+      if (aIndex !== -1 && bIndex !== -1) {
+        return aIndex - bIndex;
+      }
+
+      // If only one is in the order array, prioritize it
+      if (aIndex !== -1) return -1;
+      if (bIndex !== -1) return 1;
+
+      // If neither is in the order array, maintain original order
+      return 0;
+    });
+  }
+
+  /**
+   * Create a kanban column for a group
+   *
+   * @param container The container element
+   * @param group The group data
+   * @param settings The merged settings
+   * @param component The parent component for lifecycle management
+   */
+  private createKanbanColumn(container: HTMLElement, group: any, settings: DataCardsSettings, component: Component): void {
+    // Create column container
+    const column = container.createEl('div', {
+      cls: 'datacards-kanban-column'
+    });
+
+    // Create column header
+    const header = column.createEl('div', {
+      cls: 'datacards-kanban-header'
+    });
+
+    // Add group title
+    const title = header.createEl('span', {
+      cls: 'datacards-kanban-title',
+      text: group.key
+    });
+
+    // Add card count if enabled
+    if (settings.kanbanShowColumnCounts) {
+      header.createEl('span', {
+        cls: 'datacards-kanban-count',
+        text: `(${group.rows.length})`
+      });
+    }
+
+    // Create cards container within the column
+    const cardsContainer = column.createEl('div', {
+      cls: 'datacards-kanban-cards'
+    });
+
+    // Apply compact cards class if enabled
+    if (settings.kanbanCompactCards) {
+      cardsContainer.addClass('datacards-kanban-compact');
+    }
+
+    // Render the cards in this column
+    if (group.rows && group.rows.length > 0) {
+      console.log(`=== KANBAN COLUMN DEBUG: ${group.key} ===`);
+      console.log(`Number of rows: ${group.rows.length}`);
+      console.log(`First row:`, group.rows[0]);
+      console.log(`First row keys:`, Object.keys(group.rows[0] || {}));
+      console.log(`All rows:`, group.rows);
+      console.log(`=== END COLUMN DEBUG ===`);
+
+      // GROUP BY results have object-based rows, not array-based
+      // We need to render them as array results instead of table results
+      this.renderArrayResults(cardsContainer, group.rows, settings, component);
+    }
+  }
+
+  /**
+   * Extract headers from rows for GROUP BY results
+   *
+   * @param rows The rows to extract headers from
+   * @returns Array of header names
+   */
+  private extractHeadersFromRows(rows: any[]): string[] {
+    if (!rows || rows.length === 0) {
+      return [];
+    }
+
+    // Get all unique keys from all rows
+    const headerSet = new Set<string>();
+
+    rows.forEach(row => {
+      if (row && typeof row === 'object') {
+        Object.keys(row).forEach(key => headerSet.add(key));
+      }
+    });
+
+    return Array.from(headerSet);
   }
 }

@@ -7,6 +7,7 @@
 
 * <i class="ph ph-star"></i> **Features**
   * [<i class="ph ph-squares-four"></i> Card Presets](features/presets.md)
+  * [<i class="ph ph-kanban"></i> Kanban Boards](features/kanban.md)
   * [<i class="ph ph-sliders"></i> Property Customization](features/properties.md)
   * [<i class="ph ph-image"></i> Image Support](features/images.md)
   * [<i class="ph ph-device-mobile"></i> Mobile Support](features/mobile.md)

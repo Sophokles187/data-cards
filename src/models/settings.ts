@@ -5,7 +5,7 @@
 /**
  * Preset options for card display
  */
-export type CardPreset = 'grid' | 'portrait' | 'square' | 'compact' | 'dense';
+export type CardPreset = 'grid' | 'portrait' | 'square' | 'compact' | 'dense' | 'kanban';
 
 /**
  * Font size options
@@ -70,6 +70,19 @@ export interface DataCardsSettings {
 
   // Card interaction settings
   enableClickableCards: boolean; // Make the entire card clickable to open the note
+
+  // Kanban settings
+  kanbanColumnWidth: string; // Width of kanban columns (e.g., "300px")
+  kanbanColumnSpacing: number; // Gap between kanban columns
+  kanbanStatusOrder: string[]; // Order of status values for kanban columns
+  kanbanHideEmptyColumns: boolean; // Hide columns with no cards
+  kanbanShowColumnCounts: boolean; // Show card count in column headers
+  kanbanCompactCards: boolean; // Use smaller cards for more density
+  kanbanMobileStackColumns: boolean; // Stack columns vertically on mobile
+  kanbanStatusOptions: string[]; // Custom status values for kanban dropdowns
+  kanbanColors: Record<string, string>; // Custom colors for status values
+  newTaskPath: string; // Folder path for new task notes
+  newTaskTemplate: Record<string, any>; // Template for new task frontmatter
 
   // Formatting settings
   defaultDateFormat: string;
@@ -142,6 +155,28 @@ export const DEFAULT_SETTINGS: DataCardsSettings = {
 
   // Card interaction settings
   enableClickableCards: false, // Disabled by default
+
+  // Kanban settings
+  kanbanColumnWidth: '300px', // Default column width
+  kanbanColumnSpacing: 16, // Default spacing between columns
+  kanbanStatusOrder: ['todo', 'in-progress', 'review', 'done'], // Default status order
+  kanbanHideEmptyColumns: false, // Show empty columns by default
+  kanbanShowColumnCounts: true, // Show card counts by default
+  kanbanCompactCards: false, // Use normal card size by default
+  kanbanMobileStackColumns: false, // Use horizontal scroll on mobile by default
+  kanbanStatusOptions: ['todo', 'in-progress', 'review', 'done'], // Default status options for dropdowns
+  kanbanColors: { // Default colors for status values
+    'todo': 'gray',
+    'in-progress': 'blue',
+    'review': 'orange',
+    'done': 'green'
+  },
+  newTaskPath: '', // Default: create in vault root
+  newTaskTemplate: { // Default template for new tasks - just field names, no values
+    priority: '',
+    assignee: '',
+    due: ''
+  },
 
   // Formatting settings
   defaultDateFormat: 'YYYY-MM-DD',

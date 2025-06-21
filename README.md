@@ -24,12 +24,25 @@ imageProperty: cover
 ```
 ````
 
-That's it! Your Dataview results will now display as beautiful cards.
+**Or create a kanban board:**
+
+````markdown
+```datacards
+TABLE file.link as "Task", priority, status FROM #tasks
+SORT status ASC
+
+// Settings
+preset: kanban
+```
+````
+
+That's it! Your Dataview results will now display as beautiful cards or interactive kanban boards.
 
 ## Features
 
 - **Custom Code Block**: Use `datacards` code blocks with Dataview query syntax
-- **Flexible Presets**: Multiple card preset options (grid, portrait, square, compact, dense) optimized for different use cases
+- **Kanban Boards**: Interactive task boards with inline editing, new task creation, and automatic organization
+- **Flexible Presets**: Multiple card preset options (grid, portrait, square, compact, dense, kanban) optimized for different use cases
 - **Highly Customizable**: Adjust nearly all settings per code block, mixing and matching preset characteristics, including property display and font size options
 - **Advanced Image Support**: Display images from frontmatter properties with support for wiki links, embedded wiki links (`![[image.jpg]]`), and markdown syntax
 - **Refresh Button**: Manual refresh button for reliable updates in both reading and editing modes
