@@ -1,132 +1,96 @@
 # Task Management Example
 
-This example shows how to create a task management dashboard with DataCards.
+This example shows how to create interactive task management boards with DataCards using the new kanban preset.
 
-> ⚠️ **Note**: The conditional formatting feature shown in these examples is currently broken and not working. The examples are provided for future reference when this feature is fixed.
+## Basic Kanban Board
 
-## Basic Task Board
-
-A simple kanban-style board for your tasks:
+A simple kanban board for your tasks:
 
 ```datacards
-TABLE file.link as "Task", status, priority, dueDate FROM #tasks
-SORT dueDate ASC
+TABLE file.link as "Task", priority, assignee, status FROM #tasks
+SORT status ASC
 
 // Settings
-preset: grid
-conditionalFormatting: {
-  "status": [
-    { "condition": "= 'Completed'", "color": "#4CAF50" },
-    { "condition": "= 'In Progress'", "color": "#FFC107" },
-    { "condition": "= 'Not Started'", "color": "#F44336" }
-  ]
-}
+preset: kanban
 ```
 
 
+## Custom Kanban with Colors
+
+Kanban board with custom status options and colors:
+
+```datacards
+TABLE file.link as "Task", priority, assignee, due, status FROM #tasks
+SORT status ASC
+
+// Settings
+preset: kanban
+kanbanStatusOptions: ["backlog", "in-progress", "review", "done"]
+kanbanColors: {"backlog": "gray", "in-progress": "blue", "review": "orange", "done": "green"}
+```
+
+## Team Project Kanban
+
+Kanban board with new task templates for team collaboration:
+
+```datacards
+TABLE file.link as "Task", assignee, priority, due, status FROM #team-project
+SORT status ASC
+
+// Settings
+preset: kanban
+kanbanStatusOptions: ["todo", "active", "testing", "deployed"]
+kanbanColors: {"todo": "blue", "active": "orange", "testing": "purple", "deployed": "green"}
+newTaskPath: "Projects/Team Tasks"
+newTaskTemplate: {"priority": "medium", "assignee": "", "due": ""}
+```
+
+
+## Personal Task Management
+
+Simple kanban for personal productivity:
+
+```datacards
+TABLE file.link as "Task", priority, due, status FROM #personal-tasks
+SORT status ASC
+
+// Settings
+preset: kanban
+kanbanStatusOptions: ["todo", "doing", "done"]
+kanbanColors: {"todo": "blue", "doing": "orange", "done": "green"}
+newTaskPath: "Personal/Tasks"
+newTaskTemplate: {"priority": "", "due": ""}
+```
+
+## Content Creation Pipeline
+
+Kanban for managing content creation workflow:
+
+```datacards
+TABLE file.link as "Article", author, wordcount, status FROM #content-pipeline
+SORT status ASC
+
+// Settings
+preset: kanban
+kanbanStatusOptions: ["idea", "draft", "review", "published"]
+kanbanColors: {"idea": "gray", "draft": "blue", "review": "orange", "published": "green"}
+newTaskPath: "Content/Articles"
+newTaskTemplate: {"author": "", "wordcount": "", "category": ""}
+```
+
 ## Properties to Include in Your Task Notes
 
-For this example to work, make sure your task notes have:
+For these examples to work, make sure your task notes have the required frontmatter:
 
 ```yaml
 ---
-tags: tasks
-status: In Progress
-priority: High
-dueDate: 2023-07-15
+tags: [tasks]
+status: todo
+priority: high
+due: 2024-01-15
 assignee: John Doe
 ---
 ```
 
-## Advanced Task Board
-
-More detailed version with additional properties:
-
-> ⚠️ **Note**: The conditional formatting feature in this example is currently broken and not working.
-
-```datacards
-TABLE
-  file.link as "Task",
-  status,
-  priority,
-  dueDate,
-  assignee,
-  progress
-FROM #tasks
-SORT priority DESC, dueDate ASC
-
-// Settings
-preset: grid
-dynamicUpdate: true
-conditionalFormatting: {
-  "priority": [
-    { "condition": "= 'High'", "color": "#F44336" },
-    { "condition": "= 'Medium'", "color": "#FFC107" },
-    { "condition": "= 'Low'", "color": "#4CAF50" }
-  ],
-  "status": [
-    { "condition": "= 'Completed'", "color": "#4CAF50" },
-    { "condition": "= 'In Progress'", "color": "#2196F3" },
-    { "condition": "= 'Not Started'", "color": "#9E9E9E" }
-  ]
-}
-```
-
-
-## Filter by Status
-
-Display tasks with a specific status:
-
-```datacards
-TABLE file.link as "Task", priority, dueDate, assignee FROM #tasks
-WHERE status = "In Progress"
-SORT dueDate ASC
-
-// Settings
-preset: grid
-```
-
-
-## Due Today
-
-Display tasks due today:
-
-
-```datacards
-TABLE file.link as "Task", status, priority, assignee FROM #tasks
-WHERE date(dueDate) = date(today)
-SORT priority DESC
-
-// Settings
-preset: grid
-columns: 2
-```
-
-
-## Project-Specific Tasks
-
-If you use sub-tags for organizing tasks:
-
-
-```datacards
-TABLE file.link as "Task", status, priority, dueDate FROM #tasks/project-alpha
-SORT dueDate ASC
-
-// Settings
-preset: grid
-
-```
-
-## Compact Task List
-
-A more compact display for many tasks:
-
-
-```datacards
-TABLE file.link as "Task", status, priority, dueDate, assignee FROM #tasks
-SORT dueDate ASC
-
-// Settings
-preset: compact
-```
+The kanban preset automatically detects the `status` property and organizes your tasks into columns. You can edit the status directly from the kanban board using the dropdown menus.
 

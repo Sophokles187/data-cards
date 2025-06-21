@@ -2,7 +2,7 @@
 
 DataCards includes a powerful kanban preset that transforms your notes into interactive task boards. Perfect for project management, task tracking, and workflow visualization.
 
-![Kanban Boards](../assets/images/kanban-cards.png)
+![Kanban Boards](../assets/images/examples/kanban-cards.png)
 
 ## Quick Start
 
