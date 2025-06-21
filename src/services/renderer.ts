@@ -58,13 +58,7 @@ export class RendererService {
     // SPECIAL CHECK: Log the exact structure of the results
     Logger.debug('SPECIAL CHECK - renderCards called with results:', results);
 
-    // IMMEDIATE DEBUG - Check if this is GROUP BY
-    console.log('=== IMMEDIATE DEBUG START ===');
-    console.log('Results type:', typeof results);
-    console.log('Results is array:', Array.isArray(results));
-    console.log('Results keys:', Object.keys(results || {}));
-    console.log('Results:', results);
-    console.log('=== IMMEDIATE DEBUG END ===');
+
 
     // Check if the results are empty
     let isEmpty = false;
@@ -337,12 +331,6 @@ export class RendererService {
 
     // Handle different types of Dataview results
     // First check for GROUP BY results (which have a specific structure)
-    console.log('STRUCTURE DEBUG - Results type:', typeof results);
-    console.log('STRUCTURE DEBUG - Results keys:', Object.keys(results || {}));
-    console.log('STRUCTURE DEBUG - Results.values type:', typeof results?.values);
-    console.log('STRUCTURE DEBUG - Results.values is array:', Array.isArray(results?.values));
-    console.log('STRUCTURE DEBUG - First few results.values items:', results?.values?.slice(0, 2));
-    console.log('STRUCTURE DEBUG - Full results object:', JSON.stringify(results, null, 2));
 
     if (this.isGroupByResults(results)) {
       Logger.debug('Detected GROUP BY results');
@@ -1434,11 +1422,6 @@ export class RendererService {
 
     // Get status options from settings (with fallback to defaults)
     const statusOptions = this.currentSettings?.kanbanStatusOptions || ['todo', 'in-progress', 'review', 'done'];
-    console.log('=== STATUS DROPDOWN DEBUG ===');
-    console.log('Current settings:', this.currentSettings);
-    console.log('kanbanStatusOptions from settings:', this.currentSettings?.kanbanStatusOptions);
-    console.log('Final status options:', statusOptions);
-    console.log('=== END STATUS DEBUG ===');
 
     // Create a select dropdown
     const selectEl = valueEl.createEl('select', {
@@ -1472,22 +1455,15 @@ export class RendererService {
    */
   private async updateNoteStatus(cardData: any, newStatus: string): Promise<void> {
     try {
-      console.log('=== UPDATE NOTE STATUS DEBUG ===');
-      console.log('Card data:', cardData);
-      console.log('New status:', newStatus);
-      console.log('Card data type:', typeof cardData);
-      console.log('Card data keys:', Object.keys(cardData || {}));
 
       // Extract file information from cardData
       let file: TFile | null = null;
 
       // Try different ways to get the file
       if (cardData && cardData.file) {
-        console.log('Found cardData.file:', cardData.file);
         if (cardData.file instanceof TFile) {
           file = cardData.file;
         } else if (cardData.file.path) {
-          console.log('Getting file by path:', cardData.file.path);
           const abstractFile = this.app.vault.getAbstractFileByPath(cardData.file.path);
           if (abstractFile instanceof TFile) {
             file = abstractFile;
@@ -1497,7 +1473,6 @@ export class RendererService {
 
       // Try other properties
       if (!file && cardData && cardData.path) {
-        console.log('Trying cardData.path:', cardData.path);
         const abstractFile = this.app.vault.getAbstractFileByPath(cardData.path);
         if (abstractFile instanceof TFile) {
           file = abstractFile;
@@ -1506,7 +1481,6 @@ export class RendererService {
 
       // Try filePath property
       if (!file && cardData && cardData.filePath) {
-        console.log('Trying cardData.filePath:', cardData.filePath);
         const abstractFile = this.app.vault.getAbstractFileByPath(cardData.filePath);
         if (abstractFile instanceof TFile) {
           file = abstractFile;
@@ -1515,7 +1489,6 @@ export class RendererService {
 
       // If cardData itself is a file path string
       if (!file && typeof cardData === 'string') {
-        console.log('Trying cardData as string path:', cardData);
         const abstractFile = this.app.vault.getAbstractFileByPath(cardData);
         if (abstractFile instanceof TFile) {
           file = abstractFile;
@@ -1528,23 +1501,14 @@ export class RendererService {
         return;
       }
 
-      console.log('Found file:', file.path);
-
       // Read the file content
       const content = await this.app.vault.read(file);
-      console.log('Current file content length:', content.length);
-      console.log('First 200 chars:', content.substring(0, 200));
 
       // Update the frontmatter
       const updatedContent = this.updateFrontmatterStatus(content, newStatus);
-      console.log('Updated content length:', updatedContent.length);
-      console.log('Updated first 200 chars:', updatedContent.substring(0, 200));
 
       // Write back to file
       await this.app.vault.modify(file, updatedContent);
-
-      console.log('Successfully updated status to:', newStatus);
-      console.log('=== UPDATE COMPLETE ===');
 
       // Trigger a refresh of the DataCards
       setTimeout(() => {
@@ -2635,22 +2599,15 @@ export class RendererService {
    * @returns True if the results are from a GROUP BY query
    */
   private isGroupByResults(results: any): boolean {
-    console.log('GROUP BY CHECK - Input results:', results);
-    console.log('GROUP BY CHECK - Is array:', Array.isArray(results));
-
     // Check for Dataview's GROUP BY structure using idMeaning (TABLE + GROUP BY)
     if (results && typeof results === 'object' && results.idMeaning) {
       const isGroupBy = results.idMeaning.type === 'group';
-      console.log('GROUP BY CHECK - Found idMeaning.type:', results.idMeaning.type);
-      console.log('GROUP BY CHECK - Is GROUP BY (TABLE):', isGroupBy);
       return isGroupBy;
     }
 
     // Check for Dataview's GROUP BY structure using primaryMeaning (LIST + GROUP BY)
     if (results && typeof results === 'object' && results.primaryMeaning) {
       const isGroupBy = results.primaryMeaning.type === 'group';
-      console.log('GROUP BY CHECK - Found primaryMeaning.type:', results.primaryMeaning.type);
-      console.log('GROUP BY CHECK - Is GROUP BY (LIST):', isGroupBy);
       return isGroupBy;
     }
 
@@ -2658,9 +2615,6 @@ export class RendererService {
     if (!Array.isArray(results)) {
       // Maybe GROUP BY results are nested in a values property?
       if (results && results.values && Array.isArray(results.values)) {
-        console.log('GROUP BY CHECK - Checking results.values:', results.values);
-        console.log('GROUP BY CHECK - First item in values:', results.values[0]);
-
         const hasGroupByStructure = results.values.length > 0 && results.values.every((item: any) =>
           item &&
           typeof item === 'object' &&
@@ -2669,11 +2623,9 @@ export class RendererService {
           Array.isArray(item.rows)
         );
 
-        console.log('GROUP BY CHECK - Values has GROUP BY structure:', hasGroupByStructure);
         return hasGroupByStructure;
       }
 
-      console.log('GROUP BY CHECK - Not an array and no values property');
       return false;
     }
 
@@ -2686,7 +2638,6 @@ export class RendererService {
       Array.isArray(item.rows)
     );
 
-    console.log('GROUP BY CHECK - Direct array has GROUP BY structure:', hasGroupByStructure);
     return hasGroupByStructure;
   }
 
@@ -2700,9 +2651,6 @@ export class RendererService {
    * @param component The parent component for lifecycle management
    */
   private renderDataviewTableGroupByKanban(container: HTMLElement, results: any, settings: DataCardsSettings, component: Component): void {
-    console.log('=== DATAVIEW GROUP BY KANBAN ===');
-    console.log('Results:', results);
-    console.log('Group column:', results.idMeaning?.name);
 
     // Apply kanban-specific styling to container
     container.addClass('datacards-kanban-container');
@@ -2722,7 +2670,6 @@ export class RendererService {
 
     // Get unique group values
     const groupValues = [...new Set(results.values.map((row: any[]) => row[groupColumnIndex]))];
-    console.log('Group values:', groupValues);
 
     // For each group value, we need to query the individual notes
     // Since we can't re-query here, we'll show a message for now
@@ -2800,9 +2747,6 @@ export class RendererService {
    * @param component The parent component for lifecycle management
    */
   private renderDataviewListGroupByKanban(container: HTMLElement, results: any, settings: DataCardsSettings, component: Component): void {
-    console.log('=== DATAVIEW LIST GROUP BY KANBAN ===');
-    console.log('Results:', results);
-    console.log('Group column:', results.primaryMeaning?.name);
 
     // Apply kanban-specific styling to container
     container.addClass('datacards-kanban-container');
@@ -2813,7 +2757,6 @@ export class RendererService {
 
     // Get group values from the LIST results
     const groupValues = results.values || [];
-    console.log('Group values:', groupValues);
 
     // For each group value, create a column
     groupValues.forEach((groupValue: string) => {
@@ -2858,9 +2801,6 @@ export class RendererService {
    * @param component The parent component for lifecycle management
    */
   private renderProgrammaticKanban(container: HTMLElement, results: any, settings: DataCardsSettings, component: Component): void {
-    console.log('=== PROGRAMMATIC KANBAN ===');
-    console.log('Results:', results);
-    console.log('Headers:', results.headers);
 
     // Apply kanban-specific styling to container
     container.addClass('datacards-kanban-container');
@@ -2894,8 +2834,6 @@ export class RendererService {
       }
       groupedRows.get(groupKey)!.push(row);
     });
-
-    console.log('Grouped rows:', groupedRows);
 
     // Create columns for each group
     const sortedGroups = Array.from(groupedRows.entries()).sort(([a], [b]) => a.localeCompare(b));
@@ -3072,9 +3010,6 @@ export class RendererService {
 
           // Create card data object for inline editing
           const fileData = row[fileIndex];
-          console.log('File data for card:', fileData);
-          console.log('File data type:', typeof fileData);
-          console.log('File data keys:', Object.keys(fileData || {}));
 
           const cardData = {
             file: fileData,
@@ -3113,7 +3048,6 @@ export class RendererService {
   private showNewTaskModal(statusValue: string, settings: DataCardsSettings, component: Component): void {
     // Extract tag from the current query if available
     const extractedTag = this.extractTagFromQuery();
-    console.log('Extracted tag from query:', extractedTag);
     // Create modal container
     const modal = document.createElement('div');
     modal.className = 'datacards-new-task-modal-overlay';
@@ -3189,47 +3123,27 @@ export class RendererService {
     // Template fields
     let template = settings.newTaskTemplate || {};
 
-    // Debug the template parsing
-    console.log('=== TEMPLATE DEBUG ===');
-    console.log('Raw newTaskTemplate:', settings.newTaskTemplate);
-    console.log('Template type:', typeof settings.newTaskTemplate);
-    console.log('Template value:', template);
-    console.log('Template JSON stringify:', JSON.stringify(settings.newTaskTemplate));
-    console.log('All settings keys:', Object.keys(settings));
-    console.log('kanbanColors setting:', settings.kanbanColors);
-    console.log('kanbanColors type:', typeof settings.kanbanColors);
-    console.log('newTaskPath setting:', settings.newTaskPath);
-    console.log('Full settings object:', settings);
-
     // If template is a string, try to parse it as JSON
     if (typeof template === 'string') {
       try {
         template = JSON.parse(template);
-        console.log('Parsed template from string:', template);
       } catch (error) {
-        console.error('Failed to parse template string:', error);
         template = {};
       }
     }
 
     // Ensure template is an object
     if (!template || typeof template !== 'object') {
-      console.log('Template is not an object, using default');
       template = {
         priority: '',
         assignee: ''
       };
     }
 
-    console.log('Final template to use:', template);
-    console.log('=== END TEMPLATE DEBUG ===');
-
     const templateInputs: Record<string, HTMLInputElement> = {};
 
     Object.entries(template).forEach(([key, defaultValue]) => {
       if (key === 'status') return; // Skip status as it's set by column
-
-      console.log(`Creating field for: ${key} = ${defaultValue}`);
 
       const fieldGroup = body.createEl('div', {
         cls: 'datacards-form-group'
@@ -3338,14 +3252,12 @@ export class RendererService {
       // Add template fields
       Object.entries(templateInputs).forEach(([key, input]) => {
         const value = input.value.trim();
-        console.log(`Adding template field: ${key} = "${value}"`);
         // Always add the field, even if empty (user might want empty values)
         frontmatter[key] = value;
       });
 
       // Add tag if extracted from query
       if (extractedTag) {
-        console.log(`Adding extracted tag: ${extractedTag}`);
         frontmatter.tags = [extractedTag];
       }
 
@@ -3365,15 +3277,11 @@ export class RendererService {
         })
         .join('\n');
 
-      console.log('Generated frontmatter:', frontmatterString);
-
       // Create file content
       const content = `---\n${frontmatterString}\n---\n\n# ${title}\n\n`;
 
       // Create the file
       const file = await this.app.vault.create(fullPath, content);
-
-      console.log('Created new task:', file.path);
 
       // Open the file
       const leaf = this.app.workspace.getLeaf(false);
@@ -3414,11 +3322,8 @@ export class RendererService {
    */
   private extractTagFromQuery(): string | null {
     if (!this.currentQuery) {
-      console.log('No current query available for tag extraction');
       return null;
     }
-
-    console.log('Extracting tag from query:', this.currentQuery);
 
     // Look for patterns like "FROM #tagname"
     const fromTagPattern = /FROM\s+#([a-zA-Z0-9_-]+)/i;
@@ -3426,11 +3331,9 @@ export class RendererService {
 
     if (match && match[1]) {
       const tagName = match[1];
-      console.log('Extracted tag:', tagName);
       return tagName;
     }
 
-    console.log('No tag found in FROM clause');
     return null;
   }
 
@@ -3573,12 +3476,6 @@ export class RendererService {
 
     // Render the cards in this column
     if (group.rows && group.rows.length > 0) {
-      console.log(`=== KANBAN COLUMN DEBUG: ${group.key} ===`);
-      console.log(`Number of rows: ${group.rows.length}`);
-      console.log(`First row:`, group.rows[0]);
-      console.log(`First row keys:`, Object.keys(group.rows[0] || {}));
-      console.log(`All rows:`, group.rows);
-      console.log(`=== END COLUMN DEBUG ===`);
 
       // GROUP BY results have object-based rows, not array-based
       // We need to render them as array results instead of table results

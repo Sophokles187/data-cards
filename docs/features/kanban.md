@@ -19,23 +19,23 @@ preset: kanban
 
 ## Key Features
 
-### 🏗️ Automatic Organization
+### Automatic Organization
 - **Column Grouping**: Notes are automatically organized into columns by their `status` property
 - **Smart Sorting**: Tasks appear in the correct columns based on their frontmatter
 - **Dynamic Updates**: Columns adjust automatically as you add or modify notes
 
-### ✏️ Inline Editing
+### Inline Editing
 - **Status Dropdowns**: Change task status directly from the kanban board
 - **Instant Updates**: Status changes are saved immediately to note frontmatter
 - **Visual Feedback**: Cards move between columns when status changes
 
-### ➕ Task Creation
+### Task Creation
 - **Column Buttons**: Create new tasks using "+" buttons in column headers
 - **Empty State Support**: Start with an empty board and create your first task
 - **Smart Tagging**: New tasks automatically get the correct tags to appear in your board
 - **Status Selection**: Choose which column new tasks should appear in
 
-### 🎨 Visual Customization
+### Visual Customization
 - **Custom Colors**: Define colors for different status values
 - **Theme Integration**: Colors adapt to your Obsidian theme
 - **Professional Design**: Clean, modern appearance suitable for any workspace
@@ -88,6 +88,8 @@ kanbanStatusOptions: ["backlog", "active", "testing", "deployed"]
 ```
 ````
 
+> **Important**: Object settings like `kanbanStatusOptions`, `kanbanColors`, and `newTaskTemplate` must be written on a single line. Multi-line objects are not supported by the settings parser.
+
 ### Color Coding
 
 Customize colors for better visual organization:
@@ -101,14 +103,24 @@ SORT status ASC
 // Settings
 preset: kanban
 kanbanStatusOptions: ["planning", "in-progress", "review", "done"]
+kanbanColors: {"planning": "blue", "in-progress": "orange", "review": "purple", "done": "green"}
+```
+````
+
+**Correct single-line format:**
+```
+kanbanColors: {"todo": "blue", "in-progress": "orange", "review": "purple", "done": "green"}
+```
+
+**Incorrect multi-line format (will not work):**
+```
 kanbanColors: {
-  "planning": "blue",
-  "in-progress": "orange", 
+  "todo": "blue",
+  "in-progress": "orange",
   "review": "purple",
   "done": "green"
 }
 ```
-````
 
 ### New Task Templates
 
@@ -123,12 +135,7 @@ SORT status ASC
 // Settings
 preset: kanban
 newTaskPath: "Projects/Team Tasks"
-newTaskTemplate: {
-  "priority": "",
-  "assignee": "",
-  "due": "",
-  "project": "Team Project Alpha"
-}
+newTaskTemplate: {"priority": "", "assignee": "", "due": "", "project": "Team Project Alpha"}
 ```
 ````
 
