@@ -11,6 +11,8 @@ export class RendererService {
   // Store the current settings for use in formatting methods
   private currentSettings: DataCardsSettings | null = null;
   private pluginSettings: DataCardsSettings;
+  // Store the current query for tag extraction
+  private currentQuery: string | null = null;
 
   constructor(app: App, pluginSettings: DataCardsSettings) {
     this.app = app;
@@ -24,6 +26,15 @@ export class RendererService {
    */
   public updateSettings(settings: DataCardsSettings): void {
      this.pluginSettings = settings;
+  }
+
+  /**
+   * Set the current query for tag extraction
+   *
+   * @param query The current Dataview query
+   */
+  public setCurrentQuery(query: string): void {
+    this.currentQuery = query;
   }
   /**
    * Check if the current device is mobile or if mobile mode is forced
@@ -74,12 +85,6 @@ export class RendererService {
       isEmpty = true;
     }
 
-      // If empty, render empty state and return
-      if (isEmpty) {
-        Logger.debug('Rendering empty state from renderCards');
-        this.renderEmptyState(container, 'No notes found');
-        return;
-      }
     // Check if we're on mobile
     const isMobile = this.isMobileDevice();
     Logger.debug('Is mobile device:', isMobile);
@@ -131,6 +136,13 @@ export class RendererService {
 
     // Store the current settings for use in formatting methods
     this.currentSettings = settings;
+
+    // Now check for empty state after settings are processed
+    if (isEmpty) {
+      Logger.debug('Rendering empty state from renderCards');
+      this.renderEmptyState(container, 'No notes found');
+      return;
+    }
 
     // Create the cards container
     const cardsContainer = container.createEl('div', {
@@ -460,6 +472,12 @@ export class RendererService {
   public renderEmptyState(container: HTMLElement, message: string = "No notes found"): void {
     Logger.debug('renderEmptyState called with message:', message);
 
+    // Check if this is a kanban preset - if so, show special empty state
+    if (this.currentSettings?.preset === 'kanban') {
+      this.renderKanbanEmptyState(container);
+      return;
+    }
+
     // Create the cards container to maintain consistent styling
     const cardsContainer = container.createEl('div', {
       cls: 'datacards-container',
@@ -482,6 +500,63 @@ export class RendererService {
     });
 
     Logger.debug('Added empty state element with class:', 'datacards-empty-state');
+  }
+
+  /**
+   * Render empty state for kanban with option to create first task
+   *
+   * @param container The container element
+   */
+  private renderKanbanEmptyState(container: HTMLElement): void {
+    // Create the cards container to maintain consistent styling
+    const cardsContainer = container.createEl('div', {
+      cls: 'datacards-container datacards-kanban-container datacards-kanban-empty',
+      attr: {
+        'data-datacards-container': 'true'
+      }
+    });
+
+    // Add refresh button if enabled
+    if (this.currentSettings?.showRefreshButton) {
+      this.addRefreshButton(cardsContainer);
+    }
+
+    // Set kanban column width and spacing
+    if (this.currentSettings) {
+      cardsContainer.style.setProperty('--kanban-column-width', this.currentSettings.kanbanColumnWidth);
+      cardsContainer.style.setProperty('--kanban-column-spacing', `${this.currentSettings.kanbanColumnSpacing}px`);
+    }
+
+    const emptyState = cardsContainer.createEl('div', {
+      cls: 'datacards-kanban-empty-state'
+    });
+
+    // Title
+    emptyState.createEl('h3', {
+      cls: 'datacards-kanban-empty-title',
+      text: 'No tasks found'
+    });
+
+    // Description
+    emptyState.createEl('p', {
+      cls: 'datacards-kanban-empty-description',
+      text: 'Get started by creating your first task. It will appear in the appropriate status column.'
+    });
+
+    // Create task button
+    const createBtn = emptyState.createEl('button', {
+      cls: 'datacards-btn datacards-btn-primary datacards-kanban-create-first',
+      text: '+ Create First Task'
+    });
+
+    // Add click handler for create first task button
+    createBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      // Use default status from kanbanStatusOptions or fallback to 'todo'
+      const defaultStatus = this.currentSettings?.kanbanStatusOptions?.[0] || 'todo';
+      this.showNewTaskModal(defaultStatus, this.currentSettings!, new Component());
+    });
   }
 
   /**
@@ -3036,6 +3111,9 @@ export class RendererService {
    * @param component The parent component for lifecycle management
    */
   private showNewTaskModal(statusValue: string, settings: DataCardsSettings, component: Component): void {
+    // Extract tag from the current query if available
+    const extractedTag = this.extractTagFromQuery();
+    console.log('Extracted tag from query:', extractedTag);
     // Create modal container
     const modal = document.createElement('div');
     modal.className = 'datacards-new-task-modal-overlay';
@@ -3082,6 +3160,32 @@ export class RendererService {
       }
     });
 
+    // Status selection
+    const statusGroup = body.createEl('div', {
+      cls: 'datacards-form-group'
+    });
+    statusGroup.createEl('label', {
+      text: 'Status *',
+      cls: 'datacards-form-label'
+    });
+    const statusSelect = statusGroup.createEl('select', {
+      cls: 'datacards-form-input datacards-status-select'
+    });
+
+    // Get status options from settings
+    const statusOptions = settings.kanbanStatusOptions || ['todo', 'in-progress', 'review', 'done'];
+    statusOptions.forEach(status => {
+      const option = statusSelect.createEl('option', {
+        value: status,
+        text: status.charAt(0).toUpperCase() + status.slice(1).replace('-', ' ')
+      });
+
+      // Pre-select the status that was passed in (from column or default)
+      if (status === statusValue) {
+        option.selected = true;
+      }
+    });
+
     // Template fields
     let template = settings.newTaskTemplate || {};
 
@@ -3090,6 +3194,12 @@ export class RendererService {
     console.log('Raw newTaskTemplate:', settings.newTaskTemplate);
     console.log('Template type:', typeof settings.newTaskTemplate);
     console.log('Template value:', template);
+    console.log('Template JSON stringify:', JSON.stringify(settings.newTaskTemplate));
+    console.log('All settings keys:', Object.keys(settings));
+    console.log('kanbanColors setting:', settings.kanbanColors);
+    console.log('kanbanColors type:', typeof settings.kanbanColors);
+    console.log('newTaskPath setting:', settings.newTaskPath);
+    console.log('Full settings object:', settings);
 
     // If template is a string, try to parse it as JSON
     if (typeof template === 'string') {
@@ -3178,8 +3288,11 @@ export class RendererService {
         return;
       }
 
+      // Get the selected status from the dropdown
+      const selectedStatus = statusSelect.value;
+
       try {
-        await this.createNewTask(title, statusValue, templateInputs, settings);
+        await this.createNewTask(title, selectedStatus, templateInputs, settings, extractedTag);
         closeModal();
       } catch (error) {
         console.error('Error creating new task:', error);
@@ -3206,12 +3319,14 @@ export class RendererService {
    * @param statusValue The status value
    * @param templateInputs The template field inputs
    * @param settings The current settings
+   * @param extractedTag The tag extracted from the query (optional)
    */
   private async createNewTask(
     title: string,
     statusValue: string,
     templateInputs: Record<string, HTMLInputElement>,
-    settings: DataCardsSettings
+    settings: DataCardsSettings,
+    extractedTag: string | null = null
   ): Promise<void> {
     try {
       // Build frontmatter
@@ -3227,6 +3342,12 @@ export class RendererService {
         // Always add the field, even if empty (user might want empty values)
         frontmatter[key] = value;
       });
+
+      // Add tag if extracted from query
+      if (extractedTag) {
+        console.log(`Adding extracted tag: ${extractedTag}`);
+        frontmatter.tags = [extractedTag];
+      }
 
       // Generate filename
       const filename = this.generateFilename(title);
@@ -3285,6 +3406,33 @@ export class RendererService {
     return `${safeName}.md`;
   }
 
+  /**
+   * Extract tag from the current Dataview query
+   * Looks for patterns like "FROM #tagname"
+   *
+   * @returns The tag name without the # symbol, or null if not found
+   */
+  private extractTagFromQuery(): string | null {
+    if (!this.currentQuery) {
+      console.log('No current query available for tag extraction');
+      return null;
+    }
+
+    console.log('Extracting tag from query:', this.currentQuery);
+
+    // Look for patterns like "FROM #tagname"
+    const fromTagPattern = /FROM\s+#([a-zA-Z0-9_-]+)/i;
+    const match = this.currentQuery.match(fromTagPattern);
+
+    if (match && match[1]) {
+      const tagName = match[1];
+      console.log('Extracted tag:', tagName);
+      return tagName;
+    }
+
+    console.log('No tag found in FROM clause');
+    return null;
+  }
 
 
 

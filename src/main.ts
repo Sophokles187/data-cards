@@ -449,6 +449,9 @@ export default class DataCardsPlugin extends Plugin {
       const child = new MarkdownRenderChild(el);
       ctx.addChild(child); // ctx.addChild expects a MarkdownRenderChild
 
+      // Set the current query in the renderer for tag extraction
+      this.rendererService.setCurrentQuery(query);
+
       // If not empty, render the cards with the extracted data, passing the child component
       // MarkdownRenderChild is a subclass of Component, so it's compatible with the renderCards signature
       this.rendererService.renderCards(el, dataToRender, settings, child); // Pass child

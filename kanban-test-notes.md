@@ -58,17 +58,9 @@ SORT status ASC
 // Settings
 preset: kanban
 kanbanStatusOptions: ["todo", "in-progress", "review", "done"]
-kanbanColors: {
-  "todo": "blue",
-  "in-progress": "orange",
-  "review": "purple",
-  "done": "green"
-}
+kanbanColors: {"todo": "blue", "in-progress": "orange", "review": "purple", "done": "green"}
 newTaskPath: "Tasks"
-newTaskTemplate: {
-  "priority": "",
-  "assignee": ""
-}
+newTaskTemplate: {"priority": "", "assignee": "", "neues feld": ""}
 ```
 
 **Test:**
