@@ -35,8 +35,15 @@ imageProperty: cover
 | Setting | Description | Default | Available Options |
 |---------|-------------|---------|-------------------|
 | **Preset Settings** | | | |
-| `preset` | Card layout preset | `grid` | `grid`, `portrait`, `square`, `compact`, `dense` |
+| `preset` | Card layout preset | `grid` | `grid`, `portrait`, `square`, `compact`, `dense`, `kanban` |
 | `columns` | Number of columns (code block only) | Preset-specific | Number (typically 1-6) |
+| **Kanban Settings** | | | |
+| `kanbanStatusOptions` | Available status values for dropdowns | `["todo", "in-progress", "review", "done"]` | Array of status strings |
+| `kanbanColors` | Colors for status columns | `{}` | Object mapping status to color names |
+| `kanbanColumnWidth` | Width of kanban columns | `300px` | CSS value (e.g., `250px`, `20rem`) |
+| `kanbanColumnSpacing` | Space between kanban columns | `16` | Number (pixels) |
+| `newTaskPath` | Folder path for new tasks | `""` | Folder path (e.g., `"Projects/Tasks"`) |
+| `newTaskTemplate` | Default properties for new tasks | `{}` | Object with property defaults |
 | **Image Settings** | | | |
 | `imageProperty` | Frontmatter property to use for images | `cover` | Any property name |
 | `imageHeight` | Height of images | Preset-specific | CSS value (e.g., `200px`) |
@@ -163,6 +170,20 @@ SORT file.mtime DESC
 preset: compact
 truncateText: true
 fontSize: small
+```
+
+### Kanban Board Example
+
+```datacards
+TABLE file.link as "Task", priority, assignee, status FROM #project-tasks
+SORT status ASC
+
+// Settings
+preset: kanban
+kanbanStatusOptions: ["backlog", "in-progress", "review", "done"]
+kanbanColors: {"backlog": "gray", "in-progress": "blue", "review": "orange", "done": "green"}
+newTaskPath: "Projects/Tasks"
+newTaskTemplate: {"priority": "medium", "assignee": ""}
 ```
 
 ## Settings Hierarchy
