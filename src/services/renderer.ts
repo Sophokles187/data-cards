@@ -925,7 +925,7 @@ export class RendererService {
       }
 
       // Open the note
-      this.app.workspace.openLinkText(path, '', false, { active: true });
+      this.app.workspace.openLinkText(path, '', event.metaKey, { active: true });
 
       // Prevent event bubbling
       event.stopPropagation();
