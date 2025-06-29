@@ -590,21 +590,25 @@ export class RendererService {
 
       // If file is not in headers, try to get it from the row's metadata
       if (!fileValue && row.file) {
+        Logger.debug(`File not in headers, try to get it from metadata`);
         fileValue = row.file;
       }
 
       // If still no file value, try to get it from the row's path property
       if (!fileValue && row.path) {
+        Logger.debug(`File not in headers, try to get it from path`);
         fileValue = row.path;
       }
 
       // If still no file value, try to get it from the row's source property
       if (!fileValue && row.source) {
+        Logger.debug(`File not in headers, try to get it from source`);
         fileValue = row.source;
       }
 
       // If still no file value, try to get it from the original file
       if (!fileValue && row.originalFile) {
+        Logger.debug(`File not in headers, try to get it from original file`);
         fileValue = row.originalFile;
       }
 
@@ -921,7 +925,7 @@ export class RendererService {
       }
 
       // Open the note
-      this.app.workspace.openLinkText(path, '', false, { active: true });
+      this.app.workspace.openLinkText(path, '', event.metaKey, { active: true });
 
       // Prevent event bubbling
       event.stopPropagation();
