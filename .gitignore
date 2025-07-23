@@ -142,3 +142,6 @@ kanban-test-notes.md
 
 # Documentation internal files - not visible on GitHub
 docs/preview-instructions.md
+
+# Claude Code configuration
+CLAUDE.md
