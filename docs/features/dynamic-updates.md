@@ -51,22 +51,6 @@ To enable dynamic updates for all DataCards blocks:
 4. Enable "Dynamic Updates"
 5. Optionally adjust the "Refresh Delay"
 
-## How Dynamic Updates Work
-
-When dynamic updates are enabled:
-
-1. DataCards monitors changes to notes that match your query
-2. When a relevant property changes, the cards are automatically refreshed after the configured delay
-3. Only the affected cards are updated, not the entire display
-
-## Update Triggers
-
-Cards will update when:
-
-- You modify a property in a note's frontmatter
-- You add or remove a tag that affects the query results
-- You create or delete a note that matches the query
-- You manually trigger a refresh
 
 ## Refresh Delay
 
@@ -92,43 +76,11 @@ To optimize performance:
 - Increase the refresh delay
 - Only enable dynamic updates where needed
 
-## Examples
-
-### Task Tracker with Dynamic Updates
-
-```datacards
-TABLE file.link as "Task", status, priority, dueDate FROM #tasks
-WHERE status != "Completed"
-SORT dueDate ASC
-
-// Settings
-preset: grid
-dynamicUpdate: true
-```
-
-### Reading Progress Tracker
-
-```datacards
-TABLE file.link as "Book", author, progress, cover FROM #books
-WHERE status = "Reading"
-SORT progress DESC
-
-// Settings
-preset: portrait
-imageProperty: cover
-dynamicUpdate: true
-```
 
 ## Troubleshooting
 
-If you're having issues with updates:
 
-### Refresh Button Issues
-- Make sure you're hovering over the top-left corner of the DataCards container
-- The button appears with a slight delay - wait a moment after hovering
-- Try clicking the refresh button after making changes to your data
 
-### Dynamic Updates Issues
 - Verify that `dynamicUpdate: true` is set or that the global setting is enabled
 - Dynamic updates work better in reading mode than editing mode
 - Make sure the Dataview plugin is up to date
