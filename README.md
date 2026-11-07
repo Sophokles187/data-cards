@@ -8,7 +8,7 @@ Transform Dataview query results into visually appealing, customizable card layo
 
 [![Documentation](https://img.shields.io/badge/Documentation-Visit%20Docs-blue)](https://sophokles187.github.io/data-cards/)
 
-[!WARNING]
+## WARNING
 > **This plugin is no longer maintained.**
 >
 > Data Cards is built entirely on top of [Dataview](https://github.com/blacksmithgu/obsidian-dataview), which has been abandoned and no longer receives updates. Since this plugin depends on it, I have stopped developing it. Obsidian now offers [Bases](https://obsidian.md/help/bases) as a native core plugin, which covers most of what Data Cards does, so I recommend migrating to it.
